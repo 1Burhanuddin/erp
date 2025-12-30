@@ -9,6 +9,41 @@ export type Json =
 export interface Database {
     public: {
         Tables: {
+            contacts: {
+                Row: {
+                    id: string
+                    name: string
+                    email: string | null
+                    phone: string | null
+                    company: string | null
+                    role: string | null
+                    address: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    email?: string | null
+                    phone?: string | null
+                    company?: string | null
+                    role?: string | null
+                    address?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    email?: string | null
+                    phone?: string | null
+                    company?: string | null
+                    role?: string | null
+                    address?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
             product_categories: {
                 Row: {
                     id: string

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, ShoppingCart, Eye } from "lucide-react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { SearchInput, StatusBadge, DataCard } from "@/components/shared";
+import { mockOrders } from "@/api/mockData";
 import { Button } from "@/components/ui/button";
 import {
   Table,

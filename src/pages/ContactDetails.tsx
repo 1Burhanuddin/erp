@@ -1,7 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Mail, Phone, Building, MapPin } from "lucide-react";
-import Navbar from "@/components/Navbar";
+import { Mail, Phone, Building, MapPin, ArrowLeft } from "lucide-react";
+import { PageLayout, PageHeader } from "@/components/layout";
+import { StatusBadge } from "@/components/shared";
+import { Button } from "@/components/ui/button";
 
 interface ContactDetailsProps {
   isCollapsed: boolean;
@@ -25,69 +27,95 @@ const ContactDetails = ({ isCollapsed, setIsCollapsed }: ContactDetailsProps) =>
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <main className={`transition-all duration-300 ${isCollapsed ? 'ml-[60px]' : 'ml-64'} p-8`}>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">{contact.name}</h1>
-          <p className="text-gray-600 mt-1">{contact.role} at {contact.company}</p>
-        </div>
+    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+      <div className="mb-4">
+        <Link to="/contacts">
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Contacts
+          </Button>
+        </Link>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                  <span>{contact.email}</span>
+      <PageHeader
+        title={contact.name}
+        description={`${contact.role} at ${contact.company}`}
+      />
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
+        <div className="xl:col-span-2 space-y-4 md:space-y-6">
+          <Card className="p-4 md:p-6 bg-card border-border">
+            <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Contact Information</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <Mail className="h-4 w-4" />
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                  <span>{contact.phone}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Building className="h-5 w-5 text-gray-400" />
-                  <span>{contact.company}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <MapPin className="h-5 w-5 text-gray-400" />
-                  <span>{contact.location}</span>
+                <div>
+                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="text-sm font-medium text-foreground">{contact.email}</p>
                 </div>
               </div>
-            </Card>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <Phone className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="text-sm font-medium text-foreground">{contact.phone}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <Building className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Company</p>
+                  <p className="text-sm font-medium text-foreground">{contact.company}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Location</p>
+                  <p className="text-sm font-medium text-foreground">{contact.location}</p>
+                </div>
+              </div>
+            </div>
+          </Card>
 
-            <Card className="p-6 mt-6">
-              <h2 className="text-xl font-semibold mb-4">Deals</h2>
-              <div className="space-y-4">
-                {contact.deals.map((deal) => (
-                  <div key={deal.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <h3 className="font-medium">{deal.name}</h3>
-                      <p className="text-sm text-gray-600">{deal.value}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-sm ${
-                      deal.status === "Won" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
-                    }`}>
-                      {deal.status}
-                    </span>
+          <Card className="p-4 md:p-6 bg-card border-border">
+            <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Deals</h2>
+            <div className="space-y-3">
+              {contact.deals.map((deal) => (
+                <div
+                  key={deal.id}
+                  className="flex items-center justify-between p-3 md:p-4 bg-muted/30 rounded-lg border border-border"
+                >
+                  <div>
+                    <h3 className="font-medium text-foreground">{deal.name}</h3>
+                    <p className="text-sm text-muted-foreground">{deal.value}</p>
                   </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          <div>
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Activity</h2>
-              <div className="space-y-4">
-                <p className="text-gray-600">No recent activity</p>
-              </div>
-            </Card>
-          </div>
+                  <StatusBadge
+                    status={deal.status === "Won" ? "success" : "info"}
+                    label={deal.status}
+                  />
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
-      </main>
-    </div>
+
+        <div>
+          <Card className="p-4 md:p-6 bg-card border-border">
+            <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Activity</h2>
+            <p className="text-muted-foreground text-sm">No recent activity</p>
+          </Card>
+        </div>
+      </div>
+    </PageLayout>
   );
 };
 

@@ -17,12 +17,7 @@ interface DealsState {
   closed: Deal[];
 }
 
-interface DealsProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
-const Deals = ({ isCollapsed, setIsCollapsed }: DealsProps) => {
+const Deals = () => {
   const [deals, setDeals] = useState<DealsState>({
     lead: [
       { id: "1", title: "Enterprise Deal", value: "$50,000", company: "Tech Corp" },
@@ -67,7 +62,7 @@ const Deals = ({ isCollapsed, setIsCollapsed }: DealsProps) => {
   ];
 
   return (
-    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+    <PageLayout>
       <PageHeader title="Deals Pipeline" description="Track and manage your deals" />
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -86,11 +81,10 @@ const Deals = ({ isCollapsed, setIsCollapsed }: DealsProps) => {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`space-y-3 min-h-[200px] p-3 md:p-4 rounded-lg border transition-colors ${
-                      snapshot.isDraggingOver
+                    className={`space-y-3 min-h-[200px] p-3 md:p-4 rounded-lg border transition-colors ${snapshot.isDraggingOver
                         ? "bg-primary/5 border-primary/20"
                         : "bg-muted/30 border-border"
-                    }`}
+                      }`}
                   >
                     {deals[column.id as keyof DealsState].map((deal, index) => (
                       <Draggable key={deal.id} draggableId={deal.id} index={index}>
@@ -99,11 +93,10 @@ const Deals = ({ isCollapsed, setIsCollapsed }: DealsProps) => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`p-4 cursor-move bg-card border-border ${
-                              snapshot.isDragging
+                            className={`p-4 cursor-move bg-card border-border ${snapshot.isDragging
                                 ? "shadow-lg ring-2 ring-primary/20"
                                 : "hover:shadow-md hover:border-primary/20"
-                            } transition-all`}
+                              } transition-all`}
                           >
                             <h3 className="font-medium text-foreground">{deal.title}</h3>
                             <p className="text-sm text-muted-foreground mt-1">{deal.company}</p>

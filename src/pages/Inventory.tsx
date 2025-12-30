@@ -12,20 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface InventoryProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
-const mockInventory = [
-  { id: 1, name: "Widget Pro X", sku: "WPX-001", quantity: 150, price: 49.99, status: "In Stock" },
-  { id: 2, name: "Gadget Elite", sku: "GDE-002", quantity: 45, price: 129.99, status: "Low Stock" },
-  { id: 3, name: "Tool Master", sku: "TML-003", quantity: 0, price: 79.99, status: "Out of Stock" },
-  { id: 4, name: "Device Plus", sku: "DVP-004", quantity: 230, price: 199.99, status: "In Stock" },
-  { id: 5, name: "Component Kit", sku: "CKT-005", quantity: 12, price: 34.99, status: "Low Stock" },
-];
-
-const Inventory = ({ isCollapsed, setIsCollapsed }: InventoryProps) => {
+const Inventory = () => {
   const [search, setSearch] = useState("");
 
   const filteredInventory = mockInventory.filter(
@@ -48,7 +35,7 @@ const Inventory = ({ isCollapsed, setIsCollapsed }: InventoryProps) => {
   };
 
   return (
-    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+    <PageLayout>
       <PageHeader
         title="Inventory"
         description="Manage your product inventory"

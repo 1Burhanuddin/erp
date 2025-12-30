@@ -4,11 +4,6 @@ import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-interface ReportsProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
 const salesData = [
   { month: "Jan", sales: 4000, orders: 240 },
   { month: "Feb", sales: 3000, orders: 180 },
@@ -26,9 +21,9 @@ const categoryData = [
   { name: "Other", value: 8, color: "hsl(215, 20%, 65%)" },
 ];
 
-const Reports = ({ isCollapsed, setIsCollapsed }: ReportsProps) => {
+const Reports = () => {
   return (
-    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+    <PageLayout>
       <PageHeader title="Reports" description="Analytics and business insights" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 lg:mb-8">

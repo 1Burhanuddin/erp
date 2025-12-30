@@ -4,31 +4,42 @@ import { Plus } from "lucide-react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { SearchInput, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useContacts } from "@/api/supabaseData";
 
-interface ContactsProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
-const Contacts = ({ isCollapsed, setIsCollapsed }: ContactsProps) => {
+const Contacts = () => {
   const [search, setSearch] = useState("");
 
-  const mockContacts = [
-    { id: 1, name: "John Doe", email: "john@example.com", company: "Tech Corp", role: "CEO" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", company: "Design Co", role: "Designer" },
-    { id: 3, name: "Mike Johnson", email: "mike@example.com", company: "Dev Inc", role: "Developer" },
-    { id: 4, name: "Sarah Williams", email: "sarah@example.com", company: "Marketing Pro", role: "Manager" },
-  ];
+  const { data: contacts, isLoading } = useContacts();
 
-  const filteredContacts = mockContacts.filter(
-    (contact) =>
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <PageHeader
+          title="Contacts"
+          description="Manage your contacts and leads"
+          actions={<Skeleton className="h-10 w-32" />}
+        />
+        <Skeleton className="h-10 w-full max-w-md mb-6" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
+          {[...Array(8)].map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-xl" />
+          ))}
+        </div>
+      </PageLayout>
+    );
+  }
+
+  const filteredContacts = contacts?.filter(
+    (contact: any) =>
       contact.name.toLowerCase().includes(search.toLowerCase()) ||
       contact.email.toLowerCase().includes(search.toLowerCase()) ||
       contact.company.toLowerCase().includes(search.toLowerCase())
-  );
+  ) || [];
 
   return (
-    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+    <PageLayout>
       <PageHeader
         title="Contacts"
         description="Manage your contacts and leads"

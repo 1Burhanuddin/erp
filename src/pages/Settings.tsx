@@ -7,14 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { User, Bell, Shield, Palette } from "lucide-react";
 
-interface SettingsProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
-const Settings = ({ isCollapsed, setIsCollapsed }: SettingsProps) => {
+const Settings = () => {
   return (
-    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+    <PageLayout>
       <PageHeader title="Settings" description="Manage your account and preferences" />
 
       <div className="max-w-3xl space-y-6">

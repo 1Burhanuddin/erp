@@ -12,20 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface InvoicesProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
-const mockInvoices = [
-  { id: "INV-001", customer: "Tech Corp", date: "2024-01-15", dueDate: "2024-02-15", amount: 2500.00, status: "Paid" },
-  { id: "INV-002", customer: "Design Co", date: "2024-01-10", dueDate: "2024-02-10", amount: 1800.00, status: "Pending" },
-  { id: "INV-003", customer: "Dev Inc", date: "2024-01-08", dueDate: "2024-02-08", amount: 3200.00, status: "Overdue" },
-  { id: "INV-004", customer: "Marketing Pro", date: "2024-01-05", dueDate: "2024-02-05", amount: 950.00, status: "Paid" },
-  { id: "INV-005", customer: "StartUp Inc", date: "2024-01-02", dueDate: "2024-02-02", amount: 4500.00, status: "Draft" },
-];
-
-const Invoices = ({ isCollapsed, setIsCollapsed }: InvoicesProps) => {
+const Invoices = () => {
   const [search, setSearch] = useState("");
 
   const filteredInvoices = mockInvoices.filter(
@@ -50,7 +37,7 @@ const Invoices = ({ isCollapsed, setIsCollapsed }: InvoicesProps) => {
   };
 
   return (
-    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+    <PageLayout>
       <PageHeader
         title="Invoices"
         description="Create and manage invoices"

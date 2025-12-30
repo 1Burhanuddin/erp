@@ -5,12 +5,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { StatusBadge } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 
-interface ContactDetailsProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
-const ContactDetails = ({ isCollapsed, setIsCollapsed }: ContactDetailsProps) => {
+const ContactDetails = () => {
   const { id } = useParams();
 
   const contact = {
@@ -27,7 +22,7 @@ const ContactDetails = ({ isCollapsed, setIsCollapsed }: ContactDetailsProps) =>
   };
 
   return (
-    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+    <PageLayout>
       <div className="mb-4">
         <Link to="/contacts">
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">

@@ -12,20 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface OrdersProps {
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
-}
-
-const mockOrders = [
-  { id: "ORD-001", customer: "John Doe", date: "2024-01-15", total: 299.99, items: 3, status: "Delivered" },
-  { id: "ORD-002", customer: "Jane Smith", date: "2024-01-14", total: 149.50, items: 2, status: "Processing" },
-  { id: "ORD-003", customer: "Mike Johnson", date: "2024-01-14", total: 599.00, items: 5, status: "Shipped" },
-  { id: "ORD-004", customer: "Sarah Williams", date: "2024-01-13", total: 89.99, items: 1, status: "Pending" },
-  { id: "ORD-005", customer: "Tech Corp", date: "2024-01-12", total: 1299.00, items: 8, status: "Delivered" },
-];
-
-const Orders = ({ isCollapsed, setIsCollapsed }: OrdersProps) => {
+const Orders = () => {
   const [search, setSearch] = useState("");
 
   const filteredOrders = mockOrders.filter(
@@ -50,7 +37,7 @@ const Orders = ({ isCollapsed, setIsCollapsed }: OrdersProps) => {
   };
 
   return (
-    <PageLayout isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed}>
+    <PageLayout>
       <PageHeader
         title="Orders"
         description="Track and manage customer orders"

@@ -89,9 +89,9 @@ const navItems = [
     label: "Sell",
     icon: CreditCard,
     children: [
-      { path: "/sell/quotation", label: "Quotation" },
+      { path: "/sales/quotations", label: "Quotations" },
       { path: "/sell/order", label: "Sales Order" },
-      { path: "/sell/challan", label: "Delivery Challan" },
+      { path: "/sales/challans", label: "Delivery Challan" },
       { path: "/sell/invoice", label: "Sales Invoice" },
       { path: "/sell/direct", label: "Direct Sale" },
       { path: "/sell/return", label: "Sale Return" },
@@ -130,32 +130,34 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navIte
   if (item.children) {
     if (isCollapsed) {
       return (
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <div className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 justify-center cursor-pointer",
-              active ? "bg-sidebar-accent text-sidebar-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
-            )}>
-              <Icon className="h-5 w-5 flex-shrink-0" />
-            </div>
-          </TooltipTrigger>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="absolute inset-0 z-10" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" className="w-56" align="start">
-              <DropdownMenuLabel>{item.label}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {item.children.map(child => (
-                <Link key={child.path} to={child.path} onClick={onMobileClick}>
-                  <DropdownMenuItem className={cn(isActive(child.path) && "bg-accent")}>
-                    {child.label}
-                  </DropdownMenuItem>
-                </Link>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </Tooltip>
+        <div className="relative">
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <div className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 justify-center cursor-pointer",
+                active ? "bg-sidebar-accent text-sidebar-primary-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
+              )}>
+                <Icon className="h-5 w-5 flex-shrink-0" />
+              </div>
+            </TooltipTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="absolute inset-0 z-10" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" className="w-56" align="start">
+                <DropdownMenuLabel>{item.label}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {item.children.map(child => (
+                  <Link key={child.path} to={child.path} onClick={onMobileClick}>
+                    <DropdownMenuItem className={cn(isActive(child.path) && "bg-accent")}>
+                      {child.label}
+                    </DropdownMenuItem>
+                  </Link>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </Tooltip>
+        </div>
       );
     }
 
@@ -164,7 +166,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navIte
         <CollapsibleTrigger asChild>
           <div className={cn(
             "flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
-            active ? "bg-sidebar-accent text-sidebar-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
+            active ? "bg-sidebar-accent text-sidebar-primary-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
           )}>
             <div className="flex items-center gap-3">
               <Icon className="h-5 w-5 flex-shrink-0" />
@@ -195,7 +197,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navIte
         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
         isCollapsed && "justify-center px-2",
         active
-          ? "bg-sidebar-accent text-sidebar-foreground"
+          ? "bg-sidebar-accent text-sidebar-primary-foreground"
           : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
       )}
     >
@@ -315,7 +317,10 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           isCollapsed ? "w-16" : "w-64"
         )}
       >
-        <div className="flex items-center h-16 px-4 border-b border-sidebar-foreground/10 flex-shrink-0 justify-between">
+        <div className={cn(
+          "flex items-center h-16 px-4 border-b border-sidebar-foreground/10 flex-shrink-0",
+          isCollapsed ? "justify-center" : "justify-between"
+        )}>
           {!isCollapsed && (
             <h1 className="text-xl font-bold text-sidebar-foreground">
               ERP System

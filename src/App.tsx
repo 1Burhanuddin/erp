@@ -32,8 +32,14 @@ import PurchaseInvoice from "./pages/purchase/PurchaseInvoice";
 import DirectPurchase from "./pages/purchase/DirectPurchase";
 import PurchaseReturn from "./pages/purchase/PurchaseReturn";
 import Quotation from "./pages/sell/Quotation";
+import Quotations from "./pages/sales/Quotations";
+import AddQuotation from "./pages/sales/AddQuotation";
+import EditQuotation from "./pages/sales/EditQuotation";
 import SalesOrder from "./pages/sell/SalesOrder";
 import DeliveryChallan from "./pages/sell/DeliveryChallan";
+import DeliveryChallans from "./pages/sales/DeliveryChallans";
+import AddDeliveryChallan from "./pages/sales/AddDeliveryChallan";
+import EditDeliveryChallan from "./pages/sales/EditDeliveryChallan";
 import SalesInvoice from "./pages/sell/SalesInvoice";
 import AddSalesInvoice from "./pages/sell/AddSalesInvoice";
 import SalesInvoiceDetails from "./pages/sell/SalesInvoiceDetails";
@@ -46,6 +52,8 @@ import StockAdjustment from "./pages/stock/StockAdjustment";
 import AddStockAdjustment from "./pages/stock/AddStockAdjustment";
 import EditStockAdjustment from "./pages/stock/EditStockAdjustment";
 import ExpensesList from "./pages/expenses/ExpensesList";
+import AddExpense from "./pages/expenses/AddExpense";
+import EditExpense from "./pages/expenses/EditExpense";
 import ExpenseCategories from "./pages/expenses/ExpenseCategories";
 import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -90,8 +98,14 @@ const App = () => {
                 <Route path="/purchase/return" element={<PurchaseReturn />} />
 
                 <Route path="/sell/quotation" element={<Quotation />} />
+                <Route path="/sales/quotations" element={<Quotations />} />
+                <Route path="/sales/quotations/add" element={<AddQuotation />} />
+                <Route path="/sales/quotations/edit/:id" element={<EditQuotation />} />
                 <Route path="/sell/order" element={<SalesOrder />} />
                 <Route path="/sell/challan" element={<DeliveryChallan />} />
+                <Route path="/sales/challans" element={<DeliveryChallans />} />
+                <Route path="/sales/challans/add" element={<AddDeliveryChallan />} />
+                <Route path="/sales/challans/edit/:id" element={<EditDeliveryChallan />} />
                 <Route path="/sell/invoice" element={<SalesInvoice />} />
                 <Route path="/sell/invoice/:id" element={<SalesInvoiceDetails />} />
                 <Route path="/sell/add" element={<AddSalesInvoice />} />
@@ -106,6 +120,8 @@ const App = () => {
                 <Route path="/stock/adjustment/:id" element={<EditStockAdjustment />} />
 
                 <Route path="/expenses/list" element={<ExpensesList />} />
+                <Route path="/expenses/add" element={<AddExpense />} />
+                <Route path="/expenses/edit/:id" element={<EditExpense />} />
                 <Route path="/expenses/categories" element={<ExpenseCategories />} />
 
                 <Route path="/deals" element={<Deals />} />

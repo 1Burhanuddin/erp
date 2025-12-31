@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type StatusType = "success" | "warning" | "error" | "info" | "default";
+type StatusType = "success" | "warning" | "error" | "info" | "default" | "primary";
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -14,6 +14,7 @@ const statusStyles: Record<StatusType, string> = {
   error: "bg-destructive/10 text-destructive border-destructive/20",
   info: "bg-info/10 text-info border-info/20",
   default: "bg-muted text-muted-foreground border-border",
+  primary: "bg-primary/10 text-primary border-primary/20",
 };
 
 const StatusBadge = ({ status, label, className }: StatusBadgeProps) => {

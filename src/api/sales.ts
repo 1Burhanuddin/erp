@@ -5,41 +5,44 @@ import { Database } from "@/types/database";
 type SalesOrder = Database["public"]["Tables"]["sales_orders"]["Row"];
 type SalesOrderInsert = Database["public"]["Tables"]["sales_orders"]["Insert"];
 type SalesItemInsert = Database["public"]["Tables"]["sales_items"]["Insert"];
+type SalesPaymentInsert = Database["public"]["Tables"]["sales_payments"]["Insert"];
 
-export const useSalesOrders = () => {
+// --- Quotations Hooks ---
+
+export const useQuotations = () => {
     return useQuery({
-        queryKey: ["sales_orders"],
+        queryKey: ["quotations"],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("sales_orders")
                 .select(`
-          *,
-          customer:contacts(name)
-        `)
+                    *,
+                    customer:contacts(name),
+                    items:sales_items(*)
+                `)
+                .eq("status", "Quotation")
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
             return data;
         },
-        staleTime: 1000 * 60 * 5,
     });
 };
 
-export const useSalesOrder = (id: string) => {
+export const useQuotation = (id: string) => {
     return useQuery({
-        queryKey: ["sales_orders", id],
+        queryKey: ["quotations", id],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("sales_orders")
                 .select(`
-          *,
-          customer:contacts(*),
-          items:sales_items(
-            *,
-            product:products(name, sku, unit:product_units(name))
-          ),
-          payments:sales_payments(*)
-        `)
+                    *,
+                    customer:contacts(*),
+                    items:sales_items(
+                        *,
+                        product:products(name, sku)
+                    )
+                `)
                 .eq("id", id)
                 .single();
 
@@ -50,80 +53,286 @@ export const useSalesOrder = (id: string) => {
     });
 };
 
-type CreateSaleParams = {
-    order: SalesOrderInsert;
-    items: Omit<SalesItemInsert, "sale_id">[];
-};
-
-export const useCreateSale = () => {
+export const useCreateQuotation = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ order, items }: CreateSaleParams) => {
+        mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
             // 1. Create Order
             const { data: orderData, error: orderError } = await supabase
                 .from("sales_orders")
-                .insert({ ...order, status: 'Completed' })
+                .insert({ ...data.order, status: "Quotation" })
                 .select()
                 .single();
 
             if (orderError) throw orderError;
 
-            // 2. Create Items & Decrease Stock
-            if (items.length > 0) {
-                const itemsWithId = items.map((item) => ({
+            // 2. Create Items
+            if (data.items.length > 0) {
+                const itemsWithOrderId = data.items.map(item => ({
                     ...item,
                     sale_id: orderData.id,
                 }));
 
-                // Insert items
                 const { error: itemsError } = await supabase
                     .from("sales_items")
-                    .insert(itemsWithId);
+                    .insert(itemsWithOrderId);
 
                 if (itemsError) throw itemsError;
-
-                // Decrease Stock for each item
-                for (const item of items) {
-                    if (item.product_id) {
-                        const { data: product } = await supabase
-                            .from('products')
-                            .select('current_stock')
-                            .eq('id', item.product_id)
-                            .single();
-
-                        if (product) {
-                            const newStock = Math.max(0, (product.current_stock || 0) - item.quantity);
-                            await supabase
-                                .from('products')
-                                .update({ current_stock: newStock })
-                                .eq('id', item.product_id);
-                        }
-                    }
-                }
             }
 
-            // 3. Create Initial Payment if applicable
-            // @ts-ignore
-            if (order.paid_amount && order.paid_amount > 0) {
-                const { error: paymentError } = await supabase
-                    .from("sales_payments")
-                    .insert({
-                        sale_id: orderData.id,
-                        // @ts-ignore
-                        amount: order.paid_amount,
-                        payment_date: order.order_date,
-                        payment_method: 'Cash', // Default for initial
-                        notes: 'Initial Payment'
-                    });
+            return orderData;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["quotations"] });
+        },
+    });
+};
 
-                if (paymentError) throw paymentError;
+export const useUpdateQuotation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data: { id: string, order: Partial<SalesOrderInsert>, items: SalesItemInsert[] }) => {
+            // 1. Update Order
+            const { error: orderError } = await supabase
+                .from("sales_orders")
+                .update(data.order)
+                .eq("id", data.id);
+
+            if (orderError) throw orderError;
+
+            // 2. Delete existing items (simple replacement strategy)
+            const { error: deleteError } = await supabase
+                .from("sales_items")
+                .delete()
+                .eq("sale_id", data.id);
+
+            if (deleteError) throw deleteError;
+
+            // 3. Insert new items
+            if (data.items.length > 0) {
+                const itemsWithOrderId = data.items.map(item => ({
+                    ...item,
+                    sale_id: data.id,
+                }));
+                const { error: itemsError } = await supabase
+                    .from("sales_items")
+                    .insert(itemsWithOrderId);
+                if (itemsError) throw itemsError;
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["quotations"] });
+            queryClient.invalidateQueries({ queryKey: ["sales_orders"] });
+        },
+    });
+};
+
+export const useDeleteQuotation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase
+                .from("sales_orders")
+                .delete()
+                .eq("id", id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["quotations"] });
+        },
+    });
+};
+// --- Delivery Challan Hooks ---
+
+export const useDeliveryChallans = () => {
+    return useQuery({
+        queryKey: ["delivery_challans"],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from("sales_orders")
+                .select(`
+                    *,
+                    customer:contacts(name),
+                    items:sales_items(*)
+                `)
+                .eq("status", "Delivery Challan")
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+            return data;
+        },
+    });
+};
+
+export const useCreateDeliveryChallan = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
+            const { data: orderData, error: orderError } = await supabase
+                .from("sales_orders")
+                .insert({ ...data.order, status: "Delivery Challan" })
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            if (data.items.length > 0) {
+                const itemsWithOrderId = data.items.map(item => ({
+                    ...item,
+                    sale_id: orderData.id,
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from("sales_items")
+                    .insert(itemsWithOrderId);
+
+                if (itemsError) throw itemsError;
+            }
+
+            return orderData;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["delivery_challans"] });
+        },
+    });
+};
+
+export const useUpdateDeliveryChallan = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data: { id: string, order: Partial<SalesOrderInsert>, items: SalesItemInsert[] }) => {
+            const { error: orderError } = await supabase
+                .from("sales_orders")
+                .update(data.order)
+                .eq("id", data.id);
+
+            if (orderError) throw orderError;
+
+            const { error: deleteError } = await supabase
+                .from("sales_items")
+                .delete()
+                .eq("sale_id", data.id);
+
+            if (deleteError) throw deleteError;
+
+            if (data.items.length > 0) {
+                const itemsWithOrderId = data.items.map(item => ({
+                    ...item,
+                    sale_id: data.id,
+                }));
+                const { error: itemsError } = await supabase
+                    .from("sales_items")
+                    .insert(itemsWithOrderId);
+                if (itemsError) throw itemsError;
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["delivery_challans"] });
+            queryClient.invalidateQueries({ queryKey: ["sales_orders"] });
+        },
+    });
+};
+
+export const useDeleteDeliveryChallan = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase
+                .from("sales_orders")
+                .delete()
+                .eq("id", id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["delivery_challans"] });
+        },
+    });
+};
+// --- General Sales Hooks (Invoices/Orders) ---
+
+export const useSalesOrders = () => {
+    return useQuery({
+        queryKey: ["sales_orders"],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from("sales_orders")
+                // Fetch everything that is NOT a quotation, assuming 'Quotation' is specific.
+                // Or just fetch everything and let UI filter? Existing UI seemed to just show all.
+                // But usually Sales Invoices page wants invoices.
+                // Let's exclude Quotations to be safe, so they don't clutter the Invoice list.
+                .select(`
+                    *,
+                    customer:contacts(name),
+                    items:sales_items(*)
+                `)
+                .neq("status", "Quotation")
+                .neq("status", "Delivery Challan")
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+            return data;
+        },
+    });
+};
+
+export const useSalesOrder = (id: string) => {
+    return useQuery({
+        queryKey: ["sales_orders", id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from("sales_orders")
+                .select(`
+                    *,
+                    customer:contacts(*),
+                    items:sales_items(
+                        *,
+                        product:products(name, sku)
+                    ),
+                    payments:sales_payments(*)
+                `)
+                .eq("id", id)
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+};
+
+export const useCreateSale = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
+            // 1. Create Order
+            const { data: orderData, error: orderError } = await supabase
+                .from("sales_orders")
+                .insert(data.order)
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            // 2. Create Items
+            if (data.items.length > 0) {
+                const itemsWithOrderId = data.items.map(item => ({
+                    ...item,
+                    sale_id: orderData.id,
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from("sales_items")
+                    .insert(itemsWithOrderId);
+
+                if (itemsError) throw itemsError;
             }
 
             return orderData;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["sales_orders"] });
-            queryClient.invalidateQueries({ queryKey: ["products"] });
         },
     });
 };
@@ -131,54 +340,37 @@ export const useCreateSale = () => {
 export const useAddSalePayment = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ sale_id, amount, date, method, notes }: { sale_id: string; amount: number; date: string; method: string; notes?: string }) => {
-            // 1. Add Payment Record
-            const { error: paymentError } = await supabase
+        mutationFn: async (payment: SalesPaymentInsert) => {
+            // 1. Add Payment
+            const { data: paymentData, error: paymentError } = await supabase
                 .from("sales_payments")
-                .insert({
-                    sale_id,
-                    amount,
-                    payment_date: date,
-                    payment_method: method,
-                    notes
-                });
-
-            if (paymentError) throw paymentError;
-
-            // 2. Fetch current order to get total paid
-            const { data: order, error: fetchError } = await supabase
-                .from("sales_orders")
-                .select("total_amount, paid_amount")
-                .eq("id", sale_id)
-                .single();
-
-            if (fetchError) throw fetchError;
-
-            const currentPaid = Number(order.paid_amount || 0);
-            const newPaid = currentPaid + amount;
-            const total = Number(order.total_amount || 0);
-
-            let status = 'Unpaid';
-            if (newPaid >= total) status = 'Paid';
-            else if (newPaid > 0) status = 'Partial';
-
-            // 3. Update Order
-            const { data: updatedOrder, error: updateError } = await supabase
-                .from("sales_orders")
-                .update({
-                    paid_amount: newPaid,
-                    payment_status: status
-                } as any)
-                .eq("id", sale_id)
+                .insert(payment)
                 .select()
                 .single();
 
+            if (paymentError) throw paymentError;
+
+            // 2. Update Sales Order Totals
+            // First fetch current order
+            const { data: order, error: fetchError } = await supabase.from("sales_orders").select("total_amount, paid_amount").eq("id", payment.sale_id).single();
+            if (fetchError) throw fetchError;
+
+            const newPaidAmount = (order.paid_amount || 0) + payment.amount;
+            let newStatus = 'Partial';
+            if (newPaidAmount >= order.total_amount) newStatus = 'Paid';
+
+            const { error: updateError } = await supabase
+                .from("sales_orders")
+                .update({ paid_amount: newPaidAmount, payment_status: newStatus })
+                .eq("id", payment.sale_id);
+
             if (updateError) throw updateError;
-            return updatedOrder;
+
+            return paymentData;
         },
-        onSuccess: (data) => {
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["sales_orders", variables.sale_id] });
             queryClient.invalidateQueries({ queryKey: ["sales_orders"] });
-            queryClient.invalidateQueries({ queryKey: ["sales_orders", data.id] });
         },
     });
 };

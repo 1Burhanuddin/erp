@@ -32,7 +32,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                 title={title}
                 description={description}
                 actions={
-                    <Button onClick={() => navigate(`/contacts/add?role=${role}`)}>
+                    <Button onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Add {role}
                     </Button>

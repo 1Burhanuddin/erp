@@ -71,6 +71,7 @@ export default {
           DEFAULT: "hsl(var(--sidebar))",
           foreground: "hsl(var(--sidebar-foreground))",
           accent: "hsl(var(--sidebar-accent))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
           muted: "hsl(var(--sidebar-muted))",
         },
         surface: {

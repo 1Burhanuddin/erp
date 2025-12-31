@@ -1,5 +1,5 @@
 import { PageLayout, PageHeader } from "@/components/layout";
-import { useExpenses, useCreateExpense } from "@/api/expenses";
+import { useExpenses } from "@/api/expenses";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import {
@@ -11,27 +11,12 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "react-router-dom";
 
 const ExpensesList = () => {
     const { data: expenses, isLoading, error } = useExpenses();
-    const createExpense = useCreateExpense();
-
-    const handleCreateTestExpense = async () => {
-        try {
-            await createExpense.mutateAsync({
-                amount: Math.floor(Math.random() * 1000) + 100,
-                description: "Test Expense " + new Date().toLocaleTimeString(),
-                payment_method: "Cash",
-                expense_date: new Date().toISOString().split("T")[0],
-            });
-            toast.success("Test expense created successfully");
-        } catch (err) {
-            toast.error("Failed to create expense");
-            console.error(err);
-        }
-    };
+    const navigate = useNavigate();
 
     if (error) {
         return (
@@ -47,9 +32,9 @@ const ExpensesList = () => {
                 title="Expenses"
                 description="Manage your business expenses"
                 actions={
-                    <Button onClick={handleCreateTestExpense}>
+                    <Button onClick={() => navigate("/expenses/add")}>
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Test Expense
+                        Add Expense
                     </Button>
                 }
             />
@@ -85,14 +70,29 @@ const ExpensesList = () => {
                                 </TableRow>
                             ) : (
                                 expenses?.map((expense: any) => (
-                                    <TableRow key={expense.id}>
+                                    <TableRow
+                                        key={expense.id}
+                                        className="cursor-pointer hover:bg-muted/50"
+                                        onClick={() => navigate(`/expenses/edit/${expense.id}`)}
+                                    >
                                         <TableCell>
                                             {expense.expense_date
                                                 ? format(new Date(expense.expense_date), "MMM d, yyyy")
                                                 : "-"}
                                         </TableCell>
-                                        <TableCell>{expense.description}</TableCell>
-                                        <TableCell>{expense.category?.name || "-"}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span>{expense.description}</span>
+                                                {expense.notes && (
+                                                    <span className="text-xs text-muted-foreground">{expense.notes}</span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                                                {expense.category?.name || "Uncategorized"}
+                                            </span>
+                                        </TableCell>
                                         <TableCell>{expense.payment_method}</TableCell>
                                         <TableCell className="text-right font-medium">
                                             ₹{expense.amount.toFixed(2)}

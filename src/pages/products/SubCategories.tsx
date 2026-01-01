@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { useUnits, useCreateUnit, useUpdateUnit, useDeleteUnit, Unit } from "@/api/products";
+import { useCategories, useSubCategories, useCreateSubCategory, useUpdateSubCategory, useDeleteSubCategory, SubCategory } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Table,
     TableBody,
@@ -20,31 +21,44 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const Units = () => {
-    const { data: units, isLoading } = useUnits();
-    const createUnit = useCreateUnit();
-    const updateUnit = useUpdateUnit();
-    const deleteUnit = useDeleteUnit();
+const SubCategories = () => {
+    const { data: subCategories, isLoading } = useSubCategories();
+    const { data: categories } = useCategories();
+    const createSubCategory = useCreateSubCategory();
+    const updateSubCategory = useUpdateSubCategory();
+    const deleteSubCategory = useDeleteSubCategory();
 
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState({ name: "" });
+    const [formData, setFormData] = useState({ name: "", description: "", category_id: "" });
 
     const handleOpenCreate = () => {
         setEditingId(null);
-        setFormData({ name: "" });
+        setFormData({ name: "", description: "", category_id: "" });
         setIsDialogOpen(true);
     };
 
-    const handleOpenEdit = (unit: Unit) => {
-        setEditingId(unit.id);
-        setFormData({ name: unit.name });
+    const handleOpenEdit = (subCategory: SubCategory) => {
+        setEditingId(subCategory.id);
+        setFormData({
+            name: subCategory.name,
+            description: subCategory.description || "",
+            category_id: subCategory.category_id
+        });
         setIsDialogOpen(true);
     };
 
@@ -53,45 +67,49 @@ const Units = () => {
             toast.error("Name is required");
             return;
         }
+        if (!formData.category_id) {
+            toast.error("Parent Category is required");
+            return;
+        }
 
         try {
             if (editingId) {
-                await updateUnit.mutateAsync({
+                await updateSubCategory.mutateAsync({
                     ...formData,
                     id: editingId,
                     created_at: "", // ignored
                     updated_at: ""  // ignored
                 });
-                toast.success("Unit updated successfully");
+                toast.success("Sub Category updated successfully");
             } else {
-                await createUnit.mutateAsync(formData);
-                toast.success("Unit created successfully");
+                await createSubCategory.mutateAsync(formData);
+                toast.success("Sub Category created successfully");
             }
             setIsDialogOpen(false);
         } catch (error) {
-            toast.error(editingId ? "Failed to update unit" : "Failed to create unit");
+            toast.error(editingId ? "Failed to update sub category" : "Failed to create sub category");
         }
     };
 
     const handleDelete = async () => {
-        if (editingId && confirm("Are you sure you want to delete this unit?")) {
+        if (editingId && confirm("Are you sure you want to delete this sub category?")) {
             try {
-                await deleteUnit.mutateAsync(editingId);
-                toast.success("Unit deleted");
+                await deleteSubCategory.mutateAsync(editingId);
+                toast.success("Sub Category deleted");
                 setIsDialogOpen(false);
             } catch (error) {
-                toast.error("Failed to delete unit");
+                toast.error("Failed to delete sub category");
             }
         }
     };
 
-    const isSubmitting = createUnit.isPending || updateUnit.isPending;
+    const isSubmitting = createSubCategory.isPending || updateSubCategory.isPending;
 
     return (
         <PageLayout>
             <PageHeader
-                title="Product Units"
-                description="Manage product units (e.g., kg, pcs)"
+                title="Product Sub Categories"
+                description="Manage product sub categories"
                 actions={
                     <div className="flex items-center gap-2">
                         <div className="hidden sm:block">
@@ -99,7 +117,7 @@ const Units = () => {
                         </div>
                         <Button onClick={handleOpenCreate}>
                             <Plus className="mr-2 h-4 w-4" />
-                            Add Unit
+                            Add Sub Category
                         </Button>
                     </div>
                 }
@@ -115,20 +133,26 @@ const Units = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {isLoading ? (
                             Array.from({ length: 4 }).map((_, i) => (
-                                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                                <Skeleton key={i} className="h-32 w-full rounded-xl" />
                             ))
-                        ) : units?.length === 0 ? (
-                            <div className="col-span-full text-center py-8 text-muted-foreground">No units found.</div>
+                        ) : subCategories?.length === 0 ? (
+                            <div className="col-span-full text-center py-8 text-muted-foreground">No sub categories found.</div>
                         ) : (
-                            units?.map((unit) => (
+                            subCategories?.map((subCategory: any) => (
                                 <DataCard
-                                    key={unit.id}
+                                    key={subCategory.id}
                                     className="bg-card cursor-pointer hover:bg-muted/50 transition-colors"
-                                    onClick={() => handleOpenEdit(unit)}
+                                    onClick={() => handleOpenEdit(subCategory)}
                                 >
-                                    <div className="flex justify-between items-center">
-                                        <span className="font-medium">{unit.name}</span>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h3 className="font-semibold">{subCategory.name}</h3>
+                                            <span className="text-xs text-muted-foreground">{subCategory.category?.name}</span>
+                                        </div>
                                     </div>
+                                    <p className="text-sm text-muted-foreground line-clamp-3">
+                                        {subCategory.description || "No description"}
+                                    </p>
                                 </DataCard>
                             ))
                         )}
@@ -139,6 +163,8 @@ const Units = () => {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Name</TableHead>
+                                    <TableHead>Parent Category</TableHead>
+                                    <TableHead>Description</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -146,22 +172,26 @@ const Units = () => {
                                     Array.from({ length: 3 }).map((_, i) => (
                                         <TableRow key={i}>
                                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                                         </TableRow>
                                     ))
-                                ) : units?.length === 0 ? (
+                                ) : subCategories?.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={1} className="h-24 text-center text-muted-foreground">
-                                            No units found.
+                                        <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                                            No sub categories found.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    units?.map((unit) => (
+                                    subCategories?.map((subCategory: any) => (
                                         <TableRow
-                                            key={unit.id}
+                                            key={subCategory.id}
                                             className="cursor-pointer hover:bg-muted/50"
-                                            onClick={() => handleOpenEdit(unit)}
+                                            onClick={() => handleOpenEdit(subCategory)}
                                         >
-                                            <TableCell className="font-medium">{unit.name}</TableCell>
+                                            <TableCell className="font-medium">{subCategory.name}</TableCell>
+                                            <TableCell>{subCategory.category?.name}</TableCell>
+                                            <TableCell>{subCategory.description}</TableCell>
                                         </TableRow>
                                     ))
                                 )}
@@ -175,19 +205,44 @@ const Units = () => {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{editingId ? "Edit Unit" : "Add New Unit"}</DialogTitle>
+                        <DialogTitle>{editingId ? "Edit Sub Category" : "Add New Sub Category"}</DialogTitle>
                         <DialogDescription>
-                            {editingId ? "Update unit details." : "Create a new unit for your products."}
+                            {editingId ? "Update sub category details." : "Create a new sub category for your products."}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="category">Parent Category</Label>
+                            <Select
+                                value={formData.category_id}
+                                onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select parent category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {categories?.map((category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="grid gap-2">
                             <Label htmlFor="name">Name</Label>
                             <Input
                                 id="name"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="e.g., Kg, Pcs, Box"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea
+                                id="description"
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             />
                         </div>
                     </div>
@@ -212,4 +267,5 @@ const Units = () => {
         </PageLayout>
     );
 };
-export default Units;
+
+export default SubCategories;

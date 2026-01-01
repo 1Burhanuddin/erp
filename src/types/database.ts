@@ -67,6 +67,32 @@ export interface Database {
                     updated_at?: string
                 }
             }
+            product_sub_categories: {
+                Row: {
+                    id: string
+                    name: string
+                    category_id: string
+                    description: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    category_id: string
+                    description?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    category_id?: string
+                    description?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
             product_brands: {
                 Row: {
                     id: string
@@ -113,6 +139,7 @@ export interface Database {
                     name: string
                     sku: string | null
                     category_id: string | null
+                    sub_category_id: string | null
                     brand_id: string | null
                     unit_id: string | null
                     purchase_price: number | null
@@ -129,6 +156,7 @@ export interface Database {
                     name: string
                     sku?: string | null
                     category_id?: string | null
+                    sub_category_id?: string | null
                     brand_id?: string | null
                     unit_id?: string | null
                     purchase_price?: number | null
@@ -145,6 +173,7 @@ export interface Database {
                     name?: string
                     sku?: string | null
                     category_id?: string | null
+                    sub_category_id?: string | null
                     brand_id?: string | null
                     unit_id?: string | null
                     purchase_price?: number | null

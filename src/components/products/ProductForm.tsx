@@ -22,9 +22,11 @@ import {
 import { Plus } from "lucide-react";
 import {
     useCategories,
+    useSubCategories,
     useBrands,
     useUnits,
     useCreateCategory,
+    useCreateSubCategory,
     useCreateBrand,
     useCreateUnit,
 } from "@/api/products";
@@ -108,6 +110,7 @@ export const ProductForm = ({
         name: "",
         sku: "",
         category_id: "",
+        sub_category_id: "",
         brand_id: "",
         unit_id: "",
         purchase_price: "",
@@ -116,12 +119,17 @@ export const ProductForm = ({
         description: "",
     });
 
+    // Fetch sub-categories only when a category is selected
+    const { data: subCategories } = useSubCategories(formData.category_id || undefined);
+    const createSubCategory = useCreateSubCategory();
+
     useEffect(() => {
         if (initialData) {
             setFormData({
                 name: initialData.name || "",
                 sku: initialData.sku || "",
                 category_id: initialData.category_id || "",
+                sub_category_id: initialData.sub_category_id || "",
                 brand_id: initialData.brand_id || "",
                 unit_id: initialData.unit_id || "",
                 purchase_price: initialData.purchase_price?.toString() || "",
@@ -167,14 +175,14 @@ export const ProductForm = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-2">
                     <Label>Category</Label>
                     <div className="flex gap-2">
                         <Select
                             value={formData.category_id}
                             onValueChange={(val) =>
-                                setFormData({ ...formData, category_id: val })
+                                setFormData({ ...formData, category_id: val, sub_category_id: "" })
                             }
                         >
                             <SelectTrigger className="w-full">
@@ -196,6 +204,47 @@ export const ProductForm = ({
                             }}
                             trigger={
                                 <Button type="button" variant="outline" size="icon">
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            }
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label>Sub Category</Label>
+                    <div className="flex gap-2">
+                        <Select
+                            value={formData.sub_category_id}
+                            onValueChange={(val) =>
+                                setFormData({ ...formData, sub_category_id: val })
+                            }
+                            disabled={!formData.category_id}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder={formData.category_id ? "Select Sub Category" : "Select Category First"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {subCategories?.map((sc) => (
+                                    <SelectItem key={sc.id} value={sc.id}>
+                                        {sc.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <QuickAddDialog
+                            title="Add Sub Category"
+                            description="Create a new sub category"
+                            onSave={async (name) => {
+                                if (formData.category_id) {
+                                    await createSubCategory.mutateAsync({
+                                        name,
+                                        category_id: formData.category_id
+                                    });
+                                }
+                            }}
+                            trigger={
+                                <Button type="button" variant="outline" size="icon" disabled={!formData.category_id}>
                                     <Plus className="h-4 w-4" />
                                 </Button>
                             }

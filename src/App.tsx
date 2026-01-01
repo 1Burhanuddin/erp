@@ -5,11 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Index from "./pages/Index";
-import Contacts from "./pages/Contacts";
 import ContactDetails from "./pages/ContactDetails";
 import Deals from "./pages/Deals";
 import Inventory from "./pages/Inventory";
-import Orders from "./pages/Orders";
 import Invoices from "./pages/Invoices";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
@@ -24,6 +22,7 @@ import AddProduct from "./pages/products/AddProduct";
 import EditProduct from "./pages/products/EditProduct";
 import Units from "./pages/products/Units";
 import Categories from "./pages/products/Categories";
+import SubCategories from "./pages/products/SubCategories";
 import Brands from "./pages/products/Brands";
 import PurchaseOrder from "./pages/purchase/PurchaseOrder";
 import AddPurchaseOrder from "./pages/purchase/AddPurchaseOrder";
@@ -31,12 +30,10 @@ import GRN from "./pages/purchase/GRN";
 import PurchaseInvoice from "./pages/purchase/PurchaseInvoice";
 import DirectPurchase from "./pages/purchase/DirectPurchase";
 import PurchaseReturn from "./pages/purchase/PurchaseReturn";
-import Quotation from "./pages/sell/Quotation";
 import Quotations from "./pages/sales/Quotations";
 import AddQuotation from "./pages/sales/AddQuotation";
 import EditQuotation from "./pages/sales/EditQuotation";
 import SalesOrder from "./pages/sell/SalesOrder";
-import DeliveryChallan from "./pages/sell/DeliveryChallan";
 import DeliveryChallans from "./pages/sales/DeliveryChallans";
 import AddDeliveryChallan from "./pages/sales/AddDeliveryChallan";
 import EditDeliveryChallan from "./pages/sales/EditDeliveryChallan";
@@ -73,7 +70,6 @@ const App = () => {
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
                 <Route path="/" element={<Index />} />
-                <Route path="/contacts" element={<Contacts />} />
                 <Route path="/contacts/suppliers" element={<Suppliers />} />
                 <Route path="/contacts/suppliers/add" element={<AddContact />} />
                 <Route path="/contacts/customers" element={<Customers />} />
@@ -88,6 +84,7 @@ const App = () => {
                 <Route path="/products/edit/:id" element={<EditProduct />} />
                 <Route path="/products/units" element={<Units />} />
                 <Route path="/products/categories" element={<Categories />} />
+                <Route path="/products/sub-categories" element={<SubCategories />} />
                 <Route path="/products/brands" element={<Brands />} />
 
                 <Route path="/purchase/order" element={<PurchaseOrder />} />
@@ -97,12 +94,10 @@ const App = () => {
                 <Route path="/purchase/direct" element={<DirectPurchase />} />
                 <Route path="/purchase/return" element={<PurchaseReturn />} />
 
-                <Route path="/sell/quotation" element={<Quotation />} />
                 <Route path="/sales/quotations" element={<Quotations />} />
                 <Route path="/sales/quotations/add" element={<AddQuotation />} />
                 <Route path="/sales/quotations/edit/:id" element={<EditQuotation />} />
                 <Route path="/sell/order" element={<SalesOrder />} />
-                <Route path="/sell/challan" element={<DeliveryChallan />} />
                 <Route path="/sales/challans" element={<DeliveryChallans />} />
                 <Route path="/sales/challans/add" element={<AddDeliveryChallan />} />
                 <Route path="/sales/challans/edit/:id" element={<EditDeliveryChallan />} />
@@ -126,7 +121,6 @@ const App = () => {
 
                 <Route path="/deals" element={<Deals />} />
                 <Route path="/inventory" element={<Inventory />} />
-                <Route path="/orders" element={<Orders />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />

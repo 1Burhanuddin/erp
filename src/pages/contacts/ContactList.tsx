@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useContacts } from "@/api/contacts";
 import { Button } from "@/components/ui/button";
+import { DataCard, DataViewToggle } from "@/components/shared";
 import { Plus, Mail, Phone, MapPin } from "lucide-react";
 import {
     Table,
@@ -22,6 +24,7 @@ interface ContactListProps {
 const ContactList = ({ role, title, description }: ContactListProps) => {
     const { data: contacts, isLoading } = useContacts();
     const navigate = useNavigate();
+    const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
 
     // Filter contacts by the requested role
     const filteredContacts = contacts?.filter(c => c.role === role) || [];
@@ -32,78 +35,135 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                 title={title}
                 description={description}
                 actions={
-                    <Button onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add {role}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <div className="hidden sm:block">
+                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                        </div>
+                        <Button onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add {role}
+                        </Button>
+                    </div>
                 }
             />
 
+            {/* Mobile View Toggle */}
+            <div className="sm:hidden mb-4">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>
+
             <div className="p-4">
-                <div className="rounded-md border bg-card">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Nam/Company</TableHead>
-                                <TableHead>Contact Info</TableHead>
-                                <TableHead>GSTIN / Address</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                Array.from({ length: 3 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24 mt-2" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24 mt-2" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : filteredContacts.length === 0 ? (
+                {viewMode === 'card' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {isLoading ? (
+                            Array.from({ length: 6 }).map((_, i) => (
+                                <Skeleton key={i} className="h-40 w-full rounded-xl" />
+                            ))
+                        ) : filteredContacts.length === 0 ? (
+                            <div className="col-span-full text-center py-8 text-muted-foreground">No {role.toLowerCase()}s found.</div>
+                        ) : (
+                            filteredContacts.map((contact) => (
+                                <DataCard key={contact.id} onClick={() => navigate(`/contacts/edit/${contact.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h3 className="font-semibold text-foreground">{contact.name}</h3>
+                                            {contact.company && <p className="text-sm text-muted-foreground">{contact.company}</p>}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2 mt-3 text-sm">
+                                        {contact.email && (
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Mail className="h-3.5 w-3.5" /> <span className="truncate">{contact.email}</span>
+                                            </div>
+                                        )}
+                                        {contact.phone && (
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Phone className="h-3.5 w-3.5" /> <span>{contact.phone}</span>
+                                            </div>
+                                        )}
+                                        {contact.address && (
+                                            <div className="flex items-start gap-2 text-muted-foreground">
+                                                <MapPin className="h-3.5 w-3.5 mt-0.5" /> <span className="line-clamp-2">{contact.address}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {contact.gstin && (
+                                        <div className="mt-3 pt-3 border-t text-xs font-mono text-muted-foreground">
+                                            GST: {contact.gstin}
+                                        </div>
+                                    )}
+                                </DataCard>
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    <div className="rounded-md border bg-card">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell
-                                        colSpan={3}
-                                        className="h-24 text-center text-muted-foreground"
-                                    >
-                                        No {role.toLowerCase()}s found.
-                                    </TableCell>
+                                    <TableHead>Name/Company</TableHead>
+                                    <TableHead>Contact Info</TableHead>
+                                    <TableHead>GSTIN / Address</TableHead>
                                 </TableRow>
-                            ) : (
-                                filteredContacts.map((contact) => (
-                                    <TableRow
-                                        key={contact.id}
-                                        className="cursor-pointer hover:bg-muted/50"
-                                        onClick={() => navigate(`/contacts/edit/${contact.id}`)}
-                                    >
-                                        <TableCell>
-                                            <div className="font-medium">{contact.name}</div>
-                                            {contact.company && <div className="text-sm text-muted-foreground">{contact.company}</div>}
-                                        </TableCell>
-                                        <TableCell>
-                                            {contact.email && (
-                                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                    <Mail className="h-3 w-3" /> {contact.email}
-                                                </div>
-                                            )}
-                                            {contact.phone && (
-                                                <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
-                                                    <Phone className="h-3 w-3" /> {contact.phone}
-                                                </div>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {contact.gstin && <div className="text-sm font-mono">GST: {contact.gstin}</div>}
-                                            {contact.address && (
-                                                <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5 truncate max-w-[200px]">
-                                                    <MapPin className="h-3 w-3 flex-shrink-0" /> {contact.address}
-                                                </div>
-                                            )}
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading ? (
+                                    Array.from({ length: 3 }).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24 mt-2" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24 mt-2" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : filteredContacts.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={3}
+                                            className="h-24 text-center text-muted-foreground"
+                                        >
+                                            No {role.toLowerCase()}s found.
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                                ) : (
+                                    filteredContacts.map((contact) => (
+                                        <TableRow
+                                            key={contact.id}
+                                            className="cursor-pointer hover:bg-muted/50"
+                                            onClick={() => navigate(`/contacts/edit/${contact.id}`)}
+                                        >
+                                            <TableCell>
+                                                <div className="font-medium">{contact.name}</div>
+                                                {contact.company && <div className="text-sm text-muted-foreground">{contact.company}</div>}
+                                            </TableCell>
+                                            <TableCell>
+                                                {contact.email && (
+                                                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                                        <Mail className="h-3 w-3" /> {contact.email}
+                                                    </div>
+                                                )}
+                                                {contact.phone && (
+                                                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
+                                                        <Phone className="h-3 w-3" /> {contact.phone}
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {contact.gstin && <div className="text-sm font-mono">GST: {contact.gstin}</div>}
+                                                {contact.address && (
+                                                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5 truncate max-w-[200px]">
+                                                        <MapPin className="h-3 w-3 flex-shrink-0" /> {contact.address}
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
             </div>
         </PageLayout>
     );

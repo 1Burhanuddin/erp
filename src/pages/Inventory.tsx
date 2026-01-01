@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Package, Edit2, Trash2 } from "lucide-react";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { SearchInput, StatusBadge, DataCard } from "@/components/shared";
+import { SearchInput, StatusBadge, DataCard, DataViewToggle } from "@/components/shared";
 import { mockInventory } from "@/api/mockData";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
 
 const Inventory = () => {
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
 
   const filteredInventory = mockInventory.filter(
     (item) =>
@@ -41,52 +42,61 @@ const Inventory = () => {
         title="Inventory"
         description="Manage your product inventory"
         actions={
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add Product</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:block">
+              <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>
+            <Button className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Product</span>
+            </Button>
+          </div>
         }
       />
 
-      <SearchInput
-        value={search}
-        onChange={setSearch}
-        placeholder="Search products..."
-        className="mb-6 max-w-md"
-      />
-
-      {/* Mobile Cards View */}
-      <div className="block lg:hidden space-y-4">
-        {filteredInventory.map((item) => (
-          <DataCard key={item.id} hover={false}>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                  <Package className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">{item.name}</h3>
-                  <p className="text-sm text-muted-foreground">{item.sku}</p>
-                </div>
-              </div>
-              <StatusBadge status={getStatusType(item.status) as any} label={item.status} />
-            </div>
-            <div className="mt-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Quantity</p>
-                <p className="font-medium text-foreground">{item.quantity}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Price</p>
-                <p className="font-semibold text-primary">${item.price}</p>
-              </div>
-            </div>
-          </DataCard>
-        ))}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 justify-between items-start sm:items-center">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search products..."
+          className="max-w-md w-full sm:w-auto"
+        />
+        {/* Mobile View Toggle */}
+        <div className="sm:hidden self-end">
+          <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+        </div>
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block">
+      {viewMode === 'card' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredInventory.map((item) => (
+            <DataCard key={item.id} hover={false}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                    <Package className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground">{item.sku}</p>
+                  </div>
+                </div>
+                <StatusBadge status={getStatusType(item.status) as any} label={item.status} />
+              </div>
+              <div className="mt-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Quantity</p>
+                  <p className="font-medium text-foreground">{item.quantity}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Price</p>
+                  <p className="font-semibold text-primary">${item.price}</p>
+                </div>
+              </div>
+            </DataCard>
+          ))}
+        </div>
+      ) : (
         <div className="rounded-lg border border-border bg-card overflow-hidden">
           <Table>
             <TableHeader>
@@ -124,7 +134,7 @@ const Inventory = () => {
             </TableBody>
           </Table>
         </div>
-      </div>
+      )}
     </PageLayout>
   );
 };

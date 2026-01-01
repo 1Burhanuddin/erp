@@ -69,6 +69,7 @@ const navItems = [
       { path: "/products/list", label: "Products List" },
       { path: "/products/units", label: "Units" },
       { path: "/products/categories", label: "Category" },
+      { path: "/products/sub-categories", label: "Sub Category" },
       { path: "/products/brands", label: "Brand" },
     ],
   },
@@ -110,7 +111,6 @@ const navItems = [
   },
   { path: "/deals", label: "Deals", icon: PieChart },
   { path: "/inventory", label: "Inventory", icon: Package },
-  { path: "/orders", label: "Orders", icon: ShoppingCart },
   { path: "/invoices", label: "Invoices", icon: FileText },
   { path: "/reports", label: "Reports", icon: BarChart3 },
   { path: "/settings", label: "Settings", icon: Settings },
@@ -175,7 +175,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navIte
             <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
           </div>
         </CollapsibleTrigger>
-        <CollapsibleContent className="pl-4 space-y-1 mt-1">
+        <CollapsibleContent className="pl-4 space-y-1 mt-1 overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
           {item.children.map(child => (
             <Link key={child.path} to={child.path} onClick={onMobileClick} className={cn(
               "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 text-sm",

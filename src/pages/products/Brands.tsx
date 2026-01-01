@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { useBrands, useCreateBrand, useDeleteBrand } from "@/api/products";
+import { useBrands, useCreateBrand, useUpdateBrand, useDeleteBrand, Brand } from "@/api/products";
+import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Table,
     TableBody,
@@ -20,43 +22,71 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Brands = () => {
     const { data: brands, isLoading } = useBrands();
     const createBrand = useCreateBrand();
+    const updateBrand = useUpdateBrand();
     const deleteBrand = useDeleteBrand();
-    const [isOpen, setIsOpen] = useState(false);
-    const [newBrand, setNewBrand] = useState({ name: "" });
 
-    const handleCreate = async () => {
-        if (!newBrand.name) {
+    const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [formData, setFormData] = useState({ name: "" });
+
+    const handleOpenCreate = () => {
+        setEditingId(null);
+        setFormData({ name: "" });
+        setIsDialogOpen(true);
+    };
+
+    const handleOpenEdit = (brand: Brand) => {
+        setEditingId(brand.id);
+        setFormData({ name: brand.name });
+        setIsDialogOpen(true);
+    };
+
+    const handleSubmit = async () => {
+        if (!formData.name) {
             toast.error("Name is required");
             return;
         }
+
         try {
-            await createBrand.mutateAsync(newBrand);
-            toast.success("Brand created successfully");
-            setIsOpen(false);
-            setNewBrand({ name: "" });
+            if (editingId) {
+                await updateBrand.mutateAsync({
+                    ...formData,
+                    id: editingId,
+                    created_at: "", // ignored
+                    updated_at: ""  // ignored
+                });
+                toast.success("Brand updated successfully");
+            } else {
+                await createBrand.mutateAsync(formData);
+                toast.success("Brand created successfully");
+            }
+            setIsDialogOpen(false);
         } catch (error) {
-            toast.error("Failed to create brand");
+            toast.error(editingId ? "Failed to update brand" : "Failed to create brand");
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Are you sure you want to delete this brand?")) {
+    const handleDelete = async () => {
+        if (editingId && confirm("Are you sure you want to delete this brand?")) {
             try {
-                await deleteBrand.mutateAsync(id);
+                await deleteBrand.mutateAsync(editingId);
                 toast.success("Brand deleted");
+                setIsDialogOpen(false);
             } catch (error) {
                 toast.error("Failed to delete brand");
             }
         }
     };
+
+    const isSubmitting = createBrand.isPending || updateBrand.isPending;
 
     return (
         <PageLayout>
@@ -64,90 +94,121 @@ const Brands = () => {
                 title="Product Brands"
                 description="Manage product brands"
                 actions={
-                    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Plus className="mr-2 h-4 w-4" />
-                                Add Brand
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Add New Brand</DialogTitle>
-                                <DialogDescription>
-                                    Create a new brand for your products.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input
-                                        id="name"
-                                        value={newBrand.name}
-                                        onChange={(e) =>
-                                            setNewBrand({ ...newBrand, name: e.target.value })
-                                        }
-                                    />
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsOpen(false)}>
-                                    Cancel
-                                </Button>
-                                <Button onClick={handleCreate}>Create</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                    <div className="flex items-center gap-2">
+                        <div className="hidden sm:block">
+                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                        </div>
+                        <Button onClick={handleOpenCreate}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Brand
+                        </Button>
+                    </div>
                 }
             />
 
+            {/* Mobile View Toggle */}
+            <div className="sm:hidden mb-4">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>
+
             <div className="p-4">
-                <div className="rounded-md border bg-card">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead className="w-[100px]">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                Array.from({ length: 3 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : brands?.length === 0 ? (
+                {viewMode === 'card' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {isLoading ? (
+                            Array.from({ length: 4 }).map((_, i) => (
+                                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                            ))
+                        ) : brands?.length === 0 ? (
+                            <div className="col-span-full text-center py-8 text-muted-foreground">No brands found.</div>
+                        ) : (
+                            brands?.map((brand) => (
+                                <DataCard
+                                    key={brand.id}
+                                    className="bg-card cursor-pointer hover:bg-muted/50 transition-colors"
+                                    onClick={() => handleOpenEdit(brand)}
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-medium">{brand.name}</span>
+                                    </div>
+                                </DataCard>
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    <div className="rounded-md border bg-card">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell
-                                        colSpan={2}
-                                        className="h-24 text-center text-muted-foreground"
-                                    >
-                                        No brands found.
-                                    </TableCell>
+                                    <TableHead>Name</TableHead>
                                 </TableRow>
-                            ) : (
-                                brands?.map((brand) => (
-                                    <TableRow key={brand.id}>
-                                        <TableCell className="font-medium">{brand.name}</TableCell>
-                                        <TableCell>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-destructive hover:text-destructive/90"
-                                                onClick={() => handleDelete(brand.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading ? (
+                                    Array.from({ length: 3 }).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : brands?.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={1} className="h-24 text-center text-muted-foreground">
+                                            No brands found.
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                                ) : (
+                                    brands?.map((brand) => (
+                                        <TableRow
+                                            key={brand.id}
+                                            className="cursor-pointer hover:bg-muted/50"
+                                            onClick={() => handleOpenEdit(brand)}
+                                        >
+                                            <TableCell className="font-medium">{brand.name}</TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
             </div>
+
+            {/* Create/Edit Dialog */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{editingId ? "Edit Brand" : "Add New Brand"}</DialogTitle>
+                        <DialogDescription>
+                            {editingId ? "Update brand details." : "Create a new brand for your products."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Name</Label>
+                            <Input
+                                id="name"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="flex justify-between sm:justify-between w-full">
+                        {editingId ? (
+                            <Button variant="destructive" onClick={handleDelete} type="button">
+                                Delete
+                            </Button>
+                        ) : <div />}
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button onClick={handleSubmit} disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {editingId ? "Update" : "Create"}
+                            </Button>
+                        </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </PageLayout>
     );
 };

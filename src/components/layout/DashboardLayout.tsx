@@ -9,7 +9,7 @@ const DashboardLayout = () => {
         <div className="min-h-screen bg-background flex w-full">
             <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             <main
-                className={`flex-1 transition-all duration-300 ${isCollapsed ? "ml-16" : "ml-16 lg:ml-64"
+                className={`flex-1 min-w-0 transition-all duration-300 ${isCollapsed ? "lg:ml-16" : "lg:ml-64"
                     }`}
             >
                 <Outlet context={{ isCollapsed, setIsCollapsed }} />

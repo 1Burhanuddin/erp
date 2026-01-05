@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import Sidebar, { getPageTitle } from "./Sidebar";
+import Sidebar, { getPageTitle, SidebarMobileContent } from "./Sidebar";
 import TopHeader from "./TopHeader";
 import { useState } from "react";
 
@@ -14,9 +14,10 @@ const DashboardLayout = () => {
             <div
                 className={`flex-1 min-w-0 flex flex-col transition-all duration-300 ${isCollapsed ? "lg:ml-16" : "lg:ml-64"}`}
             >
-                <TopHeader 
-                    title={pageInfo.title} 
+                <TopHeader
+                    title={pageInfo.title}
                     description={pageInfo.description}
+                    sidebarContent={<SidebarMobileContent />}
                 />
                 <main className="flex-1">
                     <Outlet context={{ isCollapsed, setIsCollapsed }} />

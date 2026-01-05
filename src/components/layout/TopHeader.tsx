@@ -20,7 +20,10 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-72">
+            <SheetContent
+              side="left"
+              className="p-0 w-72 bg-sidebar border-r border-sidebar-foreground/10"
+            >
               {sidebarContent}
             </SheetContent>
           </Sheet>

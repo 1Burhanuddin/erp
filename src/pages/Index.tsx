@@ -41,20 +41,12 @@ const Index = () => {
   if (statsLoading || chartsLoading) {
     return (
       <PageLayout>
-        <PageHeader
-          title="Dashboard"
-          description="Welcome back! Here's your overview."
-        />
         <DashboardSkeleton />
       </PageLayout>
     );
   }
   return (
     <PageLayout>
-      <PageHeader
-        title="Dashboard"
-        description="Welcome back! Here's your overview."
-      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 lg:mb-8">
         {stats?.map((stat, i) => (

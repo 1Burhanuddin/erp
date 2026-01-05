@@ -70,8 +70,8 @@ const SalesInvoiceDetails = () => {
             await addPayment.mutateAsync({
                 sale_id: sale.id,
                 amount: paymentAmount,
-                date: paymentDate,
-                method: paymentMethod,
+                payment_date: paymentDate,
+                payment_method: paymentMethod,
                 notes: paymentNotes
             });
             toast.success("Payment added successfully");

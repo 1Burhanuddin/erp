@@ -155,7 +155,15 @@ export const getPageTitle = (pathname: string): { title: string; description?: s
   return { title: 'ERP System', description: '' };
 };
 
-const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navItems[0], isCollapsed: boolean, onMobileClick?: () => void }) => {
+type NavItem = {
+  path: string;
+  label: string;
+  description?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  children?: Array<{ path: string; label: string; description?: string }>;
+};
+
+const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCollapsed: boolean, onMobileClick?: () => void }) => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
   const Icon = item.icon;
@@ -176,7 +184,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navIte
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 justify-center cursor-pointer",
                 active ? "bg-sidebar-accent text-sidebar-primary-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
               )}>
-                <Icon className="h-5 w-5 flex-shrink-0" />
+                {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
               </div>
             </TooltipTrigger>
             <DropdownMenu>
@@ -208,7 +216,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navIte
             active ? "bg-sidebar-accent text-sidebar-primary-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
           )}>
             <div className="flex items-center gap-3">
-              <Icon className="h-5 w-5 flex-shrink-0" />
+              {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
               <span className="font-medium text-sm">{item.label}</span>
             </div>
             <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
@@ -240,7 +248,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navIte
           : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
       )}
     >
-      <Icon className="h-5 w-5 flex-shrink-0" />
+      {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
       {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
     </Link>
   );

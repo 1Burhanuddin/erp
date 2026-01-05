@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ComponentType } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -159,7 +159,7 @@ type NavItem = {
   path: string;
   label: string;
   description?: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: ComponentType<{ className?: string }>;
   children?: Array<{ path: string; label: string; description?: string }>;
 };
 
@@ -325,6 +325,24 @@ const UserProfile = ({ isCollapsed }: { isCollapsed: boolean }) => {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+};
+
+export const SidebarMobileContent = () => {
+  return (
+    <div className="flex flex-col h-full bg-sidebar">
+      <div className="flex items-center h-16 px-6 border-b border-sidebar-foreground/10">
+        <h1 className="text-xl font-bold text-sidebar-foreground">ERP System</h1>
+      </div>
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar">
+        {navItems.map((item) => (
+          <SidebarItem key={item.path} item={item as NavItem} isCollapsed={false} />
+        ))}
+      </nav>
+      <div className="p-4">
+        <UserProfile isCollapsed={false} />
+      </div>
+    </div>
   );
 };
 

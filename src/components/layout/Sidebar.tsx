@@ -49,16 +49,16 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/", label: "Dashboard", icon: LayoutDashboard, description: "Welcome back! Here's your overview." },
   {
     path: "/contacts",
     label: "Contacts",
     icon: Users,
     children: [
-      { path: "/contacts/suppliers", label: "Suppliers" },
-      { path: "/contacts/customers", label: "Customers" },
-      { path: "/contacts/ecommerce", label: "E-commerce" },
-      { path: "/contacts/import", label: "Import Contacts" },
+      { path: "/contacts/suppliers", label: "Suppliers", description: "Manage your supplier database" },
+      { path: "/contacts/customers", label: "Customers", description: "Manage your customer database" },
+      { path: "/contacts/ecommerce", label: "E-commerce", description: "Manage e-commerce customers" },
+      { path: "/contacts/import", label: "Import Contacts", description: "Import contacts from file" },
     ],
   },
   {
@@ -66,11 +66,11 @@ const navItems = [
     label: "Products",
     icon: Package,
     children: [
-      { path: "/products/list", label: "Products List" },
-      { path: "/products/units", label: "Units" },
-      { path: "/products/categories", label: "Category" },
-      { path: "/products/sub-categories", label: "Sub Category" },
-      { path: "/products/brands", label: "Brand" },
+      { path: "/products/list", label: "Products List", description: "Manage your product catalog" },
+      { path: "/products/units", label: "Units", description: "Manage product units" },
+      { path: "/products/categories", label: "Category", description: "Manage product categories" },
+      { path: "/products/sub-categories", label: "Sub Category", description: "Manage sub categories" },
+      { path: "/products/brands", label: "Brand", description: "Manage product brands" },
     ],
   },
   {
@@ -78,11 +78,11 @@ const navItems = [
     label: "Purchase",
     icon: ShoppingCart,
     children: [
-      { path: "/purchase/order", label: "Purchase Order" },
-      { path: "/purchase/grn", label: "GRN" },
-      { path: "/purchase/invoice", label: "Purchase Invoice" },
-      { path: "/purchase/direct", label: "Direct Purchase" },
-      { path: "/purchase/return", label: "Purchase Return" },
+      { path: "/purchase/order", label: "Purchase Order", description: "Manage purchase orders" },
+      { path: "/purchase/grn", label: "GRN", description: "Goods Received Note" },
+      { path: "/purchase/invoice", label: "Purchase Invoice", description: "Manage purchase invoices" },
+      { path: "/purchase/direct", label: "Direct Purchase", description: "Manage direct purchases" },
+      { path: "/purchase/return", label: "Purchase Return", description: "Manage purchase returns" },
     ],
   },
   {
@@ -90,31 +90,70 @@ const navItems = [
     label: "Sell",
     icon: CreditCard,
     children: [
-      { path: "/sales/quotations", label: "Quotations" },
-      { path: "/sell/order", label: "Sales Order" },
-      { path: "/sales/challans", label: "Delivery Challan" },
-      { path: "/sell/invoice", label: "Sales Invoice" },
-      { path: "/sell/direct", label: "Direct Sale" },
-      { path: "/sell/return", label: "Sale Return" },
-      { path: "/sell/ecommerce", label: "E-Commerce Sale" },
+      { path: "/sales/quotations", label: "Quotations", description: "Manage sales quotations" },
+      { path: "/sell/order", label: "Sales Order", description: "Manage sales orders" },
+      { path: "/sales/challans", label: "Delivery Challan", description: "Manage delivery challans" },
+      { path: "/sell/invoice", label: "Sales Invoice", description: "Manage sales invoices" },
+      { path: "/sell/direct", label: "Direct Sale", description: "Manage direct sales" },
+      { path: "/sell/return", label: "Sale Return", description: "Manage sale returns" },
+      { path: "/sell/ecommerce", label: "E-Commerce Sale", description: "Manage e-commerce sales" },
     ],
   },
-  { path: "/stock/adjustment", label: "Stock Adjustment", icon: ClipboardList },
+  { path: "/stock/adjustment", label: "Stock Adjustment", icon: ClipboardList, description: "Manage stock adjustments" },
   {
     path: "/expenses",
     label: "Expenses",
     icon: Wallet,
     children: [
-      { path: "/expenses/list", label: "Expenses" },
-      { path: "/expenses/categories", label: "Expense Categories" },
+      { path: "/expenses/list", label: "Expenses", description: "Manage expenses" },
+      { path: "/expenses/categories", label: "Expense Categories", description: "Manage expense categories" },
     ],
   },
-  { path: "/deals", label: "Deals", icon: PieChart },
-  { path: "/inventory", label: "Inventory", icon: Package },
-  { path: "/invoices", label: "Invoices", icon: FileText },
-  { path: "/reports", label: "Reports", icon: BarChart3 },
-  { path: "/settings", label: "Settings", icon: Settings },
+  { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
+  { path: "/inventory", label: "Inventory", icon: Package, description: "Manage inventory" },
+  { path: "/invoices", label: "Invoices", icon: FileText, description: "Manage invoices" },
+  { path: "/reports", label: "Reports", icon: BarChart3, description: "View reports and analytics" },
+  { path: "/settings", label: "Settings", icon: Settings, description: "Manage your settings" },
 ];
+
+// Helper function to get page title from path
+export const getPageTitle = (pathname: string): { title: string; description?: string } => {
+  // Check top-level items
+  for (const item of navItems) {
+    if (item.path === pathname) {
+      return { title: item.label, description: item.description };
+    }
+    // Check children
+    if (item.children) {
+      for (const child of item.children) {
+        if (child.path === pathname) {
+          return { title: child.label, description: child.description };
+        }
+      }
+    }
+  }
+  // Handle dynamic routes
+  if (pathname.startsWith('/products/add')) return { title: 'Add Product', description: 'Create a new product' };
+  if (pathname.startsWith('/products/edit')) return { title: 'Edit Product', description: 'Update product details' };
+  if (pathname.startsWith('/contacts/add')) return { title: 'Add Contact', description: 'Create a new contact' };
+  if (pathname.startsWith('/contacts/edit')) return { title: 'Edit Contact', description: 'Update contact details' };
+  if (pathname.startsWith('/contacts/')) return { title: 'Contact Details', description: 'View contact information' };
+  if (pathname.startsWith('/purchase/order/add')) return { title: 'Add Purchase Order', description: 'Create a new purchase order' };
+  if (pathname.startsWith('/sell/invoice/add')) return { title: 'Add Sales Invoice', description: 'Create a new sales invoice' };
+  if (pathname.startsWith('/sell/invoice/')) return { title: 'Invoice Details', description: 'View invoice details' };
+  if (pathname.startsWith('/sales/quotations/add')) return { title: 'Add Quotation', description: 'Create a new quotation' };
+  if (pathname.startsWith('/sales/quotations/edit')) return { title: 'Edit Quotation', description: 'Update quotation' };
+  if (pathname.startsWith('/sales/challans/add')) return { title: 'Add Delivery Challan', description: 'Create a delivery challan' };
+  if (pathname.startsWith('/sales/challans/edit')) return { title: 'Edit Delivery Challan', description: 'Update delivery challan' };
+  if (pathname.startsWith('/expenses/add')) return { title: 'Add Expense', description: 'Record a new expense' };
+  if (pathname.startsWith('/expenses/edit')) return { title: 'Edit Expense', description: 'Update expense details' };
+  if (pathname.startsWith('/stock/adjustment/add')) return { title: 'Add Stock Adjustment', description: 'Create stock adjustment' };
+  if (pathname.startsWith('/stock/adjustment/edit')) return { title: 'Edit Stock Adjustment', description: 'Update stock adjustment' };
+  if (pathname.startsWith('/sell/return/add')) return { title: 'Add Sale Return', description: 'Create a sale return' };
+  if (pathname.startsWith('/sell/return/edit')) return { title: 'Edit Sale Return', description: 'Update sale return' };
+  
+  return { title: 'ERP System', description: '' };
+};
 
 const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: typeof navItems[0], isCollapsed: boolean, onMobileClick?: () => void }) => {
   const location = useLocation();
@@ -284,31 +323,6 @@ const UserProfile = ({ isCollapsed }: { isCollapsed: boolean }) => {
 const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   return (
     <>
-      {/* Mobile Trigger */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Menu className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 bg-sidebar border-r border-sidebar-foreground/10 w-72">
-            <div className="flex flex-col h-full">
-              <div className="flex items-center h-16 px-6 border-b border-sidebar-foreground/10">
-                <h1 className="text-xl font-bold text-sidebar-foreground">ERP System</h1>
-              </div>
-              <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar">
-                {navItems.map((item) => (
-                  <SidebarItem key={item.path} item={item} isCollapsed={false} />
-                ))}
-              </nav>
-              <div className="p-4">
-                <UserProfile isCollapsed={false} />
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
 
       {/* Desktop Sidebar */}
       <aside

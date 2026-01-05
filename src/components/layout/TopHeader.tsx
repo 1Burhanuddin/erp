@@ -1,0 +1,41 @@
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+interface TopHeaderProps {
+  title: string;
+  description?: string;
+  sidebarContent?: React.ReactNode;
+}
+
+const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
+  return (
+    <header className="sticky top-0 z-40 bg-background border-b border-border">
+      <div className="flex items-center gap-4 h-14 px-4 md:px-6">
+        {/* Mobile menu trigger */}
+        <div className="lg:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-72">
+              {sidebarContent}
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Page title */}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg font-semibold text-foreground truncate">{title}</h1>
+          {description && (
+            <p className="text-sm text-muted-foreground truncate hidden sm:block">{description}</p>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default TopHeader;

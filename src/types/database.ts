@@ -375,6 +375,38 @@ export interface Database {
                     created_at?: string
                 }
             }
+            sales_payments: {
+                Row: {
+                    id: string
+                    sale_id: string
+                    amount: number
+                    payment_date: string | null
+                    payment_method: string | null
+                    reference: string | null
+                    notes: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    sale_id: string
+                    amount: number
+                    payment_date?: string | null
+                    payment_method?: string | null
+                    reference?: string | null
+                    notes?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    sale_id?: string
+                    amount?: number
+                    payment_date?: string | null
+                    payment_method?: string | null
+                    reference?: string | null
+                    notes?: string | null
+                    created_at?: string
+                }
+            }
         }
         Views: {
             [_ in never]: never

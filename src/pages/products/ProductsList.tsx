@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard } from "@/components/shared";
+import { DataViewToggle, DataCard, SearchInput } from "@/components/shared";
 import { useProducts } from "@/api/products";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Upload, Download } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -14,11 +14,60 @@ import {
 } from "@/components/ui/table";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ProductsList = () => {
     const { data: products, isLoading } = useProducts();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Filter products by search query
+    const filteredProducts = products?.filter(product => {
+        if (!searchQuery.trim()) return true;
+        
+        const query = searchQuery.toLowerCase();
+        return (
+            product.name?.toLowerCase().includes(query) ||
+            product.sku?.toLowerCase().includes(query) ||
+            product.description?.toLowerCase().includes(query) ||
+            (product.category as any)?.name?.toLowerCase().includes(query) ||
+            (product.brand as any)?.name?.toLowerCase().includes(query) ||
+            (product.unit as any)?.name?.toLowerCase().includes(query)
+        );
+    }) || [];
+
+    const handleExportCSV = () => {
+        if (!filteredProducts || filteredProducts.length === 0) {
+            toast.error("No products to export");
+            return;
+        }
+
+        downloadCSV(
+            filteredProducts,
+            ["Name", "SKU", "Category", "Brand", "Unit", "Purchase Price", "Sale Price", "Stock", "Alert Quantity", "Description"],
+            (product: any) => [
+                product.name || "",
+                product.sku || "",
+                product.category?.name || "",
+                product.brand?.name || "",
+                product.unit?.name || "",
+                product.purchase_price?.toString() || "",
+                product.sale_price?.toString() || "",
+                product.current_stock?.toString() || "",
+                product.alert_quantity?.toString() || "",
+                product.description || ""
+            ],
+            "products_export.csv"
+        );
+    };
 
     return (
         <PageLayout>
@@ -30,6 +79,23 @@ const ProductsList = () => {
                         <div className="hidden sm:block">
                             <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                         </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Export
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" onClick={() => navigate("/products/import")}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Import
+                        </Button>
                         <Button onClick={() => navigate("/products/add")}>
                             <Plus className="mr-2 h-4 w-4" />
                             Add Product
@@ -43,6 +109,17 @@ const ProductsList = () => {
                 <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
             </div>
 
+            {/* Search Bar */}
+            <div className="p-4 pb-0">
+                <div className="max-w-md">
+                    <SearchInput
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search products by name, SKU, category, brand..."
+                    />
+                </div>
+            </div>
+
             <div className="p-4">
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -50,10 +127,12 @@ const ProductsList = () => {
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-40 w-full rounded-xl" />
                             ))
-                        ) : products?.length === 0 ? (
-                            <div className="col-span-full text-center py-8 text-muted-foreground">No products found. Add your first product!</div>
+                        ) : filteredProducts.length === 0 ? (
+                            <div className="col-span-full text-center py-8 text-muted-foreground">
+                                {searchQuery ? `No products found matching "${searchQuery}"` : "No products found. Add your first product!"}
+                            </div>
                         ) : (
-                            products?.map((product: any) => (
+                            filteredProducts.map((product: any) => (
                                 <DataCard key={product.id} onClick={() => navigate(`/products/edit/${product.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <div>
@@ -113,17 +192,17 @@ const ProductsList = () => {
                                             <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
                                         </TableRow>
                                     ))
-                                ) : products?.length === 0 ? (
+                                ) : filteredProducts.length === 0 ? (
                                     <TableRow>
                                         <TableCell
                                             colSpan={6}
                                             className="h-24 text-center text-muted-foreground"
                                         >
-                                            No products found. Add your first product!
+                                            {searchQuery ? `No products found matching "${searchQuery}"` : "No products found. Add your first product!"}
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    products?.map((product: any) => (
+                                    filteredProducts.map((product: any) => (
                                         <TableRow
                                             key={product.id}
                                             className="cursor-pointer hover:bg-muted/50"

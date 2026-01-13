@@ -336,17 +336,35 @@ export const useCreateProduct = () => {
 };
 
 export const useDeleteProduct = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await supabase
-                .from("products")
-                .delete()
-                .eq("id", id);
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["products"] });
-        },
-    });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+};
+
+export const useBulkImportProducts = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (products: ProductInsert[]) => {
+      const { data, error } = await supabase
+        .from("products")
+        .insert(products)
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
 };

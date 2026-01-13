@@ -23,6 +23,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useContacts } from "@/api/contacts";
 import { useProducts } from "@/api/products";
 import { useCreatePurchaseOrder } from "@/api/purchase";
+import { useTaxRates } from "@/api/taxRates";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -31,6 +32,7 @@ const AddPurchaseOrder = () => {
     const navigate = useNavigate();
     const { data: suppliers } = useContacts(); // We filter for suppliers in the render
     const { data: products } = useProducts();
+    const { data: taxRates } = useTaxRates();
     const createOrder = useCreatePurchaseOrder();
 
     const [orderDate, setOrderDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -46,6 +48,7 @@ const AddPurchaseOrder = () => {
         productId: "",
         quantity: 1,
         unitPrice: 0,
+        taxRateId: ""
     });
 
     const supplierList = suppliers?.filter(c => c.role === 'Supplier' || c.role === 'Both') || [];
@@ -67,14 +70,32 @@ const AddPurchaseOrder = () => {
             return;
         }
         const product = products?.find(p => p.id === currentItem.productId);
+
+        let taxAmount = 0;
+        let taxPercentage = 0;
+
+        // Find selected tax rate
+        if (currentItem.taxRateId) {
+            const rate = taxRates?.find(r => r.id === currentItem.taxRateId);
+            if (rate) {
+                taxPercentage = rate.percentage;
+                // Tax = (Price * Qty * Rate) / 100
+                taxAmount = (currentItem.unitPrice * currentItem.quantity * rate.percentage) / 100;
+            }
+        }
+
+        const subtotal = (currentItem.quantity * currentItem.unitPrice) + taxAmount;
+
         const newItem = {
             ...currentItem,
             productName: product?.name,
-            subtotal: currentItem.quantity * currentItem.unitPrice
+            taxPercentage,
+            taxAmount,
+            subtotal
         };
         setItems([...items, newItem]);
         // Reset current item (keep quantity 1 for convenience)
-        setCurrentItem({ productId: "", quantity: 1, unitPrice: 0 });
+        setCurrentItem({ productId: "", quantity: 1, unitPrice: 0, taxRateId: "" });
     };
 
     const removeItem = (index: number) => {
@@ -111,7 +132,9 @@ const AddPurchaseOrder = () => {
                     product_id: item.productId,
                     quantity: item.quantity,
                     unit_price: item.unitPrice,
-                    subtotal: item.subtotal
+                    subtotal: item.subtotal,
+                    tax_rate_id: item.taxRateId || null,
+                    tax_amount: item.taxAmount
                 }))
             });
             toast.success("Purchase Order created successfully");
@@ -180,7 +203,7 @@ const AddPurchaseOrder = () => {
                                 onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
                             />
                         </div>
-                        <div className="md:col-span-3 space-y-2">
+                        <div className="md:col-span-2 space-y-2">
                             <Label>Unit Cost</Label>
                             <Input
                                 type="number"
@@ -188,6 +211,24 @@ const AddPurchaseOrder = () => {
                                 value={currentItem.unitPrice}
                                 onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
                             />
+                        </div>
+                        <div className="md:col-span-3 space-y-2">
+                            <Label>Tax</Label>
+                            <Select
+                                value={currentItem.taxRateId}
+                                onValueChange={(val) => setCurrentItem({ ...currentItem, taxRateId: val })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Tax" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {taxRates?.map(rate => (
+                                        <SelectItem key={rate.id} value={rate.id}>
+                                            {rate.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="md:col-span-2">
                             <Button className="w-full" onClick={addItem}>Add Item</Button>
@@ -203,14 +244,15 @@ const AddPurchaseOrder = () => {
                                 <TableHead>Product</TableHead>
                                 <TableHead className="text-right">Quantity</TableHead>
                                 <TableHead className="text-right">Unit Price</TableHead>
-                                <TableHead className="text-right">Subtotal</TableHead>
+                                <TableHead className="text-right">Tax</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
                                 <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {items.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                                         No items added yet.
                                     </TableCell>
                                 </TableRow>
@@ -219,8 +261,14 @@ const AddPurchaseOrder = () => {
                                     <TableRow key={index}>
                                         <TableCell>{item.productName}</TableCell>
                                         <TableCell className="text-right">{item.quantity}</TableCell>
-                                        <TableCell className="text-right">{item.unitPrice.toFixed(2)}</TableCell>
-                                        <TableCell className="text-right">{item.subtotal.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">₹{item.unitPrice.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="text-xs text-muted-foreground">
+                                                {item.taxPercentage > 0 ? `${item.taxPercentage}%` : '0%'}
+                                            </div>
+                                            ₹{item.taxAmount.toFixed(2)}
+                                        </TableCell>
+                                        <TableCell className="text-right font-medium">₹{item.subtotal.toFixed(2)}</TableCell>
                                         <TableCell>
                                             <Button variant="ghost" size="icon" onClick={() => removeItem(index)}>
                                                 <Trash2 className="h-4 w-4 text-destructive" />

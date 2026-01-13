@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { format, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval } from "date-fns";
+import { format, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval, startOfDay, endOfDay } from "date-fns";
 
 export interface DashboardReport {
     totalRevenue: number;
@@ -19,32 +19,61 @@ export interface DashboardReport {
     }[];
 }
 
-export const useReports = () => {
+export interface ReportsFilters {
+    startDate?: Date;
+    endDate?: Date;
+}
+
+export const useReports = (filters?: ReportsFilters) => {
     return useQuery({
-        queryKey: ["reports"],
+        queryKey: ["reports", filters?.startDate?.toISOString(), filters?.endDate?.toISOString()],
         queryFn: async (): Promise<DashboardReport> => {
-            // 1. Fetch Sales Orders (Global)
-            const { data: sales, error: salesError } = await supabase
+            // Build date filters
+            const startDate = filters?.startDate ? startOfDay(filters.startDate).toISOString() : undefined;
+            const endDate = filters?.endDate ? endOfDay(filters.endDate).toISOString() : undefined;
+
+            // 1. Fetch Sales Orders (with optional date filtering)
+            let salesQuery = supabase
                 .from("sales_orders")
-                .select("total_amount, order_date")
+                .select("id, total_amount, order_date")
                 .neq("status", "Cancelled");
+
+            if (startDate) {
+                salesQuery = salesQuery.gte("order_date", startDate);
+            }
+            if (endDate) {
+                salesQuery = salesQuery.lte("order_date", endDate);
+            }
+
+            const { data: sales, error: salesError } = await salesQuery;
 
             if (salesError) throw salesError;
 
-            // 2. Fetch Expenses (Global)
-            const { data: expenses, error: expensesError } = await supabase
+            // 2. Fetch Expenses (with optional date filtering)
+            let expensesQuery = supabase
                 .from("expenses")
-                .select("amount");
+                .select("amount, expense_date");
+
+            if (startDate) {
+                expensesQuery = expensesQuery.gte("expense_date", startDate.split('T')[0]);
+            }
+            if (endDate) {
+                expensesQuery = expensesQuery.lte("expense_date", endDate.split('T')[0]);
+            }
+
+            const { data: expenses, error: expensesError } = await expensesQuery;
 
             if (expensesError) throw expensesError;
 
             // 3. Fetch Sales Items with Product Categories for Pie Chart
             // We need to join: sales_items -> products -> product_categories
-            const { data: salesItems, error: itemsError } = await supabase
+            // Also filter by sales order date if date range is provided
+            let salesItemsQuery = supabase
                 .from("sales_items")
                 .select(`
                     quantity,
                     subtotal,
+                    sale_id,
                     products (
                         category_id,
                         product_categories (
@@ -52,6 +81,28 @@ export const useReports = () => {
                         )
                     )
                 `);
+
+            const { data: salesItems, error: itemsError } = await salesItemsQuery;
+
+            // Filter sales items by date range if provided
+            let filteredSalesItems = salesItems;
+            if ((startDate || endDate) && salesItems) {
+                // Get sale_ids that match the date range
+                const validSaleIds = new Set(
+                    sales
+                        ?.filter(order => {
+                            const orderDate = new Date(order.order_date);
+                            if (startDate && orderDate < new Date(startDate)) return false;
+                            if (endDate && orderDate > new Date(endDate)) return false;
+                            return true;
+                        })
+                        .map(order => order.id) || []
+                );
+
+                filteredSalesItems = salesItems.filter((item: any) => 
+                    validSaleIds.has(item.sale_id)
+                );
+            }
 
             if (itemsError) throw itemsError;
 
@@ -63,14 +114,17 @@ export const useReports = () => {
             const totalExpenses = expenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
             const netProfit = totalRevenue - totalExpenses;
 
-            // B. Monthly Sales (Last 6 Months)
-            const today = new Date();
-            const last6Months = eachMonthOfInterval({
-                start: subMonths(today, 5),
-                end: today
+            // B. Monthly Sales
+            // Determine date range for monthly breakdown
+            const dateRangeStart = filters?.startDate || subMonths(new Date(), 5);
+            const dateRangeEnd = filters?.endDate || new Date();
+            
+            const months = eachMonthOfInterval({
+                start: startOfMonth(dateRangeStart),
+                end: endOfMonth(dateRangeEnd)
             });
 
-            const monthlySales = last6Months.map(date => {
+            const monthlySales = months.map(date => {
                 const monthStart = startOfMonth(date);
                 const monthEnd = endOfMonth(date);
                 const monthLabel = format(date, "MMM"); // Jan, Feb...
@@ -90,10 +144,10 @@ export const useReports = () => {
             });
 
             // C. Category Distribution
-            // Group salesItems by category name
+            // Group filteredSalesItems by category name
             const categoryMap = new Map<string, number>();
 
-            salesItems?.forEach((item: any) => {
+            filteredSalesItems?.forEach((item: any) => {
                 const categoryName = item.products?.product_categories?.name || "Uncategorized";
                 const value = Number(item.subtotal) || 0; // Using value magnitude (revenue contribution)
                 // Alternatively use quantity if preferred: const value = item.quantity;

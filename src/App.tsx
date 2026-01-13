@@ -10,6 +10,7 @@ import Deals from "./pages/Deals";
 import Inventory from "./pages/Inventory";
 import Invoices from "./pages/Invoices";
 import Reports from "./pages/Reports";
+import AuditLogs from "./pages/AuditLogs";
 import Settings from "./pages/Settings";
 import Suppliers from "./pages/contacts/Suppliers";
 import Customers from "./pages/contacts/Customers";
@@ -20,6 +21,7 @@ import EditContact from "./pages/contacts/EditContact";
 import ProductsList from "./pages/products/ProductsList";
 import AddProduct from "./pages/products/AddProduct";
 import EditProduct from "./pages/products/EditProduct";
+import ImportProducts from "./pages/products/ImportProducts";
 import Units from "./pages/products/Units";
 import Categories from "./pages/products/Categories";
 import SubCategories from "./pages/products/SubCategories";
@@ -82,6 +84,7 @@ const App = () => {
                 <Route path="/products/list" element={<ProductsList />} />
                 <Route path="/products/add" element={<AddProduct />} />
                 <Route path="/products/edit/:id" element={<EditProduct />} />
+                <Route path="/products/import" element={<ImportProducts />} />
                 <Route path="/products/units" element={<Units />} />
                 <Route path="/products/categories" element={<Categories />} />
                 <Route path="/products/sub-categories" element={<SubCategories />} />
@@ -123,6 +126,7 @@ const App = () => {
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/audit-logs" element={<AuditLogs />} />
                 <Route path="/settings" element={<Settings />} />
               </Route>
             </Route>

@@ -18,6 +18,7 @@ import {
   Menu,
   LogOut,
   User,
+  History,
 } from "lucide-react";
 import {
   Collapsible,
@@ -113,6 +114,7 @@ const navItems = [
   { path: "/inventory", label: "Inventory", icon: Package, description: "Manage inventory" },
   { path: "/invoices", label: "Invoices", icon: FileText, description: "Manage invoices" },
   { path: "/reports", label: "Reports", icon: BarChart3, description: "View reports and analytics" },
+  { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },
   { path: "/settings", label: "Settings", icon: Settings, description: "Manage your settings" },
 ];
 

@@ -1,13 +1,31 @@
+import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { StatsCard } from "@/components/shared";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Wallet, Calendar, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useReports } from "@/api/reports";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { downloadCSV } from "@/lib/csvParser";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Reports = () => {
-  const { data: report, isLoading } = useReports();
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const { data: report, isLoading } = useReports(
+    dateRange.from && dateRange.to
+      ? { startDate: dateRange.from, endDate: dateRange.to }
+      : undefined
+  );
 
   if (isLoading) {
     return (
@@ -32,9 +50,212 @@ const Reports = () => {
   const salesData = report?.monthlySales || [];
   const categoryData = report?.categoryDistribution || [];
 
+  const handleDateRangeSelect = (range: { from?: Date; to?: Date } | undefined) => {
+    if (range) {
+      setDateRange(range);
+    }
+  };
+
+  const clearDateRange = () => {
+    setDateRange({});
+  };
+
+  const handleExportCSV = () => {
+    if (!report) return;
+
+    const dateRangeStr = dateRange.from && dateRange.to
+      ? `${format(dateRange.from, "yyyy-MM-dd")}_to_${format(dateRange.to, "yyyy-MM-dd")}`
+      : "all_time";
+
+    // Export Summary Statistics
+    const summaryData = [
+      {
+        metric: "Total Revenue",
+        value: report.totalRevenue,
+        currency: "$"
+      },
+      {
+        metric: "Total Orders",
+        value: report.totalOrders,
+        currency: ""
+      },
+      {
+        metric: "Total Expenses",
+        value: report.totalExpenses,
+        currency: "$"
+      },
+      {
+        metric: "Net Profit",
+        value: report.netProfit,
+        currency: "$"
+      }
+    ];
+
+    downloadCSV(
+      summaryData,
+      ["Metric", "Value"],
+      (item) => [
+        item.metric,
+        item.currency ? `${item.currency}${item.value.toLocaleString()}` : item.value.toString()
+      ],
+      `reports_summary_${dateRangeStr}.csv`
+    );
+  };
+
+  const handleExportMonthlySales = () => {
+    if (!report || salesData.length === 0) return;
+
+    const dateRangeStr = dateRange.from && dateRange.to
+      ? `${format(dateRange.from, "yyyy-MM-dd")}_to_${format(dateRange.to, "yyyy-MM-dd")}`
+      : "all_time";
+
+    downloadCSV(
+      salesData,
+      ["Month", "Sales ($)", "Orders"],
+      (item) => [
+        item.month,
+        item.sales.toLocaleString(),
+        item.orders.toString()
+      ],
+      `reports_monthly_sales_${dateRangeStr}.csv`
+    );
+  };
+
+  const handleExportCategoryDistribution = () => {
+    if (!report || categoryData.length === 0) return;
+
+    const dateRangeStr = dateRange.from && dateRange.to
+      ? `${format(dateRange.from, "yyyy-MM-dd")}_to_${format(dateRange.to, "yyyy-MM-dd")}`
+      : "all_time";
+
+    downloadCSV(
+      categoryData,
+      ["Category", "Revenue ($)"],
+      (item) => [
+        item.name,
+        item.value.toLocaleString()
+      ],
+      `reports_category_distribution_${dateRangeStr}.csv`
+    );
+  };
+
+  const handleExportAll = () => {
+    if (!report) return;
+
+    const dateRangeStr = dateRange.from && dateRange.to
+      ? `${format(dateRange.from, "yyyy-MM-dd")}_to_${format(dateRange.to, "yyyy-MM-dd")}`
+      : "all_time";
+
+    // Combine all data into a comprehensive report
+    const allData: any[] = [];
+
+    // Add summary section
+    allData.push({ section: "Summary", metric: "Total Revenue", value: `$${report.totalRevenue.toLocaleString()}`, details: "" });
+    allData.push({ section: "Summary", metric: "Total Orders", value: report.totalOrders.toString(), details: "" });
+    allData.push({ section: "Summary", metric: "Total Expenses", value: `$${report.totalExpenses.toLocaleString()}`, details: "" });
+    allData.push({ section: "Summary", metric: "Net Profit", value: `$${report.netProfit.toLocaleString()}`, details: "" });
+    allData.push({ section: "", metric: "", value: "", details: "" }); // Empty row
+
+    // Add monthly sales
+    allData.push({ section: "Monthly Sales", metric: "Month", value: "Sales ($)", details: "Orders" });
+    salesData.forEach(item => {
+      allData.push({
+        section: "Monthly Sales",
+        metric: item.month,
+        value: item.sales.toLocaleString(),
+        details: item.orders.toString()
+      });
+    });
+    allData.push({ section: "", metric: "", value: "", details: "" }); // Empty row
+
+    // Add category distribution
+    allData.push({ section: "Category Distribution", metric: "Category", value: "Revenue ($)", details: "" });
+    categoryData.forEach(item => {
+      allData.push({
+        section: "Category Distribution",
+        metric: item.name,
+        value: item.value.toLocaleString(),
+        details: ""
+      });
+    });
+
+    downloadCSV(
+      allData,
+      ["Section", "Metric", "Value", "Details"],
+      (item) => [item.section, item.metric, item.value, item.details],
+      `reports_complete_${dateRangeStr}.csv`
+    );
+  };
+
   return (
     <PageLayout>
-      <PageHeader title="Reports" description="Analytics and business insights" />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <PageHeader title="Reports" description="Analytics and business insights" />
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[280px] justify-start text-left font-normal",
+                  !dateRange.from && "text-muted-foreground"
+                )}
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "LLL dd, y")} -{" "}
+                      {format(dateRange.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <CalendarComponent
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange.from}
+                selected={{ from: dateRange.from, to: dateRange.to }}
+                onSelect={handleDateRangeSelect}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
+          {(dateRange.from || dateRange.to) && (
+            <Button variant="ghost" onClick={clearDateRange}>
+              Clear
+            </Button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportAll}>
+                Export All Data
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportCSV}>
+                Export Summary
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportMonthlySales}>
+                Export Monthly Sales
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportCategoryDistribution}>
+                Export Category Distribution
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 lg:mb-8">
         <StatsCard

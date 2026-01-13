@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { StatsCard } from "@/components/shared";
+import AlertsPanel from "@/components/shared/AlertsPanel";
 import DashboardChart from "@/components/DashboardChart";
 import DashboardBarChart from "@/components/DashboardBarChart";
 import { useRealDashboardStats, useRealDashboardCharts } from "@/api/dashboard";
@@ -65,9 +66,16 @@ const Index = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-        <DashboardChart data={charts?.lineChart} />
-        <DashboardBarChart data={charts?.barChart} />
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 mb-6 lg:mb-8">
+        <div className="xl:col-span-2">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+            <DashboardChart data={charts?.lineChart} />
+            <DashboardBarChart data={charts?.barChart} />
+          </div>
+        </div>
+        <div className="xl:col-span-1">
+          <AlertsPanel />
+        </div>
       </div>
     </PageLayout>
   );

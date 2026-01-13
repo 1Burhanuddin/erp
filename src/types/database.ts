@@ -287,6 +287,8 @@ export interface Database {
                     quantity: number
                     unit_price: number
                     subtotal: number
+                    tax_rate_id: string | null
+                    tax_amount: number
                     created_at: string
                 }
                 Insert: {
@@ -296,6 +298,8 @@ export interface Database {
                     quantity: number
                     unit_price: number
                     subtotal: number
+                    tax_rate_id?: string | null
+                    tax_amount?: number
                     created_at?: string
                 }
                 Update: {
@@ -305,6 +309,8 @@ export interface Database {
                     quantity?: number
                     unit_price?: number
                     subtotal?: number
+                    tax_rate_id?: string | null
+                    tax_amount?: number
                     created_at?: string
                 }
             }
@@ -354,6 +360,8 @@ export interface Database {
                     quantity: number
                     unit_price: number
                     subtotal: number
+                    tax_rate_id: string | null
+                    tax_amount: number
                     created_at: string
                 }
                 Insert: {
@@ -363,6 +371,8 @@ export interface Database {
                     quantity: number
                     unit_price: number
                     subtotal: number
+                    tax_rate_id?: string | null
+                    tax_amount?: number
                     created_at?: string
                 }
                 Update: {
@@ -372,6 +382,8 @@ export interface Database {
                     quantity?: number
                     unit_price?: number
                     subtotal?: number
+                    tax_rate_id?: string | null
+                    tax_amount?: number
                     created_at?: string
                 }
             }
@@ -404,6 +416,208 @@ export interface Database {
                     payment_method?: string | null
                     reference?: string | null
                     notes?: string | null
+                    created_at?: string
+                }
+            }
+            stock_adjustments: {
+                Row: {
+                    id: string
+                    reference_no: string
+                    adjustment_date: string
+                    reason: string
+                    notes: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    reference_no: string
+                    adjustment_date: string
+                    reason: string
+                    notes?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    reference_no?: string
+                    adjustment_date?: string
+                    reason?: string
+                    notes?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            stock_adjustment_items: {
+                Row: {
+                    id: string
+                    adjustment_id: string
+                    product_id: string
+                    quantity: number
+                    type: string
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    adjustment_id: string
+                    product_id: string
+                    quantity: number
+                    type: string
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    adjustment_id?: string
+                    product_id?: string
+                    quantity?: number
+                    type?: string
+                    created_at?: string
+                }
+            }
+            business_profiles: {
+                Row: {
+                    id: string
+                    company_name: string
+                    company_type: string | null
+                    address: string | null
+                    phone: string | null
+                    email: string | null
+                    website: string | null
+                    logo_url: string | null
+                    signature_url: string | null
+                    gstin: string | null
+                    pan_no: string | null
+                    tax_scheme: string | null
+                    owner_name: string | null
+                    owner_phone: string | null
+                    owner_email: string | null
+                    bank_name: string | null
+                    account_no: string | null
+                    ifsc_code: string | null
+                    branch_name: string | null
+                    timezone: string | null
+                    currency: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    company_name: string
+                    company_type?: string | null
+                    address?: string | null
+                    phone?: string | null
+                    email?: string | null
+                    website?: string | null
+                    logo_url?: string | null
+                    signature_url?: string | null
+                    gstin?: string | null
+                    pan_no?: string | null
+                    tax_scheme?: string | null
+                    owner_name?: string | null
+                    owner_phone?: string | null
+                    owner_email?: string | null
+                    bank_name?: string | null
+                    account_no?: string | null
+                    ifsc_code?: string | null
+                    branch_name?: string | null
+                    timezone?: string | null
+                    currency?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    company_name?: string
+                    company_type?: string | null
+                    address?: string | null
+                    phone?: string | null
+                    email?: string | null
+                    website?: string | null
+                    logo_url?: string | null
+                    signature_url?: string | null
+                    gstin?: string | null
+                    pan_no?: string | null
+                    tax_scheme?: string | null
+                    owner_name?: string | null
+                    owner_phone?: string | null
+                    owner_email?: string | null
+                    bank_name?: string | null
+                    account_no?: string | null
+                    ifsc_code?: string | null
+                    branch_name?: string | null
+                    timezone?: string | null
+                    currency?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            tax_rates: {
+                Row: {
+                    id: string
+                    name: string
+                    percentage: number
+                    description: string | null
+                    is_active: boolean
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    percentage: number
+                    description?: string | null
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    percentage?: number
+                    description?: string | null
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            audit_logs: {
+                Row: {
+                    id: string
+                    user_id: string | null
+                    table_name: string
+                    record_id: string
+                    action: string
+                    old_data: Json | null
+                    new_data: Json | null
+                    changed_fields: string[] | null
+                    ip_address: string | null
+                    user_agent: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id?: string | null
+                    table_name: string
+                    record_id: string
+                    action: string
+                    old_data?: Json | null
+                    new_data?: Json | null
+                    changed_fields?: string[] | null
+                    ip_address?: string | null
+                    user_agent?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string | null
+                    table_name?: string
+                    record_id?: string
+                    action?: string
+                    old_data?: Json | null
+                    new_data?: Json | null
+                    changed_fields?: string[] | null
+                    ip_address?: string | null
+                    user_agent?: string | null
                     created_at?: string
                 }
             }

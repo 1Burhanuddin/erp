@@ -94,3 +94,21 @@ export const useDeleteContact = () => {
     },
   });
 };
+
+export const useBulkImportContacts = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (contacts: ContactInsert[]) => {
+      const { data, error } = await supabase
+        .from("contacts")
+        .insert(contacts)
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+    },
+  });
+};

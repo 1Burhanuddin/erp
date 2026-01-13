@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useSalesOrder, useAddSalePayment } from "@/api/sales";
+import { useBusinessProfile } from "@/api/businessProfile";
 import { format } from "date-fns";
 import { Printer, CreditCard, ArrowLeft, History } from "lucide-react";
 import {
@@ -38,6 +39,7 @@ const SalesInvoiceDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { data: sale, isLoading } = useSalesOrder(id!);
+    const { data: businessProfile } = useBusinessProfile();
     const addPayment = useAddSalePayment();
 
     // Payment Form State
@@ -267,9 +269,13 @@ const SalesInvoiceDetails = () => {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <h3 className="font-semibold text-lg">My Company Setup</h3>
-                                    <p className="text-gray-600 text-sm">123 Business Rd, City, Country</p>
-                                    <p className="text-gray-600 text-sm">Phone: +91 1234567890</p>
+                                    <h3 className="font-semibold text-lg">{businessProfile?.company_name || "My Company Name"}</h3>
+                                    <p className="text-gray-600 text-sm whitespace-pre-wrap">{businessProfile?.address || "Address Line 1"}</p>
+                                    <p className="text-gray-600 text-sm">
+                                        {businessProfile?.phone && `Phone: ${businessProfile.phone}`}
+                                        {businessProfile?.email && ` • Email: ${businessProfile.email}`}
+                                    </p>
+                                    {businessProfile?.gstin && <p className="text-gray-600 text-sm">GSTIN: {businessProfile.gstin}</p>}
                                     <div className="mt-6">
                                         <p className="text-gray-600">Date:</p>
                                         <p className="font-semibold">{sale.order_date ? format(new Date(sale.order_date), "dd MMM yyyy") : "-"}</p>
@@ -358,9 +364,13 @@ const SalesInvoiceDetails = () => {
                             </div>
                         </div>
                         <div className="text-right">
-                            <h3 className="font-semibold text-lg">My Company Setup</h3>
-                            <p className="text-gray-600 text-sm">123 Business Rd, City, Country</p>
-                            <p className="text-gray-600 text-sm">Phone: +91 1234567890</p>
+                            <h3 className="font-semibold text-lg">{businessProfile?.company_name || "My Company Name"}</h3>
+                            <p className="text-gray-600 text-sm whitespace-pre-wrap">{businessProfile?.address || "Address Line 1"}</p>
+                            <p className="text-gray-600 text-sm">
+                                {businessProfile?.phone && `Phone: ${businessProfile.phone}`}
+                                {businessProfile?.email && ` • Email: ${businessProfile.email}`}
+                            </p>
+                            {businessProfile?.gstin && <p className="text-gray-600 text-sm">GSTIN: {businessProfile.gstin}</p>}
                             <div className="mt-6">
                                 <p className="text-gray-600">Date:</p>
                                 <p className="font-semibold">{sale.order_date ? format(new Date(sale.order_date), "dd MMM yyyy") : "-"}</p>

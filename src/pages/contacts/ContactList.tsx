@@ -2,8 +2,8 @@ import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useContacts } from "@/api/contacts";
 import { Button } from "@/components/ui/button";
-import { DataCard, DataViewToggle } from "@/components/shared";
-import { Plus, Mail, Phone, MapPin } from "lucide-react";
+import { DataCard, DataViewToggle, SearchInput } from "@/components/shared";
+import { Plus, Mail, Phone, MapPin, Upload, Download } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -14,6 +14,14 @@ import {
 } from "@/components/ui/table";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ContactListProps {
     role: "Supplier" | "Customer";
@@ -25,9 +33,46 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
     const { data: contacts, isLoading } = useContacts();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
 
-    // Filter contacts by the requested role
-    const filteredContacts = contacts?.filter(c => c.role === role) || [];
+    // Filter contacts by the requested role and search query
+    const filteredContacts = contacts?.filter(c => {
+        if (c.role !== role) return false;
+        
+        if (!searchQuery.trim()) return true;
+        
+        const query = searchQuery.toLowerCase();
+        return (
+            c.name?.toLowerCase().includes(query) ||
+            c.email?.toLowerCase().includes(query) ||
+            c.phone?.toLowerCase().includes(query) ||
+            c.company?.toLowerCase().includes(query) ||
+            c.gstin?.toLowerCase().includes(query) ||
+            c.address?.toLowerCase().includes(query)
+        );
+    }) || [];
+
+    const handleExportCSV = () => {
+      if (filteredContacts.length === 0) {
+        toast.error("No contacts to export");
+        return;
+      }
+
+      downloadCSV(
+        filteredContacts,
+        ["Name", "Email", "Phone", "Company", "GSTIN", "Address", "Role"],
+        (contact) => [
+          contact.name || "",
+          contact.email || "",
+          contact.phone || "",
+          contact.company || "",
+          contact.gstin || "",
+          contact.address || "",
+          contact.role || ""
+        ],
+        `${role.toLowerCase()}_contacts_export.csv`
+      );
+    };
 
     return (
         <PageLayout>
@@ -39,6 +84,23 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                         <div className="hidden sm:block">
                             <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                         </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Export
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" onClick={() => navigate("/contacts/import")}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Import
+                        </Button>
                         <Button onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
                             <Plus className="mr-2 h-4 w-4" />
                             Add {role}
@@ -52,6 +114,17 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                 <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
             </div>
 
+            {/* Search Bar */}
+            <div className="p-4 pb-0">
+                <div className="max-w-md">
+                    <SearchInput
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder={`Search ${role.toLowerCase()}s by name, email, phone, company...`}
+                    />
+                </div>
+            </div>
+
             <div className="p-4">
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -60,7 +133,9 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                                 <Skeleton key={i} className="h-40 w-full rounded-xl" />
                             ))
                         ) : filteredContacts.length === 0 ? (
-                            <div className="col-span-full text-center py-8 text-muted-foreground">No {role.toLowerCase()}s found.</div>
+                            <div className="col-span-full text-center py-8 text-muted-foreground">
+                                {searchQuery ? `No ${role.toLowerCase()}s found matching "${searchQuery}"` : `No ${role.toLowerCase()}s found.`}
+                            </div>
                         ) : (
                             filteredContacts.map((contact) => (
                                 <DataCard key={contact.id} onClick={() => navigate(`/contacts/edit/${contact.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
@@ -123,7 +198,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                                             colSpan={3}
                                             className="h-24 text-center text-muted-foreground"
                                         >
-                                            No {role.toLowerCase()}s found.
+                                            {searchQuery ? `No ${role.toLowerCase()}s found matching "${searchQuery}"` : `No ${role.toLowerCase()}s found.`}
                                         </TableCell>
                                     </TableRow>
                                 ) : (

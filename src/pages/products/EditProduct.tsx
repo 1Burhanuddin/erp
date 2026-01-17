@@ -4,7 +4,10 @@ import { useCreateProduct, useProducts, useDeleteProduct } from "@/api/products"
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const EditProduct = () => {
     const { id } = useParams();

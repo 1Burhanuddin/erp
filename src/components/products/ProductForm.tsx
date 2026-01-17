@@ -19,7 +19,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
+
 import {
     useCategories,
     useSubCategories,
@@ -44,17 +45,21 @@ const QuickAddDialog = ({
     description,
     onSave,
     trigger,
+    children,
 }: {
     title: string;
     description: string;
     onSave: (name: string) => Promise<void>;
     trigger: React.ReactNode;
+    children?: React.ReactNode;
 }) => {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSave = async () => {
         if (!name) return;
+        setIsLoading(true);
         try {
             await onSave(name);
             setOpen(false);
@@ -62,6 +67,8 @@ const QuickAddDialog = ({
             toast.success(`${title} added successfully`);
         } catch (e) {
             toast.error("Failed to add item");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -73,19 +80,26 @@ const QuickAddDialog = ({
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
-                <div className="py-4">
-                    <Label>Name</Label>
-                    <Input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter name..."
-                    />
+                <div className="py-4 space-y-4">
+                    {children}
+                    <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Enter name..."
+                            disabled={isLoading}
+                        />
+                    </div>
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>
+                    <Button variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
                         Cancel
                     </Button>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        {isLoading ? "Saving..." : "Save"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -236,19 +250,42 @@ export const ProductForm = ({
                             title="Add Sub Category"
                             description="Create a new sub category"
                             onSave={async (name) => {
-                                if (formData.category_id) {
-                                    await createSubCategory.mutateAsync({
-                                        name,
-                                        category_id: formData.category_id
-                                    });
+                                if (!formData.category_id) {
+                                    toast.error("Please select a parent category first");
+                                    throw new Error("Category required");
                                 }
+                                await createSubCategory.mutateAsync({
+                                    name,
+                                    category_id: formData.category_id
+                                });
                             }}
                             trigger={
-                                <Button type="button" variant="outline" size="icon" disabled={!formData.category_id}>
+                                <Button type="button" variant="outline" size="icon">
                                     <Plus className="h-4 w-4" />
                                 </Button>
                             }
-                        />
+                        >
+                            <div className="space-y-2">
+                                <Label>Parent Category</Label>
+                                <Select
+                                    value={formData.category_id}
+                                    onValueChange={(val) =>
+                                        setFormData({ ...formData, category_id: val, sub_category_id: "" })
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories?.map((c) => (
+                                            <SelectItem key={c.id} value={c.id}>
+                                                {c.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </QuickAddDialog>
                     </div>
                 </div>
 

@@ -17,6 +17,7 @@ import { useBusinessProfile, useUpdateBusinessProfile } from "@/api/businessProf
 import { useTaxRates, useCreateTaxRate, useUpdateTaxRate, useDeleteTaxRate } from "@/api/taxRates";
 import { toast } from "sonner";
 import { Trash2, Plus } from "lucide-react";
+import { useTheme } from "@/components/theme-provider";
 
 interface BusinessActionButtonsProps {
   isEditing: boolean;
@@ -77,6 +78,7 @@ const SettingsField = ({ label, value, onChange, placeholder, isEditing }: {
 import { useSearchParams } from "react-router-dom";
 
 const Settings = () => {
+  const { theme, setTheme, color, setColor } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get("tab") || "profile";
 
@@ -561,6 +563,49 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Interface Theme</Label>
+                    <div className="flex gap-2 p-1 bg-muted/50 rounded-lg w-fit">
+                      {["light", "dark", "system"].map((t) => (
+                        <Button
+                          key={t}
+                          variant={theme === t ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setTheme(t as any)}
+                          className="capitalize"
+                        >
+                          {t}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Accent Color</Label>
+                    <div className="flex gap-3">
+                      {[
+                        { name: "blue", color: "#2563eb" },
+                        { name: "teal", color: "#0d9488" },
+                        { name: "golden", color: "#d97706" },
+                        { name: "red", color: "#dc2626" },
+                        { name: "zinc", color: "#18181b" },
+                      ].map(({ name, color: bg }) => (
+                        <button
+                          key={name}
+                          onClick={() => setColor(name as any)}
+                          className={cn(
+                            "h-8 w-8 rounded-full ring-offset-2 transition-all hover:scale-110 focus:outline-none focus:ring-2 disabled:opacity-50",
+                            color === name ? "ring-2 ring-primary scale-110" : "ring-transparent group-hover:ring-2",
+                            "border border-white/20 shadow-sm"
+                          )}
+                          style={{ backgroundColor: bg }}
+                          title={name.charAt(0).toUpperCase() + name.slice(1)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="timezone">Timezone</Label>
                   {isEditingBusiness ? (

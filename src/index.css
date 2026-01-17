@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* ERP Color Scheme - Professional Blue/Slate */
+    /* Base Neutrals (Light Mode) */
     --background: 210 20% 98%;
     --foreground: 222 47% 11%;
 
@@ -13,10 +13,6 @@
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-
-    --primary: 221 83% 53%;
-    /* Slightly improved primary blue */
-    --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222 47% 11%;
@@ -32,19 +28,25 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
+
     --ring: 221 83% 53%;
 
     --radius: 0.75rem;
 
-    /* Sidebar */
+    /* Primary Colors (Default: Blue) */
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Sidebar Base */
     --sidebar: 0 0% 100%;
     --sidebar-foreground: 222 47% 11%;
-    --sidebar-accent: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-muted: 215 16% 47%;
+    --sidebar-accent: 217 91% 60%;
   }
 
   .dark {
+    /* Base Neutrals (Dark Mode) */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
@@ -53,9 +55,6 @@
 
     --popover: 223 47% 14%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
 
     --secondary: 215 20% 35%;
     --secondary-foreground: 210 40% 98%;
@@ -69,30 +68,102 @@
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
-
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 217 91% 60%;
 
-    /* Sidebar */
+    /* Primary Colors (Default: Dark Blue) */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Sidebar Base */
     --sidebar: 223 47% 8%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-accent: 217 91% 60%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-muted: 215 20% 50%;
+    --sidebar-accent: 217 91% 60%;
 
-    /* Surface variations */
     --surface: 223 47% 14%;
     --surface-hover: 217 33% 17%;
     --surface-active: 217 33% 20%;
+  }
+
+  /* --- Color Themes --- */
+
+  /* Blue (Default) */
+  [data-theme='blue'] {
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 221 83% 53%;
+    --sidebar-accent: 217 91% 60%;
+  }
+
+  .dark[data-theme='blue'] {
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 217 91% 60%;
+    --sidebar-accent: 217 91% 60%;
+  }
+
+  /* Teal (Professional) */
+  [data-theme='teal'] {
+    --primary: 175 70% 41%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 175 70% 41%;
+    --sidebar-accent: 175 70% 41%;
+  }
+
+  .dark[data-theme='teal'] {
+    --primary: 175 70% 55%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 175 70% 55%;
+    --sidebar-accent: 175 70% 55%;
+  }
+
+  /* Golden (Luxury) */
+  [data-theme='golden'] {
+    --primary: 38 92% 50%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 38 92% 50%;
+    --sidebar-accent: 38 92% 50%;
+  }
+
+  .dark[data-theme='golden'] {
+    --primary: 38 92% 60%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 38 92% 60%;
+    --sidebar-accent: 38 92% 60%;
+  }
+
+  /* Red (Strong) */
+  [data-theme='red'] {
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 0 72% 51%;
+    --sidebar-accent: 0 72% 51%;
+  }
+
+  .dark[data-theme='red'] {
+    --primary: 0 72% 65%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 0 72% 65%;
+    --sidebar-accent: 0 72% 65%;
+  }
+
+  /* Zinc */
+  [data-theme='zinc'] {
+    --primary: 240 6% 10%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 240 6% 10%;
+    --sidebar-accent: 240 6% 10%;
+  }
+
+  .dark[data-theme='zinc'] {
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 6% 10%;
+    --ring: 0 0% 98%;
+    --sidebar-accent: 240 5% 26%;
+    /* Lighter for visibility */
   }
 }
 

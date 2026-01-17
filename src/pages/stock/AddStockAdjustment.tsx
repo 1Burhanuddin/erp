@@ -70,10 +70,12 @@ const AddStockAdjustment = () => {
             <PageHeader
                 title="New Stock Adjustment"
                 description="Create a new stock adjustment record"
+                actions={
+                    <Button variant="ghost" onClick={() => navigate("/stock/adjustment")}>
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+                    </Button>
+                }
             />
-            <Button variant="ghost" onClick={() => navigate("/stock/adjustment")} className="mb-4 -mt-2">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
-            </Button>
 
             <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow space-y-6">
                 <div className="grid grid-cols-2 gap-4">

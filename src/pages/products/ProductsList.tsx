@@ -17,10 +17,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { downloadCSV } from "@/lib/csvParser";
 import { toast } from "sonner";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 const ProductsList = () => {
@@ -32,7 +32,7 @@ const ProductsList = () => {
     // Filter products by search query
     const filteredProducts = products?.filter(product => {
         if (!searchQuery.trim()) return true;
-        
+
         const query = searchQuery.toLowerCase();
         return (
             product.name?.toLowerCase().includes(query) ||
@@ -75,50 +75,43 @@ const ProductsList = () => {
                 title="Products"
                 description="Manage your products inventory"
                 actions={
-                    <div className="flex items-center gap-2">
-                        <div className="hidden sm:block">
-                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <div className="w-full sm:w-[220px]">
+                            <SearchInput
+                                value={searchQuery}
+                                onChange={setSearchQuery}
+                                placeholder="Search products..."
+                            />
                         </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline">
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Export
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    Export as CSV
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button variant="outline" onClick={() => navigate("/products/import")}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Import
-                        </Button>
-                        <Button onClick={() => navigate("/products/add")}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Product
-                        </Button>
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-4">
+                                        <Download className="h-4 w-4 sm:mr-2" />
+                                        <span className="hidden sm:inline">Export</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={handleExportCSV}>
+                                        Export as CSV
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-4" onClick={() => navigate("/products/import")}>
+                                <Upload className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Import</span>
+                            </Button>
+                            <Button size="sm" className="h-8 sm:h-9 px-2 sm:px-4" onClick={() => navigate("/products/add")}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                <span>Add Product</span>
+                            </Button>
+                        </div>
                     </div>
                 }
             />
 
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>
 
-            {/* Search Bar */}
-            <div className="p-4 pb-0">
-                <div className="max-w-md">
-                    <SearchInput
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search products by name, SKU, category, brand..."
-                    />
-                </div>
-            </div>
 
             <div className="p-4">
                 {viewMode === 'card' ? (

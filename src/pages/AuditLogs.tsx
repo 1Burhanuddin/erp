@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,23 +28,16 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Filter, X } from "lucide-react";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog";
 
 const AuditLogs = () => {
-    const [tableFilter, setTableFilter] = useState<string>("");
-    const [actionFilter, setActionFilter] = useState<string>("");
+    const navigate = useNavigate();
+    const [tableFilter, setTableFilter] = useState<string>("all");
+    const [actionFilter, setActionFilter] = useState<string>("all");
     const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
-    const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
     const filters = {
-        table_name: tableFilter || undefined,
-        action: actionFilter as 'INSERT' | 'UPDATE' | 'DELETE' | undefined,
+        table_name: tableFilter === "all" ? undefined : tableFilter,
+        action: actionFilter === "all" ? undefined : (actionFilter as 'INSERT' | 'UPDATE' | 'DELETE'),
         startDate: dateRange.from,
         endDate: dateRange.to,
         limit: 200,
@@ -58,8 +52,8 @@ const AuditLogs = () => {
     };
 
     const clearFilters = () => {
-        setTableFilter("");
-        setActionFilter("");
+        setTableFilter("all");
+        setActionFilter("all");
         setDateRange({});
     };
 
@@ -88,7 +82,7 @@ const AuditLogs = () => {
         return names[tableName] || tableName;
     };
 
-    const hasActiveFilters = tableFilter || actionFilter || dateRange.from || dateRange.to;
+    const hasActiveFilters = tableFilter !== "all" || actionFilter !== "all" || dateRange.from || dateRange.to;
 
     return (
         <PageLayout>
@@ -106,7 +100,7 @@ const AuditLogs = () => {
                                         <SelectValue placeholder="All tables" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All tables</SelectItem>
+                                        <SelectItem value="all">All tables</SelectItem>
                                         <SelectItem value="contacts">Contacts</SelectItem>
                                         <SelectItem value="products">Products</SelectItem>
                                         <SelectItem value="sales_orders">Sales Orders</SelectItem>
@@ -124,7 +118,7 @@ const AuditLogs = () => {
                                         <SelectValue placeholder="All actions" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All actions</SelectItem>
+                                        <SelectItem value="all">All actions</SelectItem>
                                         <SelectItem value="INSERT">Created</SelectItem>
                                         <SelectItem value="UPDATE">Updated</SelectItem>
                                         <SelectItem value="DELETE">Deleted</SelectItem>
@@ -243,7 +237,7 @@ const AuditLogs = () => {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => setSelectedLog(log)}
+                                                    onClick={() => navigate(`/audit-logs/${log.id}`)}
                                                 >
                                                     View Details
                                                 </Button>
@@ -257,70 +251,6 @@ const AuditLogs = () => {
                 </CardContent>
             </Card>
 
-            {/* Detail Dialog */}
-            <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Audit Log Details</DialogTitle>
-                        <DialogDescription>
-                            {selectedLog && (
-                                <>
-                                    {getTableDisplayName(selectedLog.table_name)} - {selectedLog.action} -{" "}
-                                    {format(new Date(selectedLog.created_at), "PPpp")}
-                                </>
-                            )}
-                        </DialogDescription>
-                    </DialogHeader>
-                    {selectedLog && (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-xs text-muted-foreground">Record ID</Label>
-                                    <p className="font-mono text-sm">{selectedLog.record_id}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-xs text-muted-foreground">Action</Label>
-                                    <Badge variant={getActionBadgeVariant(selectedLog.action)}>
-                                        {selectedLog.action}
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            {selectedLog.changed_fields && selectedLog.changed_fields.length > 0 && (
-                                <div>
-                                    <Label className="text-xs text-muted-foreground">Changed Fields</Label>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        {selectedLog.changed_fields.map((field) => (
-                                            <Badge key={field} variant="outline">
-                                                {field}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {selectedLog.old_data && (
-                                    <div>
-                                        <Label className="text-xs text-muted-foreground">Old Data</Label>
-                                        <pre className="mt-2 p-3 bg-muted rounded-md text-xs overflow-auto max-h-64">
-                                            {JSON.stringify(selectedLog.old_data, null, 2)}
-                                        </pre>
-                                    </div>
-                                )}
-                                {selectedLog.new_data && (
-                                    <div>
-                                        <Label className="text-xs text-muted-foreground">New Data</Label>
-                                        <pre className="mt-2 p-3 bg-muted rounded-md text-xs overflow-auto max-h-64">
-                                            {JSON.stringify(selectedLog.new_data, null, 2)}
-                                        </pre>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
         </PageLayout>
     );
 };

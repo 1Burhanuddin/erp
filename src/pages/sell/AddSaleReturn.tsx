@@ -114,10 +114,12 @@ const AddSaleReturn = () => {
             <PageHeader
                 title="New Sales Return"
                 description="Process a customer return"
+                actions={
+                    <Button variant="ghost" onClick={() => navigate("/sell/return")}>
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+                    </Button>
+                }
             />
-            <Button variant="ghost" onClick={() => navigate("/sell/return")} className="mb-4 -mt-2">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
-            </Button>
 
             <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow space-y-6">
                 <div className="grid grid-cols-2 gap-4">

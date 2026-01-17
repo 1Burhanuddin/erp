@@ -11,7 +11,7 @@ interface TopHeaderProps {
 const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
   return (
     <header className="sticky top-0 z-40 bg-background border-b border-border">
-      <div className="flex items-center gap-4 h-14 px-4 md:px-6">
+      <div className="flex items-center gap-4 h-16 px-4 md:px-6">
         {/* Mobile menu trigger */}
         <div className="lg:hidden">
           <Sheet>

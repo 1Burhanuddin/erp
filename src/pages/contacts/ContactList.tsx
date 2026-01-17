@@ -17,10 +17,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { downloadCSV } from "@/lib/csvParser";
 import { toast } from "sonner";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 interface ContactListProps {
@@ -38,9 +38,9 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
     // Filter contacts by the requested role and search query
     const filteredContacts = contacts?.filter(c => {
         if (c.role !== role) return false;
-        
+
         if (!searchQuery.trim()) return true;
-        
+
         const query = searchQuery.toLowerCase();
         return (
             c.name?.toLowerCase().includes(query) ||
@@ -53,25 +53,25 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
     }) || [];
 
     const handleExportCSV = () => {
-      if (filteredContacts.length === 0) {
-        toast.error("No contacts to export");
-        return;
-      }
+        if (filteredContacts.length === 0) {
+            toast.error("No contacts to export");
+            return;
+        }
 
-      downloadCSV(
-        filteredContacts,
-        ["Name", "Email", "Phone", "Company", "GSTIN", "Address", "Role"],
-        (contact) => [
-          contact.name || "",
-          contact.email || "",
-          contact.phone || "",
-          contact.company || "",
-          contact.gstin || "",
-          contact.address || "",
-          contact.role || ""
-        ],
-        `${role.toLowerCase()}_contacts_export.csv`
-      );
+        downloadCSV(
+            filteredContacts,
+            ["Name", "Email", "Phone", "Company", "GSTIN", "Address", "Role"],
+            (contact) => [
+                contact.name || "",
+                contact.email || "",
+                contact.phone || "",
+                contact.company || "",
+                contact.gstin || "",
+                contact.address || "",
+                contact.role || ""
+            ],
+            `${role.toLowerCase()}_contacts_export.csv`
+        );
     };
 
     return (
@@ -80,50 +80,45 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                 title={title}
                 description={description}
                 actions={
-                    <div className="flex items-center gap-2">
-                        <div className="hidden sm:block">
-                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <div className="w-full sm:w-[220px]">
+                            <SearchInput
+                                value={searchQuery}
+                                onChange={setSearchQuery}
+                                placeholder={`Search...`}
+                            />
                         </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline">
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Export
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    Export as CSV
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button variant="outline" onClick={() => navigate("/contacts/import")}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Import
-                        </Button>
-                        <Button onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add {role}
-                        </Button>
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                            <div className="hidden sm:block">
+                                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-4">
+                                        <Download className="h-4 w-4 sm:mr-2" />
+                                        <span className="hidden sm:inline">Export</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={handleExportCSV}>
+                                        Export as CSV
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-4" onClick={() => navigate("/contacts/import")}>
+                                <Upload className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Import</span>
+                            </Button>
+                            <Button size="sm" className="h-8 sm:h-9 px-2 sm:px-4" onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                <span>Add {role}</span>
+                            </Button>
+                        </div>
                     </div>
                 }
             />
 
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>
 
-            {/* Search Bar */}
-            <div className="p-4 pb-0">
-                <div className="max-w-md">
-                    <SearchInput
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder={`Search ${role.toLowerCase()}s by name, email, phone, company...`}
-                    />
-                </div>
-            </div>
 
             <div className="p-4">
                 {viewMode === 'card' ? (

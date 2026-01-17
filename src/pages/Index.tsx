@@ -49,6 +49,18 @@ const Index = () => {
   return (
     <PageLayout>
 
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 mb-6 lg:mb-8">
+        <div className="xl:col-span-2">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+            <DashboardChart data={charts?.lineChart} />
+            <DashboardBarChart data={charts?.barChart} />
+          </div>
+        </div>
+        <div className="xl:col-span-1">
+          <AlertsPanel />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 lg:mb-8">
         {stats?.map((stat, i) => (
           <StatsCard
@@ -64,18 +76,6 @@ const Index = () => {
             trend={stat.trend}
           />
         ))}
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 mb-6 lg:mb-8">
-        <div className="xl:col-span-2">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-            <DashboardChart data={charts?.lineChart} />
-            <DashboardBarChart data={charts?.barChart} />
-          </div>
-        </div>
-        <div className="xl:col-span-1">
-          <AlertsPanel />
-        </div>
       </div>
     </PageLayout>
   );

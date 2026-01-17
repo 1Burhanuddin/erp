@@ -111,8 +111,6 @@ const navItems = [
     ],
   },
   { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
-  { path: "/inventory", label: "Inventory", icon: Package, description: "Manage inventory" },
-  { path: "/invoices", label: "Invoices", icon: FileText, description: "Manage invoices" },
   { path: "/reports", label: "Reports", icon: BarChart3, description: "View reports and analytics" },
   { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },
   { path: "/settings", label: "Settings", icon: Settings, description: "Manage your settings" },
@@ -153,7 +151,7 @@ export const getPageTitle = (pathname: string): { title: string; description?: s
   if (pathname.startsWith('/stock/adjustment/edit')) return { title: 'Edit Stock Adjustment', description: 'Update stock adjustment' };
   if (pathname.startsWith('/sell/return/add')) return { title: 'Add Sale Return', description: 'Create a sale return' };
   if (pathname.startsWith('/sell/return/edit')) return { title: 'Edit Sale Return', description: 'Update sale return' };
-  
+
   return { title: 'ERP System', description: '' };
 };
 
@@ -312,11 +310,11 @@ const UserProfile = ({ isCollapsed }: { isCollapsed: boolean }) => {
       <DropdownMenuContent className="w-56" align="end" side={isCollapsed ? "right" : "top"}>
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/settings")}>
+        <DropdownMenuItem onClick={() => navigate("/settings?tab=profile")}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/settings")}>
+        <DropdownMenuItem onClick={() => navigate("/settings?tab=app")}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>

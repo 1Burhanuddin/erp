@@ -1,5 +1,6 @@
 
 import { PageLayout, PageHeader } from "@/components/layout";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,7 +74,16 @@ const SettingsField = ({ label, value, onChange, placeholder, isEditing }: {
   );
 };
 
+import { useSearchParams } from "react-router-dom";
+
 const Settings = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get("tab") || "profile";
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
+
   const [user, setUser] = useState<any>(null);
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -95,7 +105,11 @@ const Settings = () => {
   const createTaxRateMutation = useCreateTaxRate();
   const deleteTaxRateMutation = useDeleteTaxRate();
   const [isAddTaxRateOpen, setIsAddTaxRateOpen] = useState(false);
+
   const [newTaxRate, setNewTaxRate] = useState({ name: "", percentage: "", description: "" });
+
+  // Profile Edit State
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   const handleAddTaxRate = () => {
     if (!newTaxRate.name || !newTaxRate.percentage) {
@@ -190,7 +204,12 @@ const Settings = () => {
   };
 
   const handleProfileUpdate = () => {
-    updateProfileMutation.mutate({ full_name: fullName });
+    updateProfileMutation.mutate({ full_name: fullName }, {
+      onSuccess: () => {
+        setIsEditingProfile(false);
+        toast.success("Profile updated");
+      }
+    });
   };
 
   const handlePasswordUpdate = () => {
@@ -236,14 +255,38 @@ const Settings = () => {
     <PageLayout>
       <PageHeader title="Settings" description="Manage your account and business preferences" />
 
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
-          <TabsTrigger value="profile">User Profile</TabsTrigger>
-          <TabsTrigger value="business">Business Details</TabsTrigger>
-          <TabsTrigger value="tax">Tax & Bank</TabsTrigger>
-          <TabsTrigger value="owner">Owner Details</TabsTrigger>
-          <TabsTrigger value="app">App Settings</TabsTrigger>
-        </TabsList>
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
+        <div className="sticky top-[4.5rem] z-30 -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8 py-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40 mb-6">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 max-w-full">
+            {[
+              { id: "profile", label: "User Profile", icon: User },
+              { id: "business", label: "Business Details", icon: Building2 },
+              { id: "tax", label: "Tax & Bank", icon: Receipt },
+              { id: "owner", label: "Owner Details", icon: Users },
+              { id: "app", label: "App Settings", icon: Globe },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = currentTab === tab.id;
+              return (
+                <Button
+                  key={tab.id}
+                  variant={isActive ? "default" : "ghost"}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={cn(
+                    "whitespace-nowrap rounded-full px-5 py-2 h-auto flex items-center gap-2 transition-all duration-200",
+                    isActive
+                      ? "shadow-md hover:shadow-lg ring-1 ring-primary/20"
+                      : "hover:bg-muted text-muted-foreground hover:text-foreground bg-transparent border border-transparent hover:border-border/50"
+                  )}
+                  size="sm"
+                >
+                  <Icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : "text-current")} />
+                  <span className="font-medium">{tab.label}</span>
+                </Button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* User Profile Tab */}
         <TabsContent value="profile" className="space-y-6">
@@ -257,25 +300,28 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                  />
-                </div>
+                <SettingsField
+                  label="Full Name"
+                  value={fullName}
+                  onChange={setFullName}
+                  isEditing={isEditingProfile}
+                  placeholder="Your full name"
+                />
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" value={user?.email || ""} disabled className="bg-muted" />
+                  <div className="p-2 border rounded-md bg-muted/50 text-foreground min-h-[40px] flex items-center px-3 opacity-70 cursor-not-allowed">
+                    {user?.email || ""}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Email cannot be changed.</p>
                 </div>
               </div>
-              <div className="flex justify-end">
-                <Button onClick={handleProfileUpdate} disabled={updateProfileMutation.isPending}>
-                  {updateProfileMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Changes
-                </Button>
-              </div>
+              <BusinessActionButtons
+                isEditing={isEditingProfile}
+                onEdit={() => setIsEditingProfile(true)}
+                onCancel={() => { setIsEditingProfile(false); setFullName(user?.user_metadata?.full_name || ""); }}
+                onSave={handleProfileUpdate}
+                isPending={updateProfileMutation.isPending}
+              />
             </CardContent>
           </Card>
 

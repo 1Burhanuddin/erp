@@ -53,7 +53,10 @@ const EditSaleReturn = () => {
                 title={`Return #${returnData.sale?.order_no} (Refund)`}
                 description="View return details"
                 actions={
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                        <Button variant="ghost" onClick={() => navigate("/sell/return")}>
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+                        </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive">
@@ -78,9 +81,6 @@ const EditSaleReturn = () => {
                     </div>
                 }
             />
-            <Button variant="ghost" onClick={() => navigate("/sell/return")} className="mb-4 -mt-2">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
-            </Button>
 
             <div className="space-y-6">
                 <Card>

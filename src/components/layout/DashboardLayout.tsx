@@ -9,7 +9,7 @@ const DashboardLayout = () => {
     const pageInfo = getPageTitle(location.pathname);
 
     return (
-        <div className="min-h-screen bg-background flex w-full">
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex w-full">
             <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             <div
                 className={`flex-1 min-w-0 flex flex-col transition-all duration-300 ${isCollapsed ? "lg:ml-16" : "lg:ml-64"}`}

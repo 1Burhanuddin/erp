@@ -54,14 +54,14 @@ type CreateOrderParams = {
     items: Omit<PurchaseItemInsert, "purchase_id">[];
 };
 
-export const useCreatePurchaseOrder = () => {
+export const useCreateDirectPurchase = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ order, items }: CreateOrderParams) => {
-            // 1. Create Order
+            // 1. Create Order (Direct Purchase = Received + Stock Update)
             const { data: orderData, error: orderError } = await supabase
                 .from("purchase_orders")
-                .insert({ ...order, status: 'Received' }) // Force status to Received
+                .insert({ ...order, status: 'Received' })
                 .select()
                 .single();
 
@@ -74,19 +74,14 @@ export const useCreatePurchaseOrder = () => {
                     purchase_id: orderData.id,
                 }));
 
-                // Insert items
                 const { error: itemsError } = await supabase
                     .from("purchase_items")
                     .insert(itemsWithid);
 
                 if (itemsError) throw itemsError;
 
-                // Update Stock for each item
-                // We do this sequentially to ensure correctness
                 for (const item of items) {
                     if (item.product_id) {
-                        // Fetch current stock first (to be safe against race conditions if we had them, 
-                        // though here mostly to get the current number)
                         const { data: product } = await supabase
                             .from('products')
                             .select('current_stock')
@@ -108,8 +103,91 @@ export const useCreatePurchaseOrder = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["purchase_orders"] });
-            queryClient.invalidateQueries({ queryKey: ["products"] }); // Also refresh products to show new stock
+            queryClient.invalidateQueries({ queryKey: ["products"] });
         },
+    });
+};
+
+export const useCreatePurchaseOrder = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ order, items }: CreateOrderParams) => {
+            // 1. Create Order (Status: Pending) - NO STOCK UPDATE
+            const { data: orderData, error: orderError } = await supabase
+                .from("purchase_orders")
+                .insert({ ...order, status: 'Pending' })
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            // 2. Create Items
+            if (items.length > 0) {
+                const itemsWithid = items.map((item) => ({
+                    ...item,
+                    purchase_id: orderData.id,
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from("purchase_items")
+                    .insert(itemsWithid);
+
+                if (itemsError) throw itemsError;
+            }
+
+            return orderData;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["purchase_orders"] });
+        },
+    });
+};
+
+export const useConvertPOToGRN = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            // 1. Update Status
+            const { error: updateError } = await supabase
+                .from("purchase_orders")
+                .update({ status: 'Received' })
+                .eq("id", id);
+
+            if (updateError) throw updateError;
+
+            // 2. Fetch Items
+            const { data: items, error: itemsError } = await supabase
+                .from("purchase_items")
+                .select("*")
+                .eq("purchase_id", id);
+
+            if (itemsError) throw itemsError;
+
+            // 3. Update Stock
+            if (items && items.length > 0) {
+                for (const item of items) {
+                    if (item.product_id) {
+                        const { data: product } = await supabase
+                            .from('products')
+                            .select('current_stock')
+                            .eq('id', item.product_id)
+                            .single();
+
+                        if (product) {
+                            const newStock = (product.current_stock || 0) + item.quantity;
+                            await supabase
+                                .from('products')
+                                .update({ current_stock: newStock })
+                                .eq('id', item.product_id);
+                        }
+                    }
+                }
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["purchase_orders"] });
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+        }
     });
 };
 

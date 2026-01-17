@@ -53,7 +53,10 @@ const EditStockAdjustment = () => {
                 title={`Adjustment ${adjustment.reference_no}`}
                 description="View and manage stock adjustment"
                 actions={
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                        <Button variant="ghost" onClick={() => navigate("/stock/adjustment")}>
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+                        </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive">
@@ -78,9 +81,6 @@ const EditStockAdjustment = () => {
                     </div>
                 }
             />
-            <Button variant="ghost" onClick={() => navigate("/stock/adjustment")} className="mb-4 -mt-2">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
-            </Button>
 
             <div className="space-y-6">
                 <Card>

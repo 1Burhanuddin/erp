@@ -11,6 +11,7 @@ import Inventory from "./pages/Inventory";
 import Invoices from "./pages/Invoices";
 import Reports from "./pages/Reports";
 import AuditLogs from "./pages/AuditLogs";
+import AuditLogDetails from "./pages/AuditLogDetails";
 import Settings from "./pages/Settings";
 import Suppliers from "./pages/contacts/Suppliers";
 import Customers from "./pages/contacts/Customers";
@@ -30,12 +31,15 @@ import PurchaseOrder from "./pages/purchase/PurchaseOrder";
 import AddPurchaseOrder from "./pages/purchase/AddPurchaseOrder";
 import GRN from "./pages/purchase/GRN";
 import PurchaseInvoice from "./pages/purchase/PurchaseInvoice";
+import PurchaseInvoiceDetails from "./pages/purchase/PurchaseInvoiceDetails";
 import DirectPurchase from "./pages/purchase/DirectPurchase";
 import PurchaseReturn from "./pages/purchase/PurchaseReturn";
+import AddPurchaseReturn from "./pages/purchase/AddPurchaseReturn";
 import Quotations from "./pages/sales/Quotations";
 import AddQuotation from "./pages/sales/AddQuotation";
 import EditQuotation from "./pages/sales/EditQuotation";
 import SalesOrder from "./pages/sell/SalesOrder";
+import AddSalesOrder from "./pages/sell/AddSalesOrder";
 import DeliveryChallans from "./pages/sales/DeliveryChallans";
 import AddDeliveryChallan from "./pages/sales/AddDeliveryChallan";
 import EditDeliveryChallan from "./pages/sales/EditDeliveryChallan";
@@ -94,13 +98,16 @@ const App = () => {
                 <Route path="/purchase/add" element={<AddPurchaseOrder />} />
                 <Route path="/purchase/grn" element={<GRN />} />
                 <Route path="/purchase/invoice" element={<PurchaseInvoice />} />
+                <Route path="/purchase/invoice/:id" element={<PurchaseInvoiceDetails />} />
                 <Route path="/purchase/direct" element={<DirectPurchase />} />
                 <Route path="/purchase/return" element={<PurchaseReturn />} />
+                <Route path="/purchase/return/add" element={<AddPurchaseReturn />} />
 
                 <Route path="/sales/quotations" element={<Quotations />} />
                 <Route path="/sales/quotations/add" element={<AddQuotation />} />
                 <Route path="/sales/quotations/edit/:id" element={<EditQuotation />} />
                 <Route path="/sell/order" element={<SalesOrder />} />
+                <Route path="/sell/order/add" element={<AddSalesOrder />} />
                 <Route path="/sales/challans" element={<DeliveryChallans />} />
                 <Route path="/sales/challans/add" element={<AddDeliveryChallan />} />
                 <Route path="/sales/challans/edit/:id" element={<EditDeliveryChallan />} />
@@ -127,6 +134,7 @@ const App = () => {
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/audit-logs" element={<AuditLogs />} />
+                <Route path="/audit-logs/:id" element={<AuditLogDetails />} />
                 <Route path="/settings" element={<Settings />} />
               </Route>
             </Route>

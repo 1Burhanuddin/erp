@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useQuotation, useUpdateQuotation, useDeleteQuotation } from "@/api/sales";
+import { useQuotation, useUpdateQuotation, useDeleteQuotation, useConvertQuotation } from "@/api/sales";
 import { useContacts } from "@/api/contacts";
 import { useProducts } from "@/api/products";
 import {
@@ -43,6 +43,7 @@ const EditQuotation = () => {
     const { data: quotation, isLoading: isLoadingQuotation } = useQuotation(id || "");
     const updateQuotation = useUpdateQuotation();
     const deleteQuotation = useDeleteQuotation();
+    const convertQuotation = useConvertQuotation();
     const { data: contacts = [] } = useContacts();
     const { data: products = [] } = useProducts();
 
@@ -166,7 +167,16 @@ const EditQuotation = () => {
                 toast.error("Failed to delete quotation: " + error.message);
             }
         });
-    }
+    };
+
+    const handleConvert = () => {
+        if (!id) return;
+        convertQuotation.mutate(id, {
+            onSuccess: () => {
+                navigate("/sell/orders"); // Navigate to Sales Orders list
+            }
+        });
+    };
 
     if (isLoadingQuotation) {
         return (
@@ -184,28 +194,35 @@ const EditQuotation = () => {
                 title="Edit Quotation"
                 description="Update sales quotation details"
                 actions={
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Quotation
+                    <div className="flex items-center gap-2">
+                        {quotation?.status !== "Converted" && (
+                            <Button onClick={handleConvert} disabled={convertQuotation.isPending} className="bg-green-600 hover:bg-green-700">
+                                {convertQuotation.isPending ? "Converting..." : "Convert to Order"}
                             </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the quotation.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-                                    {deleteQuotation.isPending ? "Deleting..." : "Delete"}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                        )}
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete Quotation
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the quotation.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                                        {deleteQuotation.isPending ? "Deleting..." : "Delete"}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 }
             />
 

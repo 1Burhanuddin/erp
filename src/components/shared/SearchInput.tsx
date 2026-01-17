@@ -17,7 +17,7 @@ const SearchInput = ({ value, onChange, placeholder = "Search...", className }: 
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-10 bg-surface border-border"
+        className="pl-10 h-9 bg-surface border-border"
       />
     </div>
   );

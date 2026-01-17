@@ -262,25 +262,37 @@ const Reports = () => {
           title="Total Revenue"
           value={`$${report?.totalRevenue.toLocaleString()}`}
           icon={<DollarSign className="h-5 w-5" />}
-          trend={{ value: 0, isPositive: true }} // TODO: implementations trend calculation
+          trend={{
+            value: Math.abs(report?.trends?.revenue || 0),
+            isPositive: (report?.trends?.revenue || 0) >= 0
+          }}
         />
         <StatsCard
           title="Total Orders"
           value={report?.totalOrders.toLocaleString() || "0"}
           icon={<ShoppingCart className="h-5 w-5" />}
-          trend={{ value: 0, isPositive: true }}
+          trend={{
+            value: Math.abs(report?.trends?.orders || 0),
+            isPositive: (report?.trends?.orders || 0) >= 0
+          }}
         />
         <StatsCard
           title="Total Expenses"
           value={`$${report?.totalExpenses.toLocaleString()}`}
           icon={<Wallet className="h-5 w-5" />}
-          trend={{ value: 0, isPositive: false }}
+          trend={{
+            value: Math.abs(report?.trends?.expenses || 0),
+            isPositive: (report?.trends?.expenses || 0) <= 0 // Lower expenses is positive
+          }}
         />
         <StatsCard
           title="Net Profit"
           value={`$${report?.netProfit.toLocaleString()}`}
           icon={<TrendingUp className="h-5 w-5" />}
-          trend={{ value: 0, isPositive: report?.netProfit && report.netProfit >= 0 ? true : false }}
+          trend={{
+            value: Math.abs(report?.trends?.profit || 0),
+            isPositive: (report?.trends?.profit || 0) >= 0
+          }}
         />
       </div>
 

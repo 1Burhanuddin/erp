@@ -98,7 +98,10 @@ const SalesInvoiceDetails = () => {
                     title={`Invoice ${sale.order_no}`}
                     description="Manage invoice payments and view details"
                     actions={
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 items-center">
+                            <Button variant="ghost" onClick={() => navigate("/sell/invoice")}>
+                                <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+                            </Button>
                             {balanceDue > 0 && (
                                 <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
                                     <DialogTrigger asChild>
@@ -182,12 +185,9 @@ const SalesInvoiceDetails = () => {
                         </div>
                     }
                 />
-                <Button variant="ghost" onClick={() => navigate("/sell/invoice")} className="mb-4 -mt-2">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
-                </Button>
 
                 <Tabs defaultValue="overview" className="space-y-4">
-                    <TabsList>
+                    <TabsList className="w-full grid grid-cols-2">
                         <TabsTrigger value="overview">Overview & Payments</TabsTrigger>
                         <TabsTrigger value="preview">Invoice Preview (Bill)</TabsTrigger>
                     </TabsList>

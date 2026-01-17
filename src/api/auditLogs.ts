@@ -62,6 +62,7 @@ export const useAuditLogs = (filters?: AuditLogFilters) => {
     });
 };
 
+
 export const useAuditLogsForRecord = (tableName: string, recordId: string) => {
     return useQuery({
         queryKey: ["audit_logs", tableName, recordId],
@@ -76,5 +77,22 @@ export const useAuditLogsForRecord = (tableName: string, recordId: string) => {
             if (error) throw error;
             return data as AuditLog[];
         },
+    });
+};
+
+export const useAuditLog = (id: string) => {
+    return useQuery({
+        queryKey: ["audit_log", id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from("audit_logs")
+                .select("*")
+                .eq("id", id)
+                .single();
+
+            if (error) throw error;
+            return data as AuditLog;
+        },
+        enabled: !!id,
     });
 };

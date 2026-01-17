@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
 
-type SalesOrder = Database["public"]["Tables"]["sales_orders"]["Row"];
-type SalesOrderInsert = Database["public"]["Tables"]["sales_orders"]["Insert"];
+type SalesOrder = Database["public"]["Tables"]["sales_orders"]["Row"] & { channel?: string };
+type SalesOrderInsert = Database["public"]["Tables"]["sales_orders"]["Insert"] & { channel?: string };
 type SalesItemInsert = Database["public"]["Tables"]["sales_items"]["Insert"];
 type SalesPaymentInsert = Database["public"]["Tables"]["sales_payments"]["Insert"];
 
@@ -141,6 +141,74 @@ export const useDeleteQuotation = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["quotations"] });
         },
+    });
+};
+
+export const useConvertQuotation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            // 1. Fetch Quotation
+            const { data: quote, error: fetchError } = await supabase
+                .from("sales_orders")
+                .select(`*, items:sales_items(*)`)
+                .eq("id", id)
+                .single();
+
+            if (fetchError) throw fetchError;
+            if (!quote) throw new Error("Quotation not found");
+
+            // 2. Create Sales Order
+            const { data: newOrder, error: orderError } = await supabase
+                .from("sales_orders")
+                .insert({
+                    customer_id: quote.customer_id,
+                    order_date: new Date().toISOString(),
+                    total_amount: quote.total_amount,
+                    status: "Pending",
+                    channel: "Direct",
+                    order_no: `SO-${Date.now()}`
+                })
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            // 3. Create Items
+            if (quote.items && quote.items.length > 0) {
+                const newItems = quote.items.map((item: any) => ({
+                    sale_id: newOrder.id,
+                    product_id: item.product_id,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price,
+                    subtotal: item.subtotal
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from("sales_items")
+                    .insert(newItems);
+
+                if (itemsError) throw itemsError;
+            }
+
+            // 4. Update Quotation Status
+            const { error: updateError } = await supabase
+                .from("sales_orders")
+                .update({ status: "Converted" })
+                .eq("id", id);
+
+            if (updateError) throw updateError;
+
+            return newOrder;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["quotations"] });
+            queryClient.invalidateQueries({ queryKey: ["sales_orders"] });
+            toast.success("Quotation converted to Order successfully");
+        },
+        onError: (error: any) => {
+            toast.error(error.message || "Failed to convert quotation");
+        }
     });
 };
 // --- Delivery Challan Hooks ---
@@ -302,14 +370,14 @@ export const useSalesOrder = (id: string) => {
     });
 };
 
-export const useCreateSale = () => {
+export const useCreateSalesOrder = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
-            // 1. Create Order
+            // 1. Create Order (Status: Pending) - DO NOT DEDUCT STOCK YET
             const { data: orderData, error: orderError } = await supabase
                 .from("sales_orders")
-                .insert(data.order)
+                .insert({ ...data.order, status: "Pending", channel: "Direct" })
                 .select()
                 .single();
 
@@ -327,6 +395,46 @@ export const useCreateSale = () => {
                     .insert(itemsWithOrderId);
 
                 if (itemsError) throw itemsError;
+            }
+
+            return orderData;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["sales_orders"] });
+        },
+    });
+};
+
+export const useCreateSale = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
+            // 1. Create Order
+            const { data: orderData, error: orderError } = await supabase
+                .from("sales_orders")
+                .insert(data.order)
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            // 2. Create Items & Deduct Stock
+            if (data.items.length > 0) {
+                const itemsWithOrderId = data.items.map(item => ({
+                    ...item,
+                    sale_id: orderData.id,
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from("sales_items")
+                    .insert(itemsWithOrderId);
+
+                if (itemsError) throw itemsError;
+
+                // Update Stock
+                for (const item of data.items) {
+                    await updateProductStock(item.product_id, item.quantity, 'Decrease');
+                }
             }
 
             return orderData;
@@ -374,3 +482,26 @@ export const useAddSalePayment = () => {
         },
     });
 };
+
+// Helper
+async function updateProductStock(productId: string, quantity: number, type: 'Increase' | 'Decrease') {
+    const { data: product } = await supabase
+        .from('products')
+        .select('current_stock')
+        .eq('id', productId)
+        .single();
+
+    if (product) {
+        let newStock = product.current_stock || 0;
+        if (type === 'Increase') {
+            newStock += quantity;
+        } else {
+            newStock = Math.max(0, newStock - quantity);
+        }
+
+        await supabase
+            .from('products')
+            .update({ current_stock: newStock })
+            .eq('id', productId);
+    }
+}

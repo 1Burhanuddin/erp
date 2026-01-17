@@ -7,6 +7,12 @@ export interface DashboardReport {
     totalOrders: number;
     totalExpenses: number;
     netProfit: number;
+    trends: {
+        revenue: number;
+        orders: number;
+        expenses: number;
+        profit: number;
+    };
     monthlySales: {
         month: string;
         sales: number;
@@ -32,42 +38,54 @@ export const useReports = (filters?: ReportsFilters) => {
             const startDate = filters?.startDate ? startOfDay(filters.startDate).toISOString() : undefined;
             const endDate = filters?.endDate ? endOfDay(filters.endDate).toISOString() : undefined;
 
-            // 1. Fetch Sales Orders (with optional date filtering)
-            let salesQuery = supabase
-                .from("sales_orders")
-                .select("id, total_amount, order_date")
-                .neq("status", "Cancelled");
+            // Helper to build queries
+            const buildSalesQuery = (start?: string, end?: string) => {
+                let q = supabase
+                    .from("sales_orders")
+                    .select("id, total_amount, order_date")
+                    .neq("status", "Cancelled");
+                if (start) q = q.gte("order_date", start);
+                if (end) q = q.lte("order_date", end);
+                return q;
+            };
 
-            if (startDate) {
-                salesQuery = salesQuery.gte("order_date", startDate);
-            }
-            if (endDate) {
-                salesQuery = salesQuery.lte("order_date", endDate);
-            }
+            const buildExpensesQuery = (start?: string, end?: string) => {
+                let q = supabase
+                    .from("expenses")
+                    .select("amount, expense_date");
+                if (start) q = q.gte("expense_date", start.split('T')[0]);
+                if (end) q = q.lte("expense_date", end.split('T')[0]);
+                return q;
+            };
 
-            const { data: sales, error: salesError } = await salesQuery;
-
+            // 1. Fetch Current Period Data
+            const { data: sales, error: salesError } = await buildSalesQuery(startDate, endDate);
             if (salesError) throw salesError;
 
-            // 2. Fetch Expenses (with optional date filtering)
-            let expensesQuery = supabase
-                .from("expenses")
-                .select("amount, expense_date");
-
-            if (startDate) {
-                expensesQuery = expensesQuery.gte("expense_date", startDate.split('T')[0]);
-            }
-            if (endDate) {
-                expensesQuery = expensesQuery.lte("expense_date", endDate.split('T')[0]);
-            }
-
-            const { data: expenses, error: expensesError } = await expensesQuery;
-
+            const { data: expenses, error: expensesError } = await buildExpensesQuery(startDate, endDate);
             if (expensesError) throw expensesError;
+
+            // 2. Fetch Previous Period Data (for trends)
+            let prevSales: any[] | null = [];
+            let prevExpenses: any[] | null = [];
+
+            if (filters?.startDate && filters?.endDate) {
+                const duration = filters.endDate.getTime() - filters.startDate.getTime();
+                const prevEndDate = new Date(filters.startDate.getTime() - 1); // 1ms before start
+                const prevStartDate = new Date(prevEndDate.getTime() - duration);
+
+                const pStart = startOfDay(prevStartDate).toISOString();
+                const pEnd = endOfDay(prevEndDate).toISOString();
+
+                const { data: pSales } = await buildSalesQuery(pStart, pEnd);
+                const { data: pExpenses } = await buildExpensesQuery(pStart, pEnd);
+
+                prevSales = pSales;
+                prevExpenses = pExpenses;
+            }
 
             // 3. Fetch Sales Items with Product Categories for Pie Chart
             // We need to join: sales_items -> products -> product_categories
-            // Also filter by sales order date if date range is provided
             let salesItemsQuery = supabase
                 .from("sales_items")
                 .select(`
@@ -88,18 +106,8 @@ export const useReports = (filters?: ReportsFilters) => {
             let filteredSalesItems = salesItems;
             if ((startDate || endDate) && salesItems) {
                 // Get sale_ids that match the date range
-                const validSaleIds = new Set(
-                    sales
-                        ?.filter(order => {
-                            const orderDate = new Date(order.order_date);
-                            if (startDate && orderDate < new Date(startDate)) return false;
-                            if (endDate && orderDate > new Date(endDate)) return false;
-                            return true;
-                        })
-                        .map(order => order.id) || []
-                );
-
-                filteredSalesItems = salesItems.filter((item: any) => 
+                const validSaleIds = new Set(sales?.map(order => order.id) || []);
+                filteredSalesItems = salesItems.filter((item: any) =>
                     validSaleIds.has(item.sale_id)
                 );
             }
@@ -108,17 +116,38 @@ export const useReports = (filters?: ReportsFilters) => {
 
             // --- Aggregations ---
 
-            // A. Totals
-            const totalRevenue = sales?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
-            const totalOrders = sales?.length || 0;
-            const totalExpenses = expenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
-            const netProfit = totalRevenue - totalExpenses;
+            const calculateTotals = (s: any[], e: any[]) => {
+                const revenue = s?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
+                const orders = s?.length || 0;
+                const expensesTotal = e?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
+                const profit = revenue - expensesTotal;
+                return { revenue, orders, expensesTotal, profit };
+            };
+
+            // Current Totals
+            const current = calculateTotals(sales || [], expenses || []);
+
+            // Previous Totals
+            const previous = calculateTotals(prevSales || [], prevExpenses || []);
+
+            // Calculate Trends (percentage change)
+            const calculateTrend = (curr: number, prev: number) => {
+                if (!prev) return 0; // Avoid division by zero
+                return ((curr - prev) / prev) * 100;
+            };
+
+            const trends = {
+                revenue: calculateTrend(current.revenue, previous.revenue),
+                orders: calculateTrend(current.orders, previous.orders),
+                expenses: calculateTrend(current.expensesTotal, previous.expensesTotal),
+                profit: calculateTrend(current.profit, previous.profit),
+            };
 
             // B. Monthly Sales
             // Determine date range for monthly breakdown
             const dateRangeStart = filters?.startDate || subMonths(new Date(), 5);
             const dateRangeEnd = filters?.endDate || new Date();
-            
+
             const months = eachMonthOfInterval({
                 start: startOfMonth(dateRangeStart),
                 end: endOfMonth(dateRangeEnd)
@@ -177,10 +206,11 @@ export const useReports = (filters?: ReportsFilters) => {
             // If "Other" needed, you could sum the rest here, but Top 5 is usually enough for UI
 
             return {
-                totalRevenue,
-                totalOrders,
-                totalExpenses,
-                netProfit,
+                totalRevenue: current.revenue,
+                totalOrders: current.orders,
+                totalExpenses: current.expensesTotal,
+                netProfit: current.profit,
+                trends,
                 monthlySales,
                 categoryDistribution
             };

@@ -16,9 +16,9 @@ import {
   ClipboardList,
   Wallet,
   Menu,
-  LogOut,
   User,
   History,
+  Wrench,
 } from "lucide-react";
 import {
   Collapsible,
@@ -74,6 +74,7 @@ const navItems = [
       { path: "/products/brands", label: "Brand", description: "Manage product brands" },
     ],
   },
+  { path: "/services", label: "Services", icon: Wrench, description: "Manage services" },
   {
     path: "/purchase",
     label: "Purchase",
@@ -113,7 +114,8 @@ const navItems = [
   { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
   { path: "/reports", label: "Reports", icon: BarChart3, description: "View reports and analytics" },
   { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },
-  { path: "/settings", label: "Settings", icon: Settings, description: "Manage your settings" },
+  { path: "/settings?tab=profile", label: "Profile", icon: User, description: "Manage your profile" },
+  { path: "/settings?tab=app", label: "Settings", icon: Settings, description: "App configuration" },
 ];
 
 // Helper function to get page title from path
@@ -138,6 +140,8 @@ export const getPageTitle = (pathname: string): { title: string; description?: s
   if (pathname.startsWith('/contacts/add')) return { title: 'Add Contact', description: 'Create a new contact' };
   if (pathname.startsWith('/contacts/edit')) return { title: 'Edit Contact', description: 'Update contact details' };
   if (pathname.startsWith('/contacts/')) return { title: 'Contact Details', description: 'View contact information' };
+  if (pathname.startsWith('/services/add')) return { title: 'Add Service', description: 'Create a new service' };
+  if (pathname.startsWith('/services/edit')) return { title: 'Edit Service', description: 'Update service details' };
   if (pathname.startsWith('/purchase/order/add')) return { title: 'Add Purchase Order', description: 'Create a new purchase order' };
   if (pathname.startsWith('/sell/invoice/add')) return { title: 'Add Sales Invoice', description: 'Create a new sales invoice' };
   if (pathname.startsWith('/sell/invoice/')) return { title: 'Invoice Details', description: 'View invoice details' };
@@ -267,66 +271,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
   return linkContent;
 };
 
-const UserProfile = ({ isCollapsed }: { isCollapsed: boolean }) => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
-
-  const initials = user?.email?.substring(0, 2).toUpperCase() || "U";
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className={cn(
-          "flex items-center gap-3 p-3 rounded-xl hover:bg-sidebar-foreground/5 cursor-pointer transition-colors border-t border-sidebar-foreground/10 mt-auto",
-          isCollapsed ? "justify-center" : "justify-between"
-        )}>
-          <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9 border border-border">
-              <AvatarImage src={user?.user_metadata?.avatar_url} />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            {!isCollapsed && (
-              <div className="flex flex-col text-left">
-                <span className="text-sm font-semibold text-sidebar-foreground truncate max-w-[120px]">
-                  {user?.user_metadata?.full_name || "User"}
-                </span>
-                <span className="text-xs text-sidebar-muted truncate max-w-[120px]">
-                  {user?.email}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" side={isCollapsed ? "right" : "top"}>
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/settings?tab=profile")}>
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/settings?tab=app")}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
 
 export const SidebarMobileContent = () => {
   return (
@@ -334,14 +279,11 @@ export const SidebarMobileContent = () => {
       <div className="flex items-center h-16 px-6 border-b border-sidebar-foreground/10">
         <h1 className="text-xl font-bold text-sidebar-foreground">ERP System</h1>
       </div>
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar pb-6">
         {navItems.map((item) => (
           <SidebarItem key={item.path} item={item as NavItem} isCollapsed={false} />
         ))}
       </nav>
-      <div className="p-4">
-        <UserProfile isCollapsed={false} />
-      </div>
     </div>
   );
 };
@@ -380,15 +322,11 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           </Button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto no-scrollbar">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto no-scrollbar pb-4">
           {navItems.map((item) => (
             <SidebarItem key={item.path} item={item} isCollapsed={isCollapsed} />
           ))}
         </nav>
-
-        <div className="p-3 mt-auto">
-          <UserProfile isCollapsed={isCollapsed} />
-        </div>
       </aside>
     </>
   );

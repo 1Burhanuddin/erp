@@ -31,6 +31,9 @@ const ProductsList = () => {
 
     // Filter products by search query
     const filteredProducts = products?.filter(product => {
+        // Exclude Services
+        if ((product as any).type === 'Service') return false;
+
         if (!searchQuery.trim()) return true;
 
         const query = searchQuery.toLowerCase();

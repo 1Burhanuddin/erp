@@ -23,6 +23,7 @@ import ProductsList from "./pages/products/ProductsList";
 import AddProduct from "./pages/products/AddProduct";
 import EditProduct from "./pages/products/EditProduct";
 import ImportProducts from "./pages/products/ImportProducts";
+import ServicesList from "./pages/products/ServicesList";
 import Units from "./pages/products/Units";
 import Categories from "./pages/products/Categories";
 import SubCategories from "./pages/products/SubCategories";
@@ -93,6 +94,10 @@ const App = () => {
                 <Route path="/products/categories" element={<Categories />} />
                 <Route path="/products/sub-categories" element={<SubCategories />} />
                 <Route path="/products/brands" element={<Brands />} />
+
+                <Route path="/services" element={<ServicesList />} />
+                <Route path="/services/add" element={<AddProduct />} />
+                <Route path="/services/edit/:id" element={<EditProduct />} />
 
                 <Route path="/purchase/order" element={<PurchaseOrder />} />
                 <Route path="/purchase/add" element={<AddPurchaseOrder />} />

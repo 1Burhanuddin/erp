@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Building2, Receipt, Users, Loader2, Pencil, X, Check, Globe, DollarSign } from "lucide-react";
+import { User, Building2, Receipt, Users, Loader2, Pencil, X, Check, Globe, DollarSign, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useUpdateProfile, useUpdatePassword } from "@/api/profile";
@@ -359,6 +359,29 @@ const Settings = () => {
                   Update Password
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive/20 bg-destructive/5">
+            <CardHeader>
+              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+              <CardDescription>Sign out of your account.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  try {
+                    await supabase.auth.signOut();
+                    window.location.href = "/auth";
+                  } catch (error) {
+                    toast.error("Failed to sign out");
+                  }
+                }}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

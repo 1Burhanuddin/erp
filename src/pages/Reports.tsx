@@ -21,7 +21,7 @@ import {
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
-  const { data: report, isLoading } = useReports(
+  const { data: report, isLoading, error } = useReports(
     dateRange.from && dateRange.to
       ? { startDate: dateRange.from, endDate: dateRange.to }
       : undefined
@@ -39,6 +39,18 @@ const Reports = () => {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
           <Skeleton className="h-[350px] rounded-xl" />
           <Skeleton className="h-[350px] rounded-xl" />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout>
+        <PageHeader title="Reports" description="Analytics and business insights" />
+        <div className="p-6 rounded-lg bg-destructive/10 text-destructive border border-destructive/20">
+          <h3 className="font-semibold mb-2">Error loading reports</h3>
+          <p>{(error as Error).message}</p>
         </div>
       </PageLayout>
     );
@@ -379,6 +391,88 @@ const Reports = () => {
                 <span className="text-muted-foreground">{item.name}</span>
               </div>
             ))}
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
+        {/* Top Products */}
+        <Card className="p-4 md:p-6 bg-card border-border">
+          <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">Top Selling Products</h3>
+          <div className="h-[250px] md:h-[300px]">
+            {report?.topProducts && report.topProducts.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  layout="vertical"
+                  data={report.topProducts}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(214, 32%, 91%)" />
+                  <XAxis type="number" hide />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    width={100}
+                    tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'transparent' }}
+                    contentStyle={{
+                      background: "hsl(0, 0%, 100%)",
+                      border: "1px solid hsl(214, 32%, 91%)",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                    formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                  />
+                  <Bar dataKey="value" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                No product data available
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Top Customers */}
+        <Card className="p-4 md:p-6 bg-card border-border">
+          <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">Top Customers</h3>
+          <div className="h-[250px] md:h-[300px]">
+            {report?.topCustomers && report.topCustomers.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  layout="vertical"
+                  data={report.topCustomers}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(214, 32%, 91%)" />
+                  <XAxis type="number" hide />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    width={100}
+                    tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'transparent' }}
+                    contentStyle={{
+                      background: "hsl(0, 0%, 100%)",
+                      border: "1px solid hsl(214, 32%, 91%)",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                    formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                  />
+                  <Bar dataKey="value" fill="hsl(142, 76%, 36%)" radius={[0, 4, 4, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                No customer data available
+              </div>
+            )}
           </div>
         </Card>
       </div>

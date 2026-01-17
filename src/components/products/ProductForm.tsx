@@ -38,6 +38,7 @@ interface ProductFormProps {
     initialData?: any;
     onSubmit: (data: any) => Promise<void>;
     isSubmitting?: boolean;
+    fixedType?: 'Product' | 'Service';
 }
 
 const QuickAddDialog = ({
@@ -110,6 +111,7 @@ export const ProductForm = ({
     initialData,
     onSubmit,
     isSubmitting,
+    fixedType,
 }: ProductFormProps) => {
     const navigate = useNavigate();
     const { data: categories } = useCategories();
@@ -123,6 +125,7 @@ export const ProductForm = ({
     const [formData, setFormData] = useState({
         name: "",
         sku: "",
+        type: fixedType || "Product", // Default type
         category_id: "",
         sub_category_id: "",
         brand_id: "",
@@ -142,6 +145,7 @@ export const ProductForm = ({
             setFormData({
                 name: initialData.name || "",
                 sku: initialData.sku || "",
+                type: fixedType || initialData.type || "Product",
                 category_id: initialData.category_id || "",
                 sub_category_id: initialData.sub_category_id || "",
                 brand_id: initialData.brand_id || "",
@@ -151,8 +155,10 @@ export const ProductForm = ({
                 alert_quantity: initialData.alert_quantity?.toString() || "5",
                 description: initialData.description || "",
             });
+        } else if (fixedType) {
+            setFormData(prev => ({ ...prev, type: fixedType }));
         }
-    }, [initialData]);
+    }, [initialData, fixedType]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -166,25 +172,65 @@ export const ProductForm = ({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
+            {!fixedType && (
+                <div className="space-y-2">
+                    <Label>Product Type</Label>
+                    <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer border p-3 rounded-lg hover:bg-muted/50 transition-colors has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                            <input
+                                type="radio"
+                                name="type"
+                                value="Product"
+                                checked={formData.type === "Product"}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                className="accent-primary h-4 w-4"
+                            />
+                            <div>
+                                <span className="font-medium block">Product</span>
+                                <span className="text-xs text-muted-foreground">Inventory tracked item</span>
+                            </div>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer border p-3 rounded-lg hover:bg-muted/50 transition-colors has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                            <input
+                                type="radio"
+                                name="type"
+                                value="Service"
+                                checked={formData.type === "Service"}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                className="accent-primary h-4 w-4"
+                            />
+                            <div>
+                                <span className="font-medium block">Service</span>
+                                <span className="text-xs text-muted-foreground">Non-stock service item</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Product Name *</Label>
+                    <Label htmlFor="name">
+                        {formData.type === "Service" ? "Service Name *" : "Product Name *"}
+                    </Label>
                     <Input
                         id="name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
-                        placeholder="e.g. Wireless Mouse"
+                        placeholder={formData.type === "Service" ? "e.g. AC Repair" : "e.g. Wireless Mouse"}
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="sku">SKU (Stock Keeping Unit) *</Label>
+                    <Label htmlFor="sku">
+                        {formData.type === "Service" ? "Service Code" : "SKU (Stock Keeping Unit)"} *
+                    </Label>
                     <Input
                         id="sku"
                         value={formData.sku}
                         onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                         required
-                        placeholder="e.g. WM-001"
+                        placeholder={formData.type === "Service" ? "e.g. SVC-001" : "e.g. WM-001"}
                     />
                 </div>
             </div>
@@ -289,80 +335,86 @@ export const ProductForm = ({
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label>Brand</Label>
-                    <div className="flex gap-2">
-                        <Select
-                            value={formData.brand_id}
-                            onValueChange={(val) =>
-                                setFormData({ ...formData, brand_id: val })
-                            }
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select Brand" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {brands?.map((b) => (
-                                    <SelectItem key={b.id} value={b.id}>
-                                        {b.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <QuickAddDialog
-                            title="Add Brand"
-                            description="Create a new brand"
-                            onSave={async (name) => {
-                                await createBrand.mutateAsync({ name });
-                            }}
-                            trigger={
-                                <Button type="button" variant="outline" size="icon">
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            }
-                        />
-                    </div>
-                </div>
+                {formData.type === "Product" && (
+                    <>
+                        <div className="space-y-2">
+                            <Label>Brand</Label>
+                            <div className="flex gap-2">
+                                <Select
+                                    value={formData.brand_id}
+                                    onValueChange={(val) =>
+                                        setFormData({ ...formData, brand_id: val })
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select Brand" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {brands?.map((b) => (
+                                            <SelectItem key={b.id} value={b.id}>
+                                                {b.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <QuickAddDialog
+                                    title="Add Brand"
+                                    description="Create a new brand"
+                                    onSave={async (name) => {
+                                        await createBrand.mutateAsync({ name });
+                                    }}
+                                    trigger={
+                                        <Button type="button" variant="outline" size="icon">
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    }
+                                />
+                            </div>
+                        </div>
 
-                <div className="space-y-2">
-                    <Label>Unit</Label>
-                    <div className="flex gap-2">
-                        <Select
-                            value={formData.unit_id}
-                            onValueChange={(val) =>
-                                setFormData({ ...formData, unit_id: val })
-                            }
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select Unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {units?.map((u) => (
-                                    <SelectItem key={u.id} value={u.id}>
-                                        {u.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <QuickAddDialog
-                            title="Add Unit"
-                            description="Create a new unit"
-                            onSave={async (name) => {
-                                await createUnit.mutateAsync({ name });
-                            }}
-                            trigger={
-                                <Button type="button" variant="outline" size="icon">
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            }
-                        />
-                    </div>
-                </div>
+                        <div className="space-y-2">
+                            <Label>Unit</Label>
+                            <div className="flex gap-2">
+                                <Select
+                                    value={formData.unit_id}
+                                    onValueChange={(val) =>
+                                        setFormData({ ...formData, unit_id: val })
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select Unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {units?.map((u) => (
+                                            <SelectItem key={u.id} value={u.id}>
+                                                {u.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <QuickAddDialog
+                                    title="Add Unit"
+                                    description="Create a new unit"
+                                    onSave={async (name) => {
+                                        await createUnit.mutateAsync({ name });
+                                    }}
+                                    trigger={
+                                        <Button type="button" variant="outline" size="icon">
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="purchase_price">Purchase Price</Label>
+                    <Label htmlFor="purchase_price">
+                        {formData.type === "Service" ? "Cost Price (Optional)" : "Purchase Price"}
+                    </Label>
                     <Input
                         id="purchase_price"
                         type="number"
@@ -375,7 +427,9 @@ export const ProductForm = ({
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="sale_price">Sale Price</Label>
+                    <Label htmlFor="sale_price">
+                        {formData.type === "Service" ? "Service Charge" : "Sale Price"}
+                    </Label>
                     <Input
                         id="sale_price"
                         type="number"
@@ -387,18 +441,20 @@ export const ProductForm = ({
                         }
                     />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="alert_quantity">Alert Quantity</Label>
-                    <Input
-                        id="alert_quantity"
-                        type="number"
-                        min="0"
-                        value={formData.alert_quantity}
-                        onChange={(e) =>
-                            setFormData({ ...formData, alert_quantity: e.target.value })
-                        }
-                    />
-                </div>
+                {formData.type === "Product" && (
+                    <div className="space-y-2">
+                        <Label htmlFor="alert_quantity">Alert Quantity</Label>
+                        <Input
+                            id="alert_quantity"
+                            type="number"
+                            min="0"
+                            value={formData.alert_quantity}
+                            onChange={(e) =>
+                                setFormData({ ...formData, alert_quantity: e.target.value })
+                            }
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="space-y-2">

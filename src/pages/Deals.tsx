@@ -42,10 +42,12 @@ const COLUMNS = [
 ];
 
 const Deals = () => {
-  const { data: deals = [], isLoading } = useDeals();
+  const { data: dealsData, isLoading } = useDeals();
+  const deals = dealsData || [];
   const updateDealMutation = useUpdateDeal();
   const createDealMutation = useCreateDeal();
-  const { data: contacts = [] } = useContacts();
+  const { data: contactsData } = useContacts();
+  const contacts = contactsData || [];
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newDeal, setNewDeal] = useState({

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
+import { toast } from "sonner";
 
 type SalesOrder = Database["public"]["Tables"]["sales_orders"]["Row"] & { channel?: string };
 type SalesOrderInsert = Database["public"]["Tables"]["sales_orders"]["Insert"] & { channel?: string };
@@ -487,11 +488,14 @@ export const useAddSalePayment = () => {
 async function updateProductStock(productId: string, quantity: number, type: 'Increase' | 'Decrease') {
     const { data: product } = await supabase
         .from('products')
-        .select('current_stock')
+        .select('current_stock, type')
         .eq('id', productId)
         .single();
 
     if (product) {
+        // Skip stock update for Service type products
+        if ((product as any).type === 'Service') return;
+
         let newStock = product.current_stock || 0;
         if (type === 'Increase') {
             newStock += quantity;

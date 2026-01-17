@@ -23,6 +23,14 @@ export interface DashboardReport {
         value: number;
         color: string;
     }[];
+    topProducts: {
+        name: string;
+        value: number;
+    }[];
+    topCustomers: {
+        name: string;
+        value: number;
+    }[];
 }
 
 export interface ReportsFilters {
@@ -42,7 +50,7 @@ export const useReports = (filters?: ReportsFilters) => {
             const buildSalesQuery = (start?: string, end?: string) => {
                 let q = supabase
                     .from("sales_orders")
-                    .select("id, total_amount, order_date")
+                    .select("id, total_amount, order_date, customer:contacts(name)")
                     .neq("status", "Cancelled");
                 if (start) q = q.gte("order_date", start);
                 if (end) q = q.lte("order_date", end);
@@ -93,6 +101,7 @@ export const useReports = (filters?: ReportsFilters) => {
                     subtotal,
                     sale_id,
                     products (
+                        name,
                         category_id,
                         product_categories (
                             name
@@ -173,18 +182,14 @@ export const useReports = (filters?: ReportsFilters) => {
             });
 
             // C. Category Distribution
-            // Group filteredSalesItems by category name
             const categoryMap = new Map<string, number>();
 
             filteredSalesItems?.forEach((item: any) => {
                 const categoryName = item.products?.product_categories?.name || "Uncategorized";
-                const value = Number(item.subtotal) || 0; // Using value magnitude (revenue contribution)
-                // Alternatively use quantity if preferred: const value = item.quantity;
-
+                const value = Number(item.subtotal) || 0;
                 categoryMap.set(categoryName, (categoryMap.get(categoryName) || 0) + value);
             });
 
-            // Colors for charts
             const COLORS = [
                 "hsl(217, 91%, 60%)", // Primary Blue
                 "hsl(142, 76%, 36%)", // Success Green
@@ -200,10 +205,42 @@ export const useReports = (filters?: ReportsFilters) => {
                     value,
                     color: COLORS[index % COLORS.length]
                 }))
-                .sort((a, b) => b.value - a.value) // Sort by highest value
-                .slice(0, 5); // Top 5 categories
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 5);
 
-            // If "Other" needed, you could sum the rest here, but Top 5 is usually enough for UI
+            // D. Top Products
+            const productMap = new Map<string, number>();
+            filteredSalesItems?.forEach((item: any) => {
+                const productData = item.products;
+                const productName = Array.isArray(productData)
+                    ? productData[0]?.name
+                    : (productData?.name || "Unknown Product");
+
+                const value = Number(item.subtotal) || 0;
+                productMap.set(productName, (productMap.get(productName) || 0) + value);
+            });
+
+            const topProducts = Array.from(productMap.entries())
+                .map(([name, value]) => ({ name, value }))
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 5);
+
+            // E. Top Customers
+            const customerMap = new Map<string, number>();
+            sales?.forEach((order: any) => {
+                const customerData = order.customer;
+                const customerName = Array.isArray(customerData)
+                    ? customerData[0]?.name
+                    : (customerData?.name || "Unknown Customer");
+
+                const value = Number(order.total_amount) || 0;
+                customerMap.set(customerName, (customerMap.get(customerName) || 0) + value);
+            });
+
+            const topCustomers = Array.from(customerMap.entries())
+                .map(([name, value]) => ({ name, value }))
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 5);
 
             return {
                 totalRevenue: current.revenue,
@@ -212,7 +249,9 @@ export const useReports = (filters?: ReportsFilters) => {
                 netProfit: current.profit,
                 trends,
                 monthlySales,
-                categoryDistribution
+                categoryDistribution,
+                topProducts,
+                topCustomers
             };
         }
     });

@@ -4,14 +4,14 @@ import { useCreateProduct, useProducts, useDeleteProduct } from "@/api/products"
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useLocation } from "react-router-dom";
 
 const EditProduct = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const isService = location.pathname.includes("/services");
+
     const [product, setProduct] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const deleteProduct = useDeleteProduct();
@@ -29,15 +29,15 @@ const EditProduct = () => {
                 if (error) throw error;
                 setProduct(data);
             } catch (error) {
-                toast.error("Failed to load product");
-                navigate("/products/list");
+                toast.error("Failed to load item");
+                navigate(isService ? "/services" : "/products/list");
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchProduct();
-    }, [id, navigate]);
+    }, [id, navigate, isService]);
 
     const handleSubmit = async (data: any) => {
         try {
@@ -46,6 +46,7 @@ const EditProduct = () => {
                 .update({
                     ...data,
                     category_id: data.category_id || null,
+                    sub_category_id: data.sub_category_id || null,
                     brand_id: data.brand_id || null,
                     unit_id: data.unit_id || null,
                 })
@@ -53,21 +54,21 @@ const EditProduct = () => {
 
             if (error) throw error;
 
-            toast.success("Product updated successfully");
-            navigate("/products/list");
+            toast.success(`${isService ? "Service" : "Product"} updated successfully`);
+            navigate(isService ? "/services" : "/products/list");
         } catch (error) {
-            toast.error("Failed to update product");
+            toast.error("Failed to update item");
         }
     };
 
     const handleDelete = async () => {
-        if (confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+        if (confirm(`Are you sure you want to delete this ${isService ? 'service' : 'product'}? This action cannot be undone.`)) {
             try {
                 await deleteProduct.mutateAsync(id!);
-                toast.success("Product deleted");
-                navigate("/products/list");
+                toast.success(`${isService ? "Service" : "Product"} deleted`);
+                navigate(isService ? "/services" : "/products/list");
             } catch (error) {
-                toast.error("Failed to delete product");
+                toast.error("Failed to delete item");
             }
         }
     };
@@ -86,12 +87,12 @@ const EditProduct = () => {
     return (
         <PageLayout>
             <PageHeader
-                title="Edit Product"
+                title={isService ? "Edit Service" : "Edit Product"}
                 description={`Editing: ${product?.name}`}
                 actions={
                     <Button variant="destructive" onClick={handleDelete}>
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Product
+                        Delete {isService ? "Service" : "Product"}
                     </Button>
                 }
             />
@@ -99,6 +100,7 @@ const EditProduct = () => {
                 <ProductForm
                     initialData={product}
                     onSubmit={handleSubmit}
+                    fixedType={isService ? "Service" : "Product"}
                 />
             </div>
         </PageLayout>

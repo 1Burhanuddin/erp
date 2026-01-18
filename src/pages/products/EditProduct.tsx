@@ -23,15 +23,27 @@ const EditProduct = () => {
         const fetchProduct = async () => {
             if (!id) return;
             try {
+                // Fetch product AND its store links
                 const { data, error } = await supabase
                     .from("products")
-                    .select("*")
+                    .select(`
+                        *,
+                        store_products(store_id)
+                    `)
                     .eq("id", id)
                     .single();
 
                 if (error) throw error;
-                setProduct(data);
+
+                // Map store_products to array of IDs
+                const productWithStores = {
+                    ...data,
+                    store_ids: data.store_products?.map((sp: any) => sp.store_id) || []
+                };
+
+                setProduct(productWithStores);
             } catch (error) {
+                console.error(error);
                 toast.error("Failed to load item");
                 navigate(isService ? "/services" : "/products/list");
             } finally {
@@ -44,10 +56,13 @@ const EditProduct = () => {
 
     const handleSubmit = async (data: any) => {
         try {
+            const { store_ids, store_products, ...productData } = data;
+
+            // 1. Update Product
             const { error } = await supabase
                 .from("products")
                 .update({
-                    ...data,
+                    ...productData,
                     category_id: data.category_id || null,
                     sub_category_id: data.sub_category_id || null,
                     brand_id: data.brand_id || null,
@@ -57,9 +72,32 @@ const EditProduct = () => {
 
             if (error) throw error;
 
+            // 2. Sync Stores
+            // First, delete existing links
+            await supabase
+                .from('store_products')
+                .delete()
+                .eq('product_id', id);
+
+            // Then insert new ones
+            if (store_ids && store_ids.length > 0) {
+                const storeLinks = store_ids.map((storeId: string) => ({
+                    store_id: storeId,
+                    product_id: id,
+                    is_active: true
+                }));
+
+                const { error: storeError } = await supabase
+                    .from('store_products')
+                    .insert(storeLinks);
+
+                if (storeError) console.error("Store sync error:", storeError);
+            }
+
             toast.success(`${isService ? "Service" : "Product"} updated successfully`);
             navigate(isService ? "/services" : "/products/list");
         } catch (error) {
+            console.error(error);
             toast.error("Failed to update item");
         }
     };

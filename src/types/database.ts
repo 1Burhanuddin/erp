@@ -148,6 +148,12 @@ export interface Database {
                     alert_quantity: number | null
                     description: string | null
                     image_url: string | null
+                    // Ecommerce fields
+                    is_online: boolean
+                    images: Json | null
+                    features: Json | null
+                    online_price: number | null
+                    condition: string | null
                     created_at: string
                     updated_at: string
                 }
@@ -165,6 +171,12 @@ export interface Database {
                     alert_quantity?: number | null
                     description?: string | null
                     image_url?: string | null
+                    // Ecommerce fields
+                    is_online?: boolean
+                    images?: Json | null
+                    features?: Json | null
+                    online_price?: number | null
+                    condition?: string | null
                     created_at?: string
                     updated_at?: string
                 }
@@ -182,6 +194,12 @@ export interface Database {
                     alert_quantity?: number | null
                     description?: string | null
                     image_url?: string | null
+                    // Ecommerce fields
+                    is_online?: boolean
+                    images?: Json | null
+                    features?: Json | null
+                    online_price?: number | null
+                    condition?: string | null
                     created_at?: string
                     updated_at?: string
                 }
@@ -580,6 +598,94 @@ export interface Database {
                     updated_at?: string
                 }
             }
+            packages: {
+                Row: {
+                    id: string
+                    name: string
+                    description: string | null
+                    price: number
+                    features: Json | null
+                    is_active: boolean
+                    display_order: number
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    description?: string | null
+                    price?: number
+                    features?: Json | null
+                    is_active?: boolean
+                    display_order?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    description?: string | null
+                    price?: number
+                    features?: Json | null
+                    is_active?: boolean
+                    display_order?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            bookings: {
+                Row: {
+                    id: string
+                    customer_name: string
+                    customer_phone: string
+                    customer_email: string | null
+                    service_type: string
+                    package_id: string | null
+                    status: string
+                    preferred_date: string | null
+                    preferred_time: string | null
+                    address: string | null
+                    notes: string | null
+                    user_id: string | null
+                    store_id: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    customer_name: string
+                    customer_phone: string
+                    customer_email?: string | null
+                    service_type: string
+                    package_id?: string | null
+                    status?: string
+                    preferred_date?: string | null
+                    preferred_time?: string | null
+                    address?: string | null
+                    notes?: string | null
+                    user_id?: string | null
+                    store_id?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    customer_name?: string
+                    customer_phone?: string
+                    customer_email?: string | null
+                    service_type?: string
+                    package_id?: string | null
+                    status?: string
+                    preferred_date?: string | null
+                    preferred_time?: string | null
+                    address?: string | null
+                    notes?: string | null
+                    user_id?: string | null
+                    store_id?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
             audit_logs: {
                 Row: {
                     id: string
@@ -619,6 +725,67 @@ export interface Database {
                     ip_address?: string | null
                     user_agent?: string | null
                     created_at?: string
+                }
+            }
+            stores: {
+                Row: {
+                    id: string
+                    name: string
+                    domain: string | null
+                    description: string | null
+                    is_active: boolean
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    domain?: string | null
+                    description?: string | null
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    domain?: string | null
+                    description?: string | null
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            store_products: {
+                Row: {
+                    id: string
+                    store_id: string
+                    product_id: string
+                    is_active: boolean
+                    custom_price: number | null
+                    custom_stock: number | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    store_id: string
+                    product_id: string
+                    is_active?: boolean
+                    custom_price?: number | null
+                    custom_stock?: number | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    store_id?: string
+                    product_id?: string
+                    is_active?: boolean
+                    custom_price?: number | null
+                    custom_stock?: number | null
+                    created_at?: string
+                    updated_at?: string
                 }
             }
         }

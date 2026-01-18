@@ -18,6 +18,7 @@ import { useTaxRates, useCreateTaxRate, useUpdateTaxRate, useDeleteTaxRate } fro
 import { toast } from "sonner";
 import { Trash2, Plus } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
+import { StoresTab } from "@/components/settings/StoresTab";
 
 interface BusinessActionButtonsProps {
   isEditing: boolean;
@@ -263,6 +264,7 @@ const Settings = () => {
             {[
               { id: "profile", label: "User Profile", icon: User },
               { id: "business", label: "Business Details", icon: Building2 },
+              { id: "stores", label: "Stores", icon: Globe },
               { id: "tax", label: "Tax & Bank", icon: Receipt },
               { id: "owner", label: "Owner Details", icon: Users },
               { id: "app", label: "App Settings", icon: Globe },
@@ -452,6 +454,11 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
+        {/* Stores Tab */}
+        <TabsContent value="stores" className="space-y-6">
+          <StoresTab />
+        </TabsContent>
+
         {/* Tax & Bank Tab */}
         <TabsContent value="tax" className="space-y-6">
           <Card>
@@ -612,6 +619,7 @@ const Settings = () => {
                         { name: "golden", color: "#d97706" },
                         { name: "red", color: "#dc2626" },
                         { name: "zinc", color: "#18181b" },
+                        { name: "pink", color: "#db2777" },
                       ].map(({ name, color: bg }) => (
                         <button
                           key={name}

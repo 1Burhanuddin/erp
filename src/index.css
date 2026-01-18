@@ -150,6 +150,21 @@
     --sidebar-accent: 0 72% 65%;
   }
 
+  /* Pink (Vibrant) */
+  [data-theme='pink'] {
+    --primary: 330 81% 60%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 330 81% 60%;
+    --sidebar-accent: 330 81% 60%;
+  }
+
+  .dark[data-theme='pink'] {
+    --primary: 330 81% 60%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 330 81% 60%;
+    --sidebar-accent: 330 81% 60%;
+  }
+
   /* Zinc */
   [data-theme='zinc'] {
     --primary: 240 6% 10%;

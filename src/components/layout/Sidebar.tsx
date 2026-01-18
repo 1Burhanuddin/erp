@@ -99,6 +99,7 @@ const navItems = [
       { path: "/sell/direct", label: "Direct Sale", description: "Manage direct sales" },
       { path: "/sell/return", label: "Sale Return", description: "Manage sale returns" },
       { path: "/sell/ecommerce", label: "E-Commerce Sale", description: "Manage e-commerce sales" },
+      { path: "/sell/bookings", label: "Web Bookings", description: "Manage service requests" },
     ],
   },
   { path: "/stock/adjustment", label: "Stock Adjustment", icon: ClipboardList, description: "Manage stock adjustments" },

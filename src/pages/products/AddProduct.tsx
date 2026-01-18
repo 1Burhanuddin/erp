@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 import { useLocation } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
 const AddProduct = () => {
     const navigate = useNavigate();
@@ -14,13 +15,33 @@ const AddProduct = () => {
 
     const handleSubmit = async (data: any) => {
         try {
-            await createProduct.mutateAsync({
-                ...data,
-                category_id: data.category_id || null,
-                sub_category_id: data.sub_category_id || null,
-                brand_id: data.brand_id || null,
-                unit_id: data.unit_id || null,
+            // Extract store_ids from data
+            const { store_ids, ...productData } = data;
+
+            // Create product
+            const newProduct = await createProduct.mutateAsync({
+                ...productData,
+                category_id: productData.category_id || null,
+                sub_category_id: productData.sub_category_id || null,
+                brand_id: productData.brand_id || null,
+                unit_id: productData.unit_id || null,
             });
+
+            // If we have store_ids, link them
+            if (store_ids && store_ids.length > 0 && newProduct?.id) {
+                const storeLinks = store_ids.map((storeId: string) => ({
+                    store_id: storeId,
+                    product_id: newProduct.id,
+                    is_active: true
+                }));
+
+                const { error: storeError } = await supabase
+                    .from('store_products')
+                    .insert(storeLinks);
+
+                if (storeError) console.error("Failed to link stores:", storeError);
+            }
+
             toast.success(`${isService ? "Service" : "Product"} created successfully`);
             navigate(isService ? "/services" : "/products/list");
         } catch (error: any) {

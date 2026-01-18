@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react"
 
 type Theme = "dark" | "light" | "system"
-type ColorScheme = "blue" | "teal" | "golden" | "red" | "zinc"
+type ColorScheme = "blue" | "teal" | "golden" | "red" | "zinc" | "pink"
 
 interface ThemeProviderProps {
     children: React.ReactNode

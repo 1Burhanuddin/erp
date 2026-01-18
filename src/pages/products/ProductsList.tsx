@@ -3,6 +3,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard, SearchInput } from "@/components/shared";
 import { useProducts } from "@/api/products";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Upload, Download } from "lucide-react";
 import {
     Table,
@@ -132,7 +133,14 @@ const ProductsList = () => {
                                 <DataCard key={product.id} onClick={() => navigate(`/products/edit/${product.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="font-semibold text-foreground">{product.name}</h3>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-semibold text-foreground">{product.name}</h3>
+                                                {product.is_online && (
+                                                    <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 h-5 px-1.5 text-[10px]">
+                                                        Online
+                                                    </Badge>
+                                                )}
+                                            </div>
                                             <p className="font-mono text-xs text-muted-foreground">{product.sku}</p>
                                         </div>
                                         <div className="font-medium text-lg">
@@ -205,7 +213,16 @@ const ProductsList = () => {
                                             onClick={() => navigate(`/products/edit/${product.id}`)}
                                         >
                                             <TableCell className="font-mono text-sm text-muted-foreground">{product.sku}</TableCell>
-                                            <TableCell className="font-medium">{product.name}</TableCell>
+                                            <TableCell className="font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    {product.name}
+                                                    {product.is_online && (
+                                                        <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 h-5 px-1.5 text-[10px]">
+                                                            Online
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </TableCell>
                                             <TableCell>{product.category?.name || "-"}</TableCell>
                                             <TableCell>{product.brand?.name || "-"}</TableCell>
                                             <TableCell className="text-right font-medium">

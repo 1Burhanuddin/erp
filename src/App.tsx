@@ -52,6 +52,7 @@ import SaleReturn from "./pages/sell/SaleReturn";
 import AddSaleReturn from "./pages/sell/AddSaleReturn";
 import EditSaleReturn from "./pages/sell/EditSaleReturn";
 import EcommerceSale from "./pages/sell/EcommerceSale";
+import Bookings from "./pages/sell/Bookings";
 import StockAdjustment from "./pages/stock/StockAdjustment";
 import AddStockAdjustment from "./pages/stock/AddStockAdjustment";
 import EditStockAdjustment from "./pages/stock/EditStockAdjustment";
@@ -124,6 +125,7 @@ const App = () => {
                 <Route path="/sell/return/add" element={<AddSaleReturn />} />
                 <Route path="/sell/return/:id" element={<EditSaleReturn />} />
                 <Route path="/sell/ecommerce" element={<EcommerceSale />} />
+                <Route path="/sell/bookings" element={<Bookings />} />
 
                 <Route path="/stock/adjustment" element={<StockAdjustment />} />
                 <Route path="/stock/adjustment/add" element={<AddStockAdjustment />} />

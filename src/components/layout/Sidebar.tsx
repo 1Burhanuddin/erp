@@ -112,6 +112,16 @@ const navItems = [
       { path: "/expenses/categories", label: "Expense Categories", description: "Manage expense categories" },
     ],
   },
+  {
+    path: "/employees",
+    label: "Employees",
+    icon: Users,
+    children: [
+      { path: "/employees/list", label: "All Employees", description: "Manage staff profiles" },
+      { path: "/employees/tasks", label: "Tasks Board", description: "Assign and track tasks" },
+      { path: "/employees/attendance", label: "Attendance Log", description: "View daily attendance" },
+    ]
+  },
   { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
   { path: "/reports", label: "Reports", icon: BarChart3, description: "View reports and analytics" },
   { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },

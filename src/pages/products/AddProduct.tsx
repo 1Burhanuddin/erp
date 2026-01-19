@@ -60,7 +60,7 @@ const AddProduct = () => {
                 title={isService ? "Add New Service" : "Add New Product"}
                 description={isService ? "Create a new service offering" : "Create a new inventory product"}
             />
-            <div className="p-6 bg-card rounded-lg border m-4">
+            <div className="bg-card rounded-lg border p-4">
                 <ProductForm
                     onSubmit={handleSubmit}
                     isSubmitting={createProduct.isPending}

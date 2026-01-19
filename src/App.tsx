@@ -62,6 +62,21 @@ import EditExpense from "./pages/expenses/EditExpense";
 import ExpenseCategories from "./pages/expenses/ExpenseCategories";
 import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { AdminRoute } from "./components/RoleRoutes";
+import { AuthProvider } from "./hooks/useAuth";
+
+// Employee Management
+import EmployeeList from "./pages/employees/EmployeeList";
+import AddEmployee from "./pages/employees/AddEmployee";
+import EditEmployee from "./pages/employees/EditEmployee";
+import EmployeeTasks from "./pages/employees/EmployeeTasks";
+import AddTask from "./pages/employees/tasks/AddTask";
+import EditTask from "./pages/employees/tasks/EditTask";
+import Attendance from "./pages/employees/Attendance";
+import FixStores from "./pages/debug/FixStores";
+import EmployeeDashboard from "./pages/mobile/EmployeeDashboard";
+import MyTasks from "./pages/mobile/MyTasks";
+import MyAttendance from "./pages/mobile/MyAttendance";
 
 const queryClient = new QueryClient();
 
@@ -72,80 +87,99 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
+          <AuthProvider>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
 
-            <Route element={<ProtectedRoute />}>
-              <Route element={<DashboardLayout />}>
-                <Route path="/" element={<Index />} />
-                <Route path="/contacts/suppliers" element={<Suppliers />} />
-                <Route path="/contacts/suppliers/add" element={<AddContact />} />
-                <Route path="/contacts/customers" element={<Customers />} />
-                <Route path="/contacts/customers/add" element={<AddContact />} />
-                <Route path="/contacts/ecommerce" element={<EcommerceCustomers />} />
-                <Route path="/contacts/import" element={<ImportContacts />} />
-                <Route path="/contacts/:id" element={<ContactDetails />} />
-                <Route path="/contacts/edit/:id" element={<EditContact />} />
+              {/* Admin Routes - Protected & Restricted to 'admin' role */}
+              <Route element={<AdminRoute />}>
+                <Route element={<DashboardLayout />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/contacts/suppliers" element={<Suppliers />} />
+                  <Route path="/contacts/suppliers/add" element={<AddContact />} />
+                  <Route path="/contacts/customers" element={<Customers />} />
+                  <Route path="/contacts/customers/add" element={<AddContact />} />
+                  <Route path="/contacts/ecommerce" element={<EcommerceCustomers />} />
+                  <Route path="/contacts/import" element={<ImportContacts />} />
+                  <Route path="/contacts/:id" element={<ContactDetails />} />
+                  <Route path="/contacts/edit/:id" element={<EditContact />} />
 
-                <Route path="/products/list" element={<ProductsList />} />
-                <Route path="/products/add" element={<AddProduct />} />
-                <Route path="/products/edit/:id" element={<EditProduct />} />
-                <Route path="/products/import" element={<ImportProducts />} />
-                <Route path="/products/units" element={<Units />} />
-                <Route path="/products/categories" element={<Categories />} />
-                <Route path="/products/sub-categories" element={<SubCategories />} />
-                <Route path="/products/brands" element={<Brands />} />
+                  <Route path="/products/list" element={<ProductsList />} />
+                  <Route path="/products/add" element={<AddProduct />} />
+                  <Route path="/products/edit/:id" element={<EditProduct />} />
+                  <Route path="/products/import" element={<ImportProducts />} />
+                  <Route path="/products/units" element={<Units />} />
+                  <Route path="/products/categories" element={<Categories />} />
+                  <Route path="/products/sub-categories" element={<SubCategories />} />
+                  <Route path="/products/brands" element={<Brands />} />
 
-                <Route path="/services" element={<ServicesList />} />
-                <Route path="/services/add" element={<AddProduct />} />
-                <Route path="/services/edit/:id" element={<EditProduct />} />
+                  <Route path="/services" element={<ServicesList />} />
+                  <Route path="/services/add" element={<AddProduct />} />
+                  <Route path="/services/edit/:id" element={<EditProduct />} />
 
-                <Route path="/purchase/order" element={<PurchaseOrder />} />
-                <Route path="/purchase/add" element={<AddPurchaseOrder />} />
-                <Route path="/purchase/grn" element={<GRN />} />
-                <Route path="/purchase/invoice" element={<PurchaseInvoice />} />
-                <Route path="/purchase/invoice/:id" element={<PurchaseInvoiceDetails />} />
-                <Route path="/purchase/direct" element={<DirectPurchase />} />
-                <Route path="/purchase/return" element={<PurchaseReturn />} />
-                <Route path="/purchase/return/add" element={<AddPurchaseReturn />} />
+                  <Route path="/purchase/order" element={<PurchaseOrder />} />
+                  <Route path="/purchase/add" element={<AddPurchaseOrder />} />
+                  <Route path="/purchase/grn" element={<GRN />} />
+                  <Route path="/purchase/invoice" element={<PurchaseInvoice />} />
+                  <Route path="/purchase/invoice/:id" element={<PurchaseInvoiceDetails />} />
+                  <Route path="/purchase/direct" element={<DirectPurchase />} />
+                  <Route path="/purchase/return" element={<PurchaseReturn />} />
+                  <Route path="/purchase/return/add" element={<AddPurchaseReturn />} />
 
-                <Route path="/sales/quotations" element={<Quotations />} />
-                <Route path="/sales/quotations/add" element={<AddQuotation />} />
-                <Route path="/sales/quotations/edit/:id" element={<EditQuotation />} />
-                <Route path="/sell/order" element={<SalesOrder />} />
-                <Route path="/sell/order/add" element={<AddSalesOrder />} />
-                <Route path="/sales/challans" element={<DeliveryChallans />} />
-                <Route path="/sales/challans/add" element={<AddDeliveryChallan />} />
-                <Route path="/sales/challans/edit/:id" element={<EditDeliveryChallan />} />
-                <Route path="/sell/invoice" element={<SalesInvoice />} />
-                <Route path="/sell/invoice/:id" element={<SalesInvoiceDetails />} />
-                <Route path="/sell/add" element={<AddSalesInvoice />} />
-                <Route path="/sell/direct" element={<DirectSale />} />
-                <Route path="/sell/return" element={<SaleReturn />} />
-                <Route path="/sell/return/add" element={<AddSaleReturn />} />
-                <Route path="/sell/return/:id" element={<EditSaleReturn />} />
-                <Route path="/sell/ecommerce" element={<EcommerceSale />} />
-                <Route path="/sell/bookings" element={<Bookings />} />
+                  <Route path="/sales/quotations" element={<Quotations />} />
+                  <Route path="/sales/quotations/add" element={<AddQuotation />} />
+                  <Route path="/sales/quotations/edit/:id" element={<EditQuotation />} />
+                  <Route path="/sell/order" element={<SalesOrder />} />
+                  <Route path="/sell/order/add" element={<AddSalesOrder />} />
+                  <Route path="/sales/challans" element={<DeliveryChallans />} />
+                  <Route path="/sales/challans/add" element={<AddDeliveryChallan />} />
+                  <Route path="/sales/challans/edit/:id" element={<EditDeliveryChallan />} />
+                  <Route path="/sell/invoice" element={<SalesInvoice />} />
+                  <Route path="/sell/invoice/:id" element={<SalesInvoiceDetails />} />
+                  <Route path="/sell/add" element={<AddSalesInvoice />} />
+                  <Route path="/sell/direct" element={<DirectSale />} />
+                  <Route path="/sell/return" element={<SaleReturn />} />
+                  <Route path="/sell/return/add" element={<AddSaleReturn />} />
+                  <Route path="/sell/return/:id" element={<EditSaleReturn />} />
+                  <Route path="/sell/ecommerce" element={<EcommerceSale />} />
+                  <Route path="/sell/bookings" element={<Bookings />} />
 
-                <Route path="/stock/adjustment" element={<StockAdjustment />} />
-                <Route path="/stock/adjustment/add" element={<AddStockAdjustment />} />
-                <Route path="/stock/adjustment/:id" element={<EditStockAdjustment />} />
+                  <Route path="/stock/adjustment" element={<StockAdjustment />} />
+                  <Route path="/stock/adjustment/add" element={<AddStockAdjustment />} />
+                  <Route path="/stock/adjustment/:id" element={<EditStockAdjustment />} />
 
-                <Route path="/expenses/list" element={<ExpensesList />} />
-                <Route path="/expenses/add" element={<AddExpense />} />
-                <Route path="/expenses/edit/:id" element={<EditExpense />} />
-                <Route path="/expenses/categories" element={<ExpenseCategories />} />
+                  <Route path="/expenses/list" element={<ExpensesList />} />
+                  <Route path="/expenses/add" element={<AddExpense />} />
+                  <Route path="/expenses/edit/:id" element={<EditExpense />} />
+                  <Route path="/expenses/categories" element={<ExpenseCategories />} />
 
-                <Route path="/deals" element={<Deals />} />
-                <Route path="/inventory" element={<Inventory />} />
-                <Route path="/invoices" element={<Invoices />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/audit-logs" element={<AuditLogs />} />
-                <Route path="/audit-logs/:id" element={<AuditLogDetails />} />
-                <Route path="/settings" element={<Settings />} />
+                  <Route path="/deals" element={<Deals />} />
+                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/audit-logs" element={<AuditLogs />} />
+                  <Route path="/audit-logs/:id" element={<AuditLogDetails />} />
+                  <Route path="/settings" element={<Settings />} />
+
+                  {/* Employee Management System */}
+                  <Route path="/employees/list" element={<EmployeeList />} />
+                  <Route path="/employees/add" element={<AddEmployee />} />
+                  <Route path="/employees/edit/:id" element={<EditEmployee />} />
+                  <Route path="/employees/tasks" element={<EmployeeTasks />} />
+                  <Route path="/employees/tasks/add" element={<AddTask />} />
+                  <Route path="/employees/tasks/edit/:id" element={<EditTask />} />
+                  <Route path="/employees/attendance" element={<Attendance />} />
+
+                </Route>
               </Route>
-            </Route>
-          </Routes>
+
+              {/* Employee App Routes - Protected (Any Authenticated User) */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/mobile/dashboard" element={<EmployeeDashboard />} />
+                <Route path="/mobile/tasks" element={<MyTasks />} />
+                <Route path="/mobile/attendance" element={<MyAttendance />} />
+              </Route>
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

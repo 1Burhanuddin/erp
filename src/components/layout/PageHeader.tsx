@@ -11,7 +11,7 @@ const PageHeader = ({ title, description, actions }: PageHeaderProps) => {
   if (!title && !actions) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4 mb-6 lg:mb-8">
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-4">
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   );

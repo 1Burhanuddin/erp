@@ -36,7 +36,7 @@ export const usePurchaseOrder = (id: string) => {
           supplier:contacts(*),
           items:purchase_items(
             *,
-            product:products(name, sku, unit:product_units(name))
+            product:products(name, sku, hsn_code, unit:product_units(name))
           )
         `)
                 .eq("id", id)

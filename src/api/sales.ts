@@ -41,7 +41,7 @@ export const useQuotation = (id: string) => {
                     customer:contacts(*),
                     items:sales_items(
                         *,
-                        product:products(name, sku)
+                        product:products(name, sku, hsn_code)
                     )
                 `)
                 .eq("id", id)
@@ -357,7 +357,7 @@ export const useSalesOrder = (id: string) => {
                     customer:contacts(*),
                     items:sales_items(
                         *,
-                        product:products(name, sku)
+                        product:products(name, sku, hsn_code)
                     ),
                     payments:sales_payments(*)
                 `)

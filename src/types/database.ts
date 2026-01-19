@@ -18,6 +18,7 @@ export interface Database {
                     company: string | null
                     role: string | null
                     address: string | null
+                    state: string | null
                     created_at: string
                     updated_at: string
                 }
@@ -29,6 +30,7 @@ export interface Database {
                     company?: string | null
                     role?: string | null
                     address?: string | null
+                    state?: string | null
                     created_at?: string
                     updated_at?: string
                 }
@@ -40,6 +42,7 @@ export interface Database {
                     company?: string | null
                     role?: string | null
                     address?: string | null
+                    state?: string | null
                     created_at?: string
                     updated_at?: string
                 }
@@ -147,6 +150,8 @@ export interface Database {
                     current_stock: number | null
                     alert_quantity: number | null
                     description: string | null
+                    hsn_code: string | null
+                    is_tax_inclusive: boolean
                     image_url: string | null
                     // Ecommerce fields
                     is_online: boolean
@@ -170,6 +175,8 @@ export interface Database {
                     current_stock?: number | null
                     alert_quantity?: number | null
                     description?: string | null
+                    hsn_code?: string | null
+                    is_tax_inclusive?: boolean
                     image_url?: string | null
                     // Ecommerce fields
                     is_online?: boolean
@@ -193,6 +200,8 @@ export interface Database {
                     current_stock?: number | null
                     alert_quantity?: number | null
                     description?: string | null
+                    hsn_code?: string | null
+                    is_tax_inclusive?: boolean
                     image_url?: string | null
                     // Ecommerce fields
                     is_online?: boolean
@@ -498,6 +507,7 @@ export interface Database {
                     company_name: string
                     company_type: string | null
                     address: string | null
+                    state: string | null
                     phone: string | null
                     email: string | null
                     website: string | null
@@ -523,6 +533,7 @@ export interface Database {
                     company_name: string
                     company_type?: string | null
                     address?: string | null
+                    state?: string | null
                     phone?: string | null
                     email?: string | null
                     website?: string | null
@@ -548,6 +559,7 @@ export interface Database {
                     company_name?: string
                     company_type?: string | null
                     address?: string | null
+                    state?: string | null
                     phone?: string | null
                     email?: string | null
                     website?: string | null

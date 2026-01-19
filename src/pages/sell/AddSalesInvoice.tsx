@@ -11,6 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
     Table,
     TableBody,
@@ -65,7 +66,8 @@ const AddSalesInvoice = () => {
         quantity: 1,
         unitPrice: 0,
         currentStock: 0,
-        taxRateId: ""
+        taxRateId: "",
+        isTaxInclusive: false
     });
 
     const customerList = customers?.filter(c => c.role === 'Customer' || c.role === 'Both') || [];
@@ -77,7 +79,8 @@ const AddSalesInvoice = () => {
                 ...currentItem,
                 productId,
                 unitPrice: product.sale_price || 0,
-                currentStock: product.current_stock || 0
+                currentStock: product.current_stock || 0,
+                isTaxInclusive: product.is_tax_inclusive || false
             });
         }
     };
@@ -99,19 +102,29 @@ const AddSalesInvoice = () => {
         let taxPercentage = 0;
 
         // Find selected tax rate
+        // Find selected tax rate
+        let baseUnitPrice = currentItem.unitPrice;
+
         if (currentItem.taxRateId) {
             const rate = taxRates?.find(r => r.id === currentItem.taxRateId);
             if (rate) {
                 taxPercentage = rate.percentage;
-                // Tax = (Price * Qty * Rate) / 100
-                taxAmount = (currentItem.unitPrice * currentItem.quantity * rate.percentage) / 100;
+
+                if (currentItem.isTaxInclusive) {
+                    // Reverse calculate base price
+                    baseUnitPrice = currentItem.unitPrice / (1 + (rate.percentage / 100));
+                }
+
+                // Tax = (Base Price * Qty * Rate) / 100
+                taxAmount = (baseUnitPrice * currentItem.quantity * rate.percentage) / 100;
             }
         }
 
-        const subtotal = (currentItem.quantity * currentItem.unitPrice) + taxAmount;
+        const subtotal = (currentItem.quantity * baseUnitPrice) + taxAmount;
 
         const newItem = {
             ...currentItem,
+            unitPrice: baseUnitPrice, // Store Base Price
             productName: product?.name,
             taxPercentage,
             taxAmount,
@@ -119,7 +132,7 @@ const AddSalesInvoice = () => {
         };
         setItems([...items, newItem]);
         // Reset
-        setCurrentItem({ productId: "", quantity: 1, unitPrice: 0, currentStock: 0, taxRateId: "" });
+        setCurrentItem({ productId: "", quantity: 1, unitPrice: 0, currentStock: 0, taxRateId: "", isTaxInclusive: false });
     };
 
     const removeItem = (index: number) => {
@@ -256,27 +269,37 @@ const AddSalesInvoice = () => {
                             />
                         </div>
                         <div className="md:col-span-2 space-y-2">
-                            <Label>Tax</Label>
+                            <Label>Tax Rate</Label>
                             <Select
                                 value={currentItem.taxRateId}
                                 onValueChange={(val) => setCurrentItem({ ...currentItem, taxRateId: val })}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Tax" />
+                                    <SelectValue placeholder="Select Tax" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {taxRates?.map(rate => (
+                                    {taxRates?.map((rate) => (
                                         <SelectItem key={rate.id} value={rate.id}>
-                                            {rate.name}
+                                            {rate.name} ({rate.percentage}%)
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="md:col-span-2">
-                            <Button className="w-full" onClick={addItem}>Add Item</Button>
-                        </div>
                     </div>
+
+                    <div className="flex items-center space-x-2 pt-2">
+                        <Switch
+                            id="item-tax-inclusive"
+                            checked={currentItem.isTaxInclusive}
+                            onCheckedChange={(checked) => setCurrentItem({ ...currentItem, isTaxInclusive: checked })}
+                        />
+                        <Label htmlFor="item-tax-inclusive">Tax Inclusive Price</Label>
+                    </div>
+
+                    <Button onClick={addItem} className="w-full md:w-auto">
+                        <Plus className="h-4 w-4 mr-2" /> Add Item
+                    </Button>
                 </div>
 
                 {/* Items Table */}

@@ -159,6 +159,8 @@ export const ProductForm = ({
     const [formData, setFormData] = useState({
         name: "",
         sku: "",
+        hsn_code: "",
+        is_tax_inclusive: false,
         type: fixedType || "Product", // Default type
         category_id: "",
         sub_category_id: "",
@@ -187,6 +189,8 @@ export const ProductForm = ({
             setFormData({
                 name: initialData.name || "",
                 sku: initialData.sku || "",
+                hsn_code: initialData.hsn_code || "",
+                is_tax_inclusive: initialData.is_tax_inclusive || false,
                 type: fixedType || initialData.type || "Product",
                 category_id: initialData.category_id || "",
                 sub_category_id: initialData.sub_category_id || "",
@@ -343,6 +347,26 @@ export const ProductForm = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
+                    <Label htmlFor="hsn_code">HSN/SAC Code</Label>
+                    <Input
+                        value={formData.hsn_code}
+                        onChange={(e) => setFormData({ ...formData, hsn_code: e.target.value })}
+                        placeholder="HSN/SAC Code"
+                    />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-8">
+                    <Switch
+                        id="tax-inclusive"
+                        checked={formData.is_tax_inclusive}
+                        onCheckedChange={(checked) => setFormData({ ...formData, is_tax_inclusive: checked })}
+                    />
+                    <Label htmlFor="tax-inclusive">Tax Inclusive Price</Label>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
                     <Label>Category</Label>
                     <div className="flex gap-2">
                         <Select
@@ -441,80 +465,82 @@ export const ProductForm = ({
                     </div>
                 </div>
 
-                {formData.type === "Product" && (
-                    <>
-                        <div className="space-y-2">
-                            <Label>Brand</Label>
-                            <div className="flex gap-2">
-                                <Select
-                                    value={formData.brand_id}
-                                    onValueChange={(val) =>
-                                        setFormData({ ...formData, brand_id: val })
-                                    }
-                                >
-                                    <SelectTrigger className="flex-1">
-                                        <SelectValue placeholder="Select Brand" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {brands?.map((b) => (
-                                            <SelectItem key={b.id} value={b.id}>
-                                                {b.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <QuickAddDialog
-                                    title="Add Brand"
-                                    description="Create a new brand"
-                                    onSave={async (name) => {
-                                        await createBrand.mutateAsync({ name });
-                                    }}
-                                    trigger={
-                                        <Button type="button" variant="outline" size="icon">
-                                            <Plus className="h-4 w-4" />
-                                        </Button>
-                                    }
-                                />
+                {
+                    formData.type === "Product" && (
+                        <>
+                            <div className="space-y-2">
+                                <Label>Brand</Label>
+                                <div className="flex gap-2">
+                                    <Select
+                                        value={formData.brand_id}
+                                        onValueChange={(val) =>
+                                            setFormData({ ...formData, brand_id: val })
+                                        }
+                                    >
+                                        <SelectTrigger className="flex-1">
+                                            <SelectValue placeholder="Select Brand" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {brands?.map((b) => (
+                                                <SelectItem key={b.id} value={b.id}>
+                                                    {b.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <QuickAddDialog
+                                        title="Add Brand"
+                                        description="Create a new brand"
+                                        onSave={async (name) => {
+                                            await createBrand.mutateAsync({ name });
+                                        }}
+                                        trigger={
+                                            <Button type="button" variant="outline" size="icon">
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                        }
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label>Unit</Label>
-                            <div className="flex gap-2">
-                                <Select
-                                    value={formData.unit_id}
-                                    onValueChange={(val) =>
-                                        setFormData({ ...formData, unit_id: val })
-                                    }
-                                >
-                                    <SelectTrigger className="flex-1">
-                                        <SelectValue placeholder="Select Unit" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {units?.map((u) => (
-                                            <SelectItem key={u.id} value={u.id}>
-                                                {u.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <QuickAddDialog
-                                    title="Add Unit"
-                                    description="Create a new unit"
-                                    onSave={async (name) => {
-                                        await createUnit.mutateAsync({ name });
-                                    }}
-                                    trigger={
-                                        <Button type="button" variant="outline" size="icon">
-                                            <Plus className="h-4 w-4" />
-                                        </Button>
-                                    }
-                                />
+                            <div className="space-y-2">
+                                <Label>Unit</Label>
+                                <div className="flex gap-2">
+                                    <Select
+                                        value={formData.unit_id}
+                                        onValueChange={(val) =>
+                                            setFormData({ ...formData, unit_id: val })
+                                        }
+                                    >
+                                        <SelectTrigger className="flex-1">
+                                            <SelectValue placeholder="Select Unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {units?.map((u) => (
+                                                <SelectItem key={u.id} value={u.id}>
+                                                    {u.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <QuickAddDialog
+                                        title="Add Unit"
+                                        description="Create a new unit"
+                                        onSave={async (name) => {
+                                            await createUnit.mutateAsync({ name });
+                                        }}
+                                        trigger={
+                                            <Button type="button" variant="outline" size="icon">
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                        }
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    </>
-                )}
-            </div>
+                        </>
+                    )
+                }
+            </div >
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
@@ -694,6 +720,6 @@ export const ProductForm = ({
                     {isSubmitting ? "Saving..." : initialData ? "Update Product" : "Create Product"}
                 </Button>
             </div>
-        </form>
+        </form >
     );
 };

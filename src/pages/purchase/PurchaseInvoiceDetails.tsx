@@ -13,6 +13,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { getTaxType, calculateTaxableAmount, calculateTotalTax, calculateItemTaxRate } from "@/utils/taxUtils";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect } from "react";
 
@@ -40,6 +42,15 @@ const PurchaseInvoiceDetails = () => {
     if (!order) return <div className="p-8">Invoice not found</div>;
 
     // Calculate Status Color
+    // Tax Logic
+    // Tax Logic
+    const supplierState = order.supplier?.state || order.supplier?.address?.split(',').pop()?.trim();
+    const buyerState = businessProfile?.state;
+
+    const isIntraState = getTaxType(supplierState, buyerState) === 'INTRA';
+    const totalTaxable = calculateTaxableAmount(order.items || []);
+    const totalTax = calculateTotalTax(order.items || []);
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'Received': return 'bg-green-50 text-green-700 border-green-200';
@@ -85,14 +96,18 @@ const PurchaseInvoiceDetails = () => {
                                         <p className="text-gray-600 text-sm whitespace-pre-wrap">{order.supplier?.address}</p>
                                         <p className="text-gray-600 text-sm">{order.supplier?.phone}</p>
                                         {order.supplier?.gstin && <p className="text-gray-600 text-sm">GSTIN: {order.supplier.gstin}</p>}
+                                        {order.supplier?.state && <p className="text-gray-600 text-sm">State: {order.supplier.state}</p>}
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <h3 className="font-semibold text-lg">{businessProfile?.company_name || "My Company Name"}</h3>
                                     <p className="text-gray-600 text-sm whitespace-pre-wrap">{businessProfile?.address || "Address Line 1"}</p>
+                                    {businessProfile?.gstin && <p className="text-gray-600 text-sm">GSTIN: {businessProfile.gstin}</p>}
+                                    {businessProfile?.state && <p className="text-gray-600 text-sm">State: {businessProfile.state}</p>}
                                     <div className="mt-6">
                                         <p className="text-gray-600">Date:</p>
                                         <p className="font-semibold">{order.order_date ? format(new Date(order.order_date), "dd MMM yyyy") : "-"}</p>
+                                        {buyerState && <p className="text-gray-600 mt-1">Place of Supply: <span className="font-semibold">{businessProfile?.state}</span></p>}
                                     </div>
                                     <div className="mt-2 text-right flex flex-col items-end gap-1">
                                         <p className="text-gray-600">Status:</p>
@@ -108,21 +123,50 @@ const PurchaseInvoiceDetails = () => {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="w-[40%]">Item</TableHead>
-                                            <TableHead className="text-right">Quantity</TableHead>
-                                            <TableHead className="text-right">Unit Price</TableHead>
+                                            <TableHead className="w-[35%]">Item</TableHead>
+                                            <TableHead className="w-[10%]">HSN/SAC</TableHead>
+                                            <TableHead className="text-right">Qty</TableHead>
+                                            <TableHead className="text-right">Rate</TableHead>
+                                            <TableHead className="text-right w-[20%]">Tax</TableHead>
                                             <TableHead className="text-right">Amount</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {order.items?.map((item: any) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className="font-medium">{item.product?.name}</TableCell>
-                                                <TableCell className="text-right">{item.quantity}</TableCell>
-                                                <TableCell className="text-right">₹{item.unit_price?.toFixed(2)}</TableCell>
-                                                <TableCell className="text-right">₹{item.subtotal?.toFixed(2)}</TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {order.items?.map((item: any) => {
+                                            const taxRate = calculateItemTaxRate(item.tax_amount || 0, item.subtotal || 0);
+
+                                            // Determine tax labels based on place of supply
+                                            const isIGST = !isIntraState;
+
+                                            return (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className="font-medium">{item.product?.name}</TableCell>
+                                                    <TableCell className="text-sm text-gray-500">{item.product?.hsn_code || "-"}</TableCell>
+                                                    <TableCell className="text-right">{item.quantity}</TableCell>
+                                                    <TableCell className="text-right">₹{item.unit_price?.toFixed(2)}</TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex flex-col items-end text-xs">
+                                                            {taxRate > 0 ? (
+                                                                isIGST ? (
+                                                                    <>
+                                                                        <span>IGST {taxRate}%</span>
+                                                                        <span className="text-muted-foreground">₹{item.tax_amount?.toFixed(2)}</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <span>CGST {taxRate / 2}%: ₹{(item.tax_amount / 2)?.toFixed(2)}</span>
+                                                                        <span>SGST {taxRate / 2}%: ₹{(item.tax_amount / 2)?.toFixed(2)}</span>
+                                                                    </>
+                                                                )
+                                                            ) : (
+                                                                <span>-</span>
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">₹{item.subtotal?.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -130,10 +174,38 @@ const PurchaseInvoiceDetails = () => {
                             {/* Totals */}
                             <div className="flex justify-end border-t pt-4">
                                 <div className="w-1/2 md:w-1/3 space-y-2">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Total Amount:</span>
-                                        <span className="font-bold">₹{order.total_amount?.toFixed(2)}</span>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">Taxable Amount:</span>
+                                        <span>₹{totalTaxable.toFixed(2)}</span>
                                     </div>
+                                    {!isIntraState ? (
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">IGST Total:</span>
+                                            <span>₹{totalTax.toFixed(2)}</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600">CGST Total:</span>
+                                                <span>₹{(totalTax / 2).toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600">SGST Total:</span>
+                                                <span>₹{(totalTax / 2).toFixed(2)}</span>
+                                            </div>
+                                        </>
+                                    )}
+                                    <div className="flex justify-between border-t pt-2 mt-2">
+                                        <span className="font-bold text-gray-900">Total Amount:</span>
+                                        <span className="font-bold text-lg">₹{order.total_amount?.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-16 flex justify-end">
+                                <div className="text-center">
+                                    <div className="h-16 mb-2"></div>
+                                    <p className="font-semibold text-gray-900 border-t border-gray-400 pt-2 px-8">Authorized Signatory</p>
                                 </div>
                             </div>
 
@@ -190,14 +262,19 @@ const PurchaseInvoiceDetails = () => {
                                 <p className="text-gray-700">{order.supplier?.name}</p>
                                 <p className="text-gray-600 text-sm whitespace-pre-wrap">{order.supplier?.address}</p>
                                 <p className="text-gray-600 text-sm">{order.supplier?.phone}</p>
+                                {order.supplier?.gstin && <p className="text-gray-600 text-sm">GSTIN: {order.supplier.gstin}</p>}
+                                {order.supplier?.state && <p className="text-gray-600 text-sm">State: {order.supplier.state}</p>}
                             </div>
                         </div>
                         <div className="text-right">
                             <h3 className="font-semibold text-lg">{businessProfile?.company_name || "My Company Name"}</h3>
                             <p className="text-gray-600 text-sm whitespace-pre-wrap">{businessProfile?.address || "Address Line 1"}</p>
+                            {businessProfile?.gstin && <p className="text-gray-600 text-sm">GSTIN: {businessProfile.gstin}</p>}
+                            {businessProfile?.state && <p className="text-gray-600 text-sm">State: {businessProfile.state}</p>}
                             <div className="mt-6">
                                 <p className="text-gray-600">Date:</p>
                                 <p className="font-semibold">{order.order_date ? format(new Date(order.order_date), "dd MMM yyyy") : "-"}</p>
+                                {buyerState && <p className="text-gray-600 mt-1">Place of Supply: <span className="font-semibold">{businessProfile?.state}</span></p>}
                             </div>
                         </div>
                     </div>
@@ -206,36 +283,93 @@ const PurchaseInvoiceDetails = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-[40%]">Item</TableHead>
-                                    <TableHead className="text-right">Quantity</TableHead>
-                                    <TableHead className="text-right">Unit Price</TableHead>
+                                    <TableHead className="w-[35%]">Item</TableHead>
+                                    <TableHead className="w-[10%]">HSN/SAC</TableHead>
+                                    <TableHead className="text-right">Qty</TableHead>
+                                    <TableHead className="text-right">Rate</TableHead>
+                                    <TableHead className="text-right w-[20%]">Tax</TableHead>
                                     <TableHead className="text-right">Amount</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {order.items?.map((item: any) => (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.product?.name}</TableCell>
-                                        <TableCell className="text-right">{item.quantity}</TableCell>
-                                        <TableCell className="text-right">₹{item.unit_price?.toFixed(2)}</TableCell>
-                                        <TableCell className="text-right">₹{item.subtotal?.toFixed(2)}</TableCell>
-                                    </TableRow>
-                                ))}
+                                {order.items?.map((item: any) => {
+                                    const taxRate = calculateItemTaxRate(item.tax_amount || 0, item.subtotal || 0);
+
+                                    // Determine tax labels based on place of supply
+                                    const isIGST = !isIntraState;
+
+                                    return (
+                                        <TableRow key={item.id}>
+                                            <TableCell className="font-medium">{item.product?.name}</TableCell>
+                                            <TableCell className="text-sm text-gray-500">{item.product?.hsn_code || "-"}</TableCell>
+                                            <TableCell className="text-right">{item.quantity}</TableCell>
+                                            <TableCell className="text-right">₹{item.unit_price?.toFixed(2)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex flex-col items-end text-xs">
+                                                    {taxRate > 0 ? (
+                                                        isIGST ? (
+                                                            <>
+                                                                <span>IGST {taxRate}%</span>
+                                                                <span className="text-muted-foreground">₹{item.tax_amount?.toFixed(2)}</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span>CGST {taxRate / 2}%: ₹{(item.tax_amount / 2)?.toFixed(2)}</span>
+                                                                <span>SGST {taxRate / 2}%: ₹{(item.tax_amount / 2)?.toFixed(2)}</span>
+                                                            </>
+                                                        )
+                                                    ) : (
+                                                        <span>-</span>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right">₹{item.subtotal?.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </div>
 
                     <div className="flex justify-end border-t pt-4">
                         <div className="w-1/2 md:w-1/3 space-y-2">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Total Amount:</span>
-                                <span className="font-bold">₹{order.total_amount?.toFixed(2)}</span>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Taxable Amount:</span>
+                                <span>₹{totalTaxable.toFixed(2)}</span>
                             </div>
+                            {!isIntraState ? (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">IGST Total:</span>
+                                    <span>₹{totalTax.toFixed(2)}</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">CGST Total:</span>
+                                        <span>₹{(totalTax / 2).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">SGST Total:</span>
+                                        <span>₹{(totalTax / 2).toFixed(2)}</span>
+                                    </div>
+                                </>
+                            )}
+                            <div className="flex justify-between border-t pt-2 mt-2">
+                                <span className="font-bold text-gray-900">Total Amount:</span>
+                                <span className="font-bold text-lg">₹{order.total_amount?.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-16 flex justify-end">
+                        <div className="text-center">
+                            <div className="h-16 mb-2"></div>
+                            <p className="font-semibold text-gray-900 border-t border-gray-400 pt-2 px-8">Authorized Signatory</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </PageLayout>
+        </PageLayout >
     );
 };
 

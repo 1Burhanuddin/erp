@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Building2, Receipt, Users, Loader2, Pencil, X, Check, Globe, DollarSign, LogOut } from "lucide-react";
+import { User, Building2, Receipt, Users, Loader2, Pencil, X, Check, Globe, DollarSign, LogOut, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useUpdateProfile, useUpdatePassword } from "@/api/profile";
@@ -19,6 +19,14 @@ import { toast } from "sonner";
 import { Trash2, Plus } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { StoresTab } from "@/components/settings/StoresTab";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface BusinessActionButtonsProps {
   isEditing: boolean;
@@ -107,9 +115,14 @@ const Settings = () => {
   const { data: taxRates } = useTaxRates();
   const createTaxRateMutation = useCreateTaxRate();
   const deleteTaxRateMutation = useDeleteTaxRate();
+  const [isTaxExpanded, setIsTaxExpanded] = useState(true);
+
+  // Form states
   const [isAddTaxRateOpen, setIsAddTaxRateOpen] = useState(false);
 
   const [newTaxRate, setNewTaxRate] = useState({ name: "", percentage: "", description: "" });
+  const [editingTaxRateId, setEditingTaxRateId] = useState<string | null>(null);
+  const updateTaxRateMutation = useUpdateTaxRate();
 
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -119,26 +132,42 @@ const Settings = () => {
       toast.error("Name and Percentage are required");
       return;
     }
-    createTaxRateMutation.mutate({
+    const rateData = {
       name: newTaxRate.name,
       percentage: parseFloat(newTaxRate.percentage),
       description: newTaxRate.description
-    }, {
-      onSuccess: () => {
-        toast.success("Tax rate added");
-        setIsAddTaxRateOpen(false);
-        setNewTaxRate({ name: "", percentage: "", description: "" });
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      }
-    });
+    };
+
+    if (editingTaxRateId) {
+      updateTaxRateMutation.mutate({ id: editingTaxRateId, data: rateData }, {
+        onSuccess: () => {
+          toast.success("Tax rate updated");
+          setIsAddTaxRateOpen(false);
+          setNewTaxRate({ name: "", percentage: "", description: "" });
+          setEditingTaxRateId(null);
+        },
+        onError: (error) => toast.error(error.message)
+      });
+    } else {
+      createTaxRateMutation.mutate(rateData, {
+        onSuccess: () => {
+          toast.success("Tax rate added");
+          setIsAddTaxRateOpen(false);
+          setNewTaxRate({ name: "", percentage: "", description: "" });
+        },
+        onError: (error) => toast.error(error.message)
+      });
+    }
   };
 
   const handleDeleteTaxRate = (id: string) => {
     if (confirm("Are you sure you want to delete this tax rate?")) {
       deleteTaxRateMutation.mutate(id, {
-        onSuccess: () => toast.success("Tax rate deleted")
+        onSuccess: () => toast.success("Tax rate deleted"),
+        onError: (error) => {
+          console.error(error);
+          toast.error("Failed to delete tax rate. It might be in use.");
+        }
       });
     }
   };
@@ -147,6 +176,7 @@ const Settings = () => {
   const [businessForm, setBusinessForm] = useState({
     company_name: "",
     address: "",
+    state: "",
     phone: "",
     email: "",
     website: "",
@@ -186,6 +216,7 @@ const Settings = () => {
       setBusinessForm({
         company_name: businessProfile.company_name || "",
         address: businessProfile.address || "",
+        state: businessProfile.state || "",
         phone: businessProfile.phone || "",
         email: businessProfile.email || "",
         website: businessProfile.website || "",
@@ -424,6 +455,13 @@ const Settings = () => {
                   />
                 </div>
                 <SettingsField
+                  label="State"
+                  value={businessForm.state}
+                  onChange={(val) => handleChange("state", val)}
+                  placeholder="State (e.g. Maharashtra)"
+                  isEditing={isEditingBusiness}
+                />
+                <SettingsField
                   label="Phone"
                   value={businessForm.phone}
                   onChange={(val) => handleChange("phone", val)}
@@ -462,9 +500,81 @@ const Settings = () => {
         {/* Tax & Bank Tab */}
         <TabsContent value="tax" className="space-y-6">
           <Card>
+            <CardHeader className="cursor-pointer select-none" onClick={() => setIsTaxExpanded(!isTaxExpanded)}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Receipt className="h-5 w-5 text-primary" />
+                    Tax Rates
+                    {isTaxExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </CardTitle>
+                  <CardDescription>Manage GST and other tax rates.</CardDescription>
+                </div>
+                <Button size="sm" onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingTaxRateId(null);
+                  setNewTaxRate({ name: "", percentage: "", description: "" });
+                  setIsAddTaxRateOpen(true);
+                }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Rate
+                </Button>
+              </div>
+            </CardHeader>
+            {isTaxExpanded && (
+              <CardContent>
+                <div className="space-y-4">
+                  {!taxRates ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : taxRates.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground border rounded-md bg-muted/20">
+                      No tax rates found. Add one to get started.
+                    </div>
+                  ) : (
+                    <div className="border rounded-md">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Tax Name</TableHead>
+                            <TableHead>Percentage</TableHead>
+                            <TableHead>Description</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {taxRates.map((rate) => (
+                            <TableRow
+                              key={rate.id}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => {
+                                setEditingTaxRateId(rate.id);
+                                setNewTaxRate({
+                                  name: rate.name,
+                                  percentage: rate.percentage.toString(),
+                                  description: rate.description || ""
+                                });
+                                setIsAddTaxRateOpen(true);
+                              }}
+                            >
+                              <TableCell className="font-medium">{rate.name}</TableCell>
+                              <TableCell>{rate.percentage}%</TableCell>
+                              <TableCell className="text-muted-foreground">{rate.description || "-"}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Receipt className="h-5 w-5 text-primary" />
+                <Building2 className="h-5 w-5 text-primary" />
                 Tax Information
               </CardTitle>
               <CardDescription>GSTIN and PAN details.</CardDescription>
@@ -711,7 +821,7 @@ const Settings = () => {
       <Dialog open={isAddTaxRateOpen} onOpenChange={setIsAddTaxRateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Tax Rate</DialogTitle>
+            <DialogTitle>{editingTaxRateId ? "Edit Tax Rate" : "Add Tax Rate"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -740,9 +850,25 @@ const Settings = () => {
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddTaxRateOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddTaxRate} disabled={createTaxRateMutation.isPending}>Add Rate</Button>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            {editingTaxRateId && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  handleDeleteTaxRate(editingTaxRateId);
+                  setIsAddTaxRateOpen(false);
+                }}
+                disabled={deleteTaxRateMutation.isPending}
+              >
+                Delete
+              </Button>
+            )}
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsAddTaxRateOpen(false)}>Cancel</Button>
+              <Button onClick={handleAddTaxRate} disabled={createTaxRateMutation.isPending || updateTaxRateMutation.isPending}>
+                {editingTaxRateId ? "Update Rate" : "Add Rate"}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

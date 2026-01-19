@@ -72,7 +72,6 @@ const PurchaseInvoice = () => {
                             <TableHead>Supplier</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Total Amount</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -86,7 +85,11 @@ const PurchaseInvoice = () => {
                             </TableRow>
                         ) : (
                             filteredOrders?.map((order) => (
-                                <TableRow key={order.id}>
+                                <TableRow
+                                    key={order.id}
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() => navigate(`/purchase/invoice/${order.id}`)}
+                                >
                                     <TableCell className="font-medium">{order.order_no}</TableCell>
                                     <TableCell>{format(new Date(order.created_at), "dd MMM yyyy")}</TableCell>
                                     <TableCell>{order.supplier?.name}</TableCell>
@@ -95,16 +98,6 @@ const PurchaseInvoice = () => {
                                     </TableCell>
                                     <TableCell className="text-right font-bold">
                                         ₹{order.total_amount?.toFixed(2)}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" onClick={() => navigate(`/purchase/invoice/${order.id}`)}>
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => navigate(`/purchase/invoice/${order.id}?action=print`)}>
-                                                <Download className="h-4 w-4" />
-                                            </Button>
-                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))

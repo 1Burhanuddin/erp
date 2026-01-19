@@ -9,12 +9,14 @@ interface ContactFormProps {
     initialData?: any;
     onSubmit: (data: any) => Promise<void>;
     isSubmitting?: boolean;
+    defaultRole?: string;
 }
 
 export const ContactForm = ({
     initialData,
     onSubmit,
     isSubmitting,
+    defaultRole = "Customer",
 }: ContactFormProps) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -24,6 +26,8 @@ export const ContactForm = ({
         company: "",
         gstin: "",
         address: "",
+        state: "",
+        role: defaultRole,
     });
 
     useEffect(() => {
@@ -35,9 +39,11 @@ export const ContactForm = ({
                 company: initialData.company || "",
                 gstin: initialData.gstin || "",
                 address: initialData.address || "",
+                state: initialData.state || "",
+                role: initialData.role || defaultRole,
             });
         }
-    }, [initialData]);
+    }, [initialData, defaultRole]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -97,6 +103,16 @@ export const ContactForm = ({
                     value={formData.gstin}
                     onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
                     placeholder="e.g. 29ABCDE1234F1Z5"
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="state">State (Place of Supply)</Label>
+                <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    placeholder="e.g. Maharashtra"
                 />
             </div>
 

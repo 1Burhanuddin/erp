@@ -38,15 +38,15 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+        <div className="min-h-screen bg-background flex flex-col md:flex-row">
             {/* Sidebar for Desktop */}
             <aside
                 className={cn(
-                    "hidden md:flex flex-col bg-white border-r min-h-screen sticky top-0 h-screen shrink-0 transition-all duration-300",
+                    "hidden md:flex flex-col bg-sidebar border-r min-h-screen sticky top-0 h-screen shrink-0 transition-all duration-300",
                     isCollapsed ? "w-16" : "w-64"
                 )}
             >
-                <div className={cn("p-4 border-b flex items-center", isCollapsed ? "justify-center" : "justify-between")}>
+                <div className={cn("p-4 border-b flex items-center bg-sidebar", isCollapsed ? "justify-center" : "justify-between")}>
                     {!isCollapsed && <h1 className="font-bold text-lg text-primary truncate">My Work</h1>}
                     <Button
                         variant="ghost"
@@ -95,7 +95,7 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
 
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 {/* Mobile Header */}
-                <header className="md:hidden bg-white border-b px-4 py-3 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                <header className="md:hidden bg-background border-b px-4 py-3 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <h1 className="font-bold text-lg text-primary">My Work</h1>
                     <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
                         <LogOut className="h-4 w-4" />
@@ -108,7 +108,7 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
             </div>
 
             {/* Bottom Navigation for Mobile */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-16 md:hidden z-50">
+            <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t flex justify-around items-center h-16 md:hidden z-50">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.href;
                     return (

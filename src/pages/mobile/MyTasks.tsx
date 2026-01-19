@@ -111,7 +111,7 @@ export default function MyTasks() {
                                         </div>
                                     )}
 
-                                    <div className="bg-slate-50 p-3 rounded text-sm text-slate-700">
+                                    <div className="bg-muted/50 p-3 rounded text-sm text-muted-foreground">
                                         {task.description || "No description provided."}
                                     </div>
 
@@ -206,7 +206,7 @@ export default function MyTasks() {
                         <p className="text-muted-foreground text-sm italic">No completed tasks yet.</p>
                     ) : (
                         completedTasks.map(task => (
-                            <Card key={task.id} className="bg-gray-50">
+                            <Card key={task.id} className="bg-muted/20">
                                 <CardHeader className="p-4">
                                     <div className="flex justify-between">
                                         <CardTitle className="text-sm text-muted-foreground">{task.title}</CardTitle>

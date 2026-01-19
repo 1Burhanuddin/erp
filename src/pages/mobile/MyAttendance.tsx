@@ -55,19 +55,19 @@ export default function MyAttendance() {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4 text-sm mt-3">
-                                        <div className="bg-slate-50 p-2 rounded">
+                                        <div className="bg-muted/50 p-2 rounded">
                                             <div className="text-muted-foreground text-xs flex items-center gap-1 mb-1">
                                                 <Clock className="w-3 h-3" /> Check In
                                             </div>
-                                            <div className="font-medium text-green-700">
+                                            <div className="font-medium text-green-700 dark:text-green-400">
                                                 {log.check_in ? format(new Date(log.check_in), "h:mm a") : '--:--'}
                                             </div>
                                         </div>
-                                        <div className="bg-slate-50 p-2 rounded">
+                                        <div className="bg-muted/50 p-2 rounded">
                                             <div className="text-muted-foreground text-xs flex items-center gap-1 mb-1">
                                                 <Clock className="w-3 h-3" /> Check Out
                                             </div>
-                                            <div className="font-medium text-red-700">
+                                            <div className="font-medium text-red-700 dark:text-red-400">
                                                 {log.check_out ? format(new Date(log.check_out), "h:mm a") : 'Working'}
                                             </div>
                                         </div>

@@ -37,6 +37,31 @@ export const useEmployees = () => {
     });
 };
 
+export const useCurrentEmployee = () => {
+    return useQuery({
+        queryKey: ["current_employee"],
+        queryFn: async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return null;
+
+            const { data, error } = await supabase
+                .from("employees")
+                .select("*")
+                .eq("user_id", user.id)
+                .single();
+
+            if (error) throw error;
+
+            // Fallback: If employee profile doesn't have email, use data from Auth
+            if (!data.email && user.email) {
+                data.email = user.email;
+            }
+
+            return data as Employee;
+        },
+    });
+};
+
 export const useCreateEmployee = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -181,12 +206,41 @@ export const useAttendance = (date?: Date) => {
 export const useCheckIn = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ employeeId, location }: { employeeId: string; location?: any }) => {
+        mutationFn: async ({ location }: { location?: any; employeeId?: string }) => { // employeeId is now ignored
+            // 1. Get current authenticated user
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            // 2. Fetch the correct internal Employee ID
+            const { data: employeeData, error: empError } = await supabase
+                .from("employees")
+                .select("id")
+                .eq("user_id", user.id)
+                .single();
+
+            if (empError || !employeeData) throw new Error("Employee profile not found");
+            const internalEmployeeId = employeeData.id;
+
+            const today = new Date().toISOString().split('T')[0];
+
+            // 3. Check if already checked in today (Double check purely for better error message, DB constraint handles race conditions)
+            const { data: existing } = await supabase
+                .from("attendance")
+                .select("id")
+                .eq("employee_id", internalEmployeeId)
+                .eq("date", today)
+                .single();
+
+            if (existing) {
+                throw new Error("You have already checked in today.");
+            }
+
+            // 4. Perform Check-in
             const { data, error } = await supabase.from("attendance").insert({
-                employee_id: employeeId,
+                employee_id: internalEmployeeId,
                 check_in: new Date().toISOString(),
-                date: new Date().toISOString().split('T')[0],
-                status: 'present', // Logic for 'late' can be added here or via Trigger
+                date: today,
+                status: 'present',
                 location_check_in: location
             }).select().single();
 
@@ -198,7 +252,12 @@ export const useCheckIn = () => {
             toast({ title: "Checked in successfully" });
         },
         onError: (error: any) => {
-            toast({ title: "Check-in failed", description: error.message, variant: "destructive" });
+            // Handle duplicate key error gracefully if race condition occurs
+            if (error.code === '23505') { // Postgres unique violation code
+                toast({ title: "Already Checked In", description: "You have already checked in for today.", variant: "destructive" });
+            } else {
+                toast({ title: "Check-in failed", description: error.message, variant: "destructive" });
+            }
         },
     });
 };

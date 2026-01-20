@@ -19,6 +19,7 @@ import {
   User,
   History,
   Wrench,
+  Smartphone,
 } from "lucide-react";
 import {
   Collapsible,
@@ -127,6 +128,7 @@ const navItems = [
   { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },
   { path: "/settings?tab=profile", label: "Profile", icon: User, description: "Manage your profile" },
   { path: "/settings?tab=app", label: "Settings", icon: Settings, description: "App configuration" },
+  { path: "/mobile/dashboard", label: "Mobile App", icon: Smartphone, description: "Switch to Employee View" },
 ];
 
 // Helper function to get page title from path

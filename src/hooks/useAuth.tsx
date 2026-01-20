@@ -21,24 +21,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const checkAdminRole = async (userId: string) => {
-    // Check 'user_roles' table if it exists in ERP, or just 'employees' table now?
-    // In ASVAC it checked 'user_roles'. In ERP, we have 'employees' table with role 'admin'.
-    // Let's check 'employees' table for role='admin'.
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
 
-    const { data, error } = await supabase
-      .from('employees')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-
-    if (!error && data && data.role === 'admin') {
-      setIsAdmin(true);
-    } else {
-      // Fallback or explicit false
+      if (!error && data && data.role === 'admin') {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error("Error checking admin role:", error);
       setIsAdmin(false);
+    } finally {
+      setIsLoading(false);
     }
-    // Also, ERP might have its own admin logic?
-    // For now, aligning with the new Employee System.
   };
 
   useEffect(() => {
@@ -46,12 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        setIsLoading(false);
 
         if (session?.user) {
+          // Verify role before finishing loading
           checkAdminRole(session.user.id);
         } else {
           setIsAdmin(false);
+          setIsLoading(false);
         }
       }
     );
@@ -59,10 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsLoading(false);
 
       if (session?.user) {
         checkAdminRole(session.user.id);
+      } else {
+        setIsLoading(false);
       }
     });
 

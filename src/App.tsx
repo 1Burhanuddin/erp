@@ -77,6 +77,7 @@ import FixStores from "./pages/debug/FixStores";
 import EmployeeDashboard from "./pages/mobile/EmployeeDashboard";
 import MyTasks from "./pages/mobile/MyTasks";
 import MyAttendance from "./pages/mobile/MyAttendance";
+import EmployeeProfile from "./pages/mobile/EmployeeProfile";
 
 const queryClient = new QueryClient();
 
@@ -177,6 +178,7 @@ const App = () => {
                 <Route path="/mobile/dashboard" element={<EmployeeDashboard />} />
                 <Route path="/mobile/tasks" element={<MyTasks />} />
                 <Route path="/mobile/attendance" element={<MyAttendance />} />
+                <Route path="/mobile/profile" element={<EmployeeProfile />} />
               </Route>
             </Routes>
           </AuthProvider>

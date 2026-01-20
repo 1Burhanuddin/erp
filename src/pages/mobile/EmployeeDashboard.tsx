@@ -16,15 +16,16 @@ export default function EmployeeDashboard() {
     const checkIn = useCheckIn();
     const checkOut = useCheckOut();
 
-    // Find today's active attendance session
-    const todaySession = attendanceLogs?.find(log => log.employee_id === user?.id);
+    // RLS ensures we only receive our own attendance records.
+    // Unique constraint ensures only one record per day.
+    const todaySession = attendanceLogs?.[0];
     const isCheckedIn = !!todaySession?.check_in && !todaySession?.check_out;
+    const hasCompletedShift = !!todaySession?.check_in && !!todaySession?.check_out;
 
     const handleCheckIn = () => {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition((position) => {
                 checkIn.mutate({
-                    employeeId: user?.id || "",
                     location: {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
@@ -32,11 +33,11 @@ export default function EmployeeDashboard() {
                 });
             }, (error) => {
                 console.error("Geolocation error:", error);
-                // Fallback without location if denied/error (or handle strict policy)
-                checkIn.mutate({ employeeId: user?.id || "" });
+                // Fallback without location
+                checkIn.mutate({});
             });
         } else {
-            checkIn.mutate({ employeeId: user?.id || "" });
+            checkIn.mutate({});
         }
     };
 
@@ -78,6 +79,11 @@ export default function EmployeeDashboard() {
                                     <h3 className="text-2xl font-bold text-foreground">Checked In</h3>
                                     <p className="text-muted-foreground text-sm">Since {format(new Date(todaySession!.check_in!), "h:mm a")}</p>
                                 </>
+                            ) : hasCompletedShift ? (
+                                <>
+                                    <h3 className="text-2xl font-bold text-foreground">Shift Completed</h3>
+                                    <p className="text-muted-foreground text-sm">You have checked out at {format(new Date(todaySession!.check_out!), "h:mm a")}</p>
+                                </>
                             ) : (
                                 <>
                                     <h3 className="text-2xl font-bold text-foreground">Not Checked In</h3>
@@ -96,12 +102,21 @@ export default function EmployeeDashboard() {
                             >
                                 Check Out
                             </Button>
+                        ) : hasCompletedShift ? (
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="w-full max-w-xs"
+                                disabled
+                            >
+                                Done for Today
+                            </Button>
                         ) : (
                             <Button
                                 size="lg"
                                 className="w-full max-w-xs"
                                 onClick={handleCheckIn}
-                                disabled={checkIn.isPending} // Disable if session exists but checked out? No, multiple sessions supported? Logic assumes single daily session for simplicity usually.
+                                disabled={checkIn.isPending}
                             >
                                 Check In Now
                             </Button>
@@ -126,8 +141,6 @@ export default function EmployeeDashboard() {
                         </CardContent>
                     </Card>
                 </div>
-
-                {/* Recent/Today's Activity Logic could go here */}
 
             </div>
         </EmployeeLayout>

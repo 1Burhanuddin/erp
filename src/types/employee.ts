@@ -8,6 +8,7 @@ export interface Employee {
     id: string;
     role: EmployeeRole;
     full_name: string;
+    email: string | null;
     phone: string | null;
     address: string | null;
     joining_date: string | null;

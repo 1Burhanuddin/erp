@@ -6,8 +6,10 @@ import {
     Clock,
     Home,
     LogOut,
+    LayoutDashboard,
     ChevronLeft,
     ChevronRight,
+    User,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -23,10 +25,11 @@ const navItems = [
     { href: '/mobile/dashboard', label: 'Home', icon: Home },
     { href: '/mobile/tasks', label: 'Tasks', icon: ClipboardList },
     { href: '/mobile/attendance', label: 'Attendance', icon: Clock },
+    { href: '/mobile/profile', label: 'Profile', icon: User },
 ];
 
 export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
-    const { signOut } = useAuth();
+    const { signOut, isAdmin } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -80,7 +83,18 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                         );
                     })}
                 </nav>
-                <div className="p-4 border-t">
+                <div className="p-4 border-t space-y-2">
+                    {isAdmin && (
+                        <Button
+                            variant="default"
+                            className={cn("w-full gap-2", isCollapsed && "px-0 justify-center")}
+                            onClick={() => navigate('/')}
+                            title={isCollapsed ? "Back to ERP" : undefined}
+                        >
+                            <LayoutDashboard className="h-4 w-4 shrink-0" />
+                            {!isCollapsed && "Back to ERP"}
+                        </Button>
+                    )}
                     <Button
                         variant="outline"
                         className={cn("w-full gap-2", isCollapsed && "px-0 justify-center")}
@@ -97,9 +111,16 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                 {/* Mobile Header */}
                 <header className="md:hidden bg-background border-b px-4 py-3 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <h1 className="font-bold text-lg text-primary">My Work</h1>
-                    <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
-                        <LogOut className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        {isAdmin && (
+                            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-primary">
+                                <LayoutDashboard className="h-4 w-4" />
+                            </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
+                            <LogOut className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </header>
 
                 <main className="flex-1 p-4 pb-20 md:pb-4 overflow-auto">

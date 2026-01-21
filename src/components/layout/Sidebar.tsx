@@ -53,6 +53,18 @@ interface SidebarProps {
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard, description: "Welcome back! Here's your overview." },
   {
+    path: "/employees",
+    label: "Employees",
+    icon: Users,
+    children: [
+      { path: "/employees/list", label: "All Employees", description: "Manage staff profiles" },
+      { path: "/employees/tasks", label: "Tasks Board", description: "Assign and track tasks" },
+      { path: "/employees/live", label: "Live Status", description: "Real-time activity" },
+      { path: "/employees/performance", label: "Performance", description: "Productivity metrics" },
+      { path: "/employees/attendance", label: "Attendance Log", description: "View daily attendance" },
+    ]
+  },
+  {
     path: "/contacts",
     label: "Contacts",
     icon: Users,
@@ -113,21 +125,12 @@ const navItems = [
       { path: "/expenses/categories", label: "Expense Categories", description: "Manage expense categories" },
     ],
   },
-  {
-    path: "/employees",
-    label: "Employees",
-    icon: Users,
-    children: [
-      { path: "/employees/list", label: "All Employees", description: "Manage staff profiles" },
-      { path: "/employees/tasks", label: "Tasks Board", description: "Assign and track tasks" },
-      { path: "/employees/attendance", label: "Attendance Log", description: "View daily attendance" },
-    ]
-  },
+
   { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
   { path: "/reports", label: "Reports", icon: BarChart3, description: "View reports and analytics" },
   { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },
-  { path: "/settings?tab=profile", label: "Profile", icon: User, description: "Manage your profile" },
-  { path: "/settings?tab=app", label: "Settings", icon: Settings, description: "App configuration" },
+  { path: "/settings/profile", label: "Profile", icon: User, description: "Manage your profile" },
+  { path: "/settings", label: "Settings", icon: Settings, description: "App configuration" },
   { path: "/mobile/dashboard", label: "Mobile App", icon: Smartphone, description: "Switch to Employee View" },
 ];
 

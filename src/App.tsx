@@ -73,11 +73,21 @@ import EmployeeTasks from "./pages/employees/EmployeeTasks";
 import AddTask from "./pages/employees/tasks/AddTask";
 import EditTask from "./pages/employees/tasks/EditTask";
 import Attendance from "./pages/employees/Attendance";
+import LiveStatus from "./pages/employees/LiveStatus";
+import EmployeePerformance from "./pages/employees/EmployeePerformance";
 import FixStores from "./pages/debug/FixStores";
 import EmployeeDashboard from "./pages/mobile/EmployeeDashboard";
 import MyTasks from "./pages/mobile/MyTasks";
 import MyAttendance from "./pages/mobile/MyAttendance";
 import EmployeeProfile from "./pages/mobile/EmployeeProfile";
+// Settings Pages
+import UserProfile from "./pages/settings/UserProfile";
+import BusinessDetails from "./pages/settings/BusinessDetails";
+import StoresSettings from "./pages/settings/StoresSettings";
+import TaxAndBank from "./pages/settings/TaxAndBank";
+import OwnerDetails from "./pages/settings/OwnerDetails";
+import AppSettings from "./pages/settings/AppSettings";
+import DebugAuth from "./pages/debug/DebugAuth";
 
 const queryClient = new QueryClient();
 
@@ -160,6 +170,12 @@ const App = () => {
                   <Route path="/audit-logs" element={<AuditLogs />} />
                   <Route path="/audit-logs/:id" element={<AuditLogDetails />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/settings/profile" element={<UserProfile />} />
+                  <Route path="/settings/business" element={<BusinessDetails />} />
+                  <Route path="/settings/stores" element={<StoresSettings />} />
+                  <Route path="/settings/tax-bank" element={<TaxAndBank />} />
+                  <Route path="/settings/owner" element={<OwnerDetails />} />
+                  <Route path="/settings/app" element={<AppSettings />} />
 
                   {/* Employee Management System */}
                   <Route path="/employees/list" element={<EmployeeList />} />
@@ -168,6 +184,8 @@ const App = () => {
                   <Route path="/employees/tasks" element={<EmployeeTasks />} />
                   <Route path="/employees/tasks/add" element={<AddTask />} />
                   <Route path="/employees/tasks/edit/:id" element={<EditTask />} />
+                  <Route path="/employees/live" element={<LiveStatus />} />
+                  <Route path="/employees/performance" element={<EmployeePerformance />} />
                   <Route path="/employees/attendance" element={<Attendance />} />
 
                 </Route>
@@ -179,6 +197,7 @@ const App = () => {
                 <Route path="/mobile/tasks" element={<MyTasks />} />
                 <Route path="/mobile/attendance" element={<MyAttendance />} />
                 <Route path="/mobile/profile" element={<EmployeeProfile />} />
+                <Route path="/debug/auth" element={<DebugAuth />} />
               </Route>
             </Routes>
           </AuthProvider>

@@ -333,7 +333,7 @@ export const useSalesOrders = () => {
                 // Let's exclude Quotations to be safe, so they don't clutter the Invoice list.
                 .select(`
                     *,
-                    customer:contacts(name),
+                    customer:contacts(*),
                     items:sales_items(*)
                 `)
                 .neq("status", "Quotation")

@@ -1,0 +1,238 @@
+import { useState } from "react";
+import { PageLayout, PageHeader } from "@/components/layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { MapPin, Clock, AlertCircle, Phone, LayoutGrid, List } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { useCurrentEmployee } from "@/api/employees";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+
+export default function LiveStatus() {
+    const { data: currentEmployee } = useCurrentEmployee();
+    const [viewMode, setViewMode] = useState<"grid" | "list">("card"); // Default to card as per logic, utilizing 'grid' as identifier in UI for Cards
+
+    const { data: employees, isLoading } = useQuery({
+        queryKey: ["live_status", currentEmployee?.store_id],
+        enabled: !!currentEmployee?.store_id,
+        queryFn: async () => {
+            const today = new Date().toISOString().split('T')[0];
+
+            // 1. Fetch active employees for this store
+            const { data: emps, error: empError } = await supabase
+                .from("employees")
+                .select("id, full_name, phone, role")
+                .eq("store_id", currentEmployee!.store_id)
+                .eq("status", "active")
+                .eq("role", "employee");
+
+            if (empError) throw empError;
+            if (!emps?.length) return [];
+
+            const empIds = emps.map(e => e.id);
+
+            // 2. Fetch today's attendance for these employees
+            const { data: attendance, error: attError } = await supabase
+                .from("attendance")
+                .select("*")
+                .eq("date", today)
+                .in("employee_id", empIds);
+
+            if (attError) throw attError;
+
+            // 3. Fetch active tasks for these employees
+            const { data: tasks, error: taskError } = await supabase
+                .from("employee_tasks")
+                .select("*")
+                .in("status", ["in_progress", "accepted"])
+                .in("employee_id", empIds);
+
+            if (taskError) throw taskError;
+
+            // Merge Data
+            return emps.map(emp => {
+                const att = attendance?.find(a => a.employee_id === emp.id);
+                const activeTask = tasks?.find(t => t.employee_id === emp.id);
+
+                let status = "offline";
+                if (att) {
+                    if (att.check_out) status = "checked_out";
+                    else if (activeTask) status = "working";
+                    else status = "idle";
+                }
+
+                return {
+                    ...emp,
+                    attendance: att,
+                    activeTask,
+                    status
+                };
+            });
+        },
+        refetchInterval: 30000 // Refresh every 30s
+    });
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case "working": return <Badge className="bg-green-500 hover:bg-green-600">Working</Badge>;
+            case "idle": return <Badge className="bg-yellow-500 hover:bg-yellow-600">Idle</Badge>;
+            case "checked_out": return <Badge variant="outline">Checked Out</Badge>;
+            default: return <Badge variant="secondary">Offline</Badge>;
+        }
+    };
+
+    return (
+        <PageLayout>
+            <PageHeader
+                title="Live Employee Status"
+                description="Real-time field force tracking"
+                actions={
+                    <div className="flex bg-muted rounded-lg p-1">
+                        <Button
+                            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setViewMode('grid')}
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                        </Button>
+                        <Button
+                            variant={viewMode === 'list' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setViewMode('list')}
+                        >
+                            <List className="w-4 h-4" />
+                        </Button>
+                    </div>
+                }
+            />
+
+            <div className="p-6">
+                {viewMode === 'grid' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {employees?.map(emp => (
+                            <Card key={emp.id} className={`border-l-4 ${emp.status === 'working' ? 'border-l-green-500' : emp.status === 'idle' ? 'border-l-yellow-500' : 'border-l-gray-300'}`}>
+                                <CardHeader className="pb-2">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <Avatar className="shrink-0">
+                                                <AvatarFallback>{emp.full_name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0">
+                                                <CardTitle className="text-base truncate">{emp.full_name}</CardTitle>
+                                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                    <Phone className="w-3 h-3 shrink-0" /> <span className="truncate">{emp.phone}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {getStatusBadge(emp.status)}
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="text-sm space-y-3 pt-2">
+                                    {emp.attendance ? (
+                                        <div className="flex justify-between items-center text-muted-foreground">
+                                            <div className="flex items-center gap-2">
+                                                <Clock className="w-4 h-4" />
+                                                <span>In: {format(new Date(emp.attendance.check_in), "h:mm a")}</span>
+                                            </div>
+                                            {emp.attendance.check_out && (
+                                                <span>Out: {format(new Date(emp.attendance.check_out), "h:mm a")}</span>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="text-muted-foreground italic flex items-center gap-2">
+                                            <AlertCircle className="w-4 h-4" /> Not checked in yet
+                                        </div>
+                                    )}
+
+                                    {emp.activeTask && (
+                                        <div className="bg-muted/50 p-3 rounded-md space-y-1 border">
+                                            <div className="font-medium text-primary flex items-center gap-2">
+                                                <MapPin className="w-4 h-4" />
+                                                {emp.activeTask.customer_name}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground line-clamp-1">{emp.activeTask.title}</p>
+                                            <p className="text-xs text-muted-foreground line-clamp-1">{emp.activeTask.customer_address}</p>
+                                        </div>
+                                    )}
+
+                                    {emp.status === 'idle' && emp.attendance && (
+                                        <div className="text-yellow-600 text-xs flex items-center gap-2 bg-yellow-50 p-2 rounded">
+                                            <AlertCircle className="w-3 h-3" /> Waiting for next assignment
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))}
+                        {employees?.length === 0 && (
+                            <div className="col-span-full text-center text-muted-foreground py-12">
+                                No active employees found.
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <Card>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Employee</TableHead>
+                                    <TableHead>Phone</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Check In</TableHead>
+                                    <TableHead>Current Activity</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {employees?.map((emp) => (
+                                    <TableRow key={emp.id}>
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center gap-2">
+                                                <Avatar className="h-8 w-8">
+                                                    <AvatarFallback>{emp.full_name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                                </Avatar>
+                                                {emp.full_name}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>{emp.phone}</TableCell>
+                                        <TableCell>{getStatusBadge(emp.status)}</TableCell>
+                                        <TableCell>
+                                            {emp.attendance ? format(new Date(emp.attendance.check_in), "h:mm a") : "-"}
+                                        </TableCell>
+                                        <TableCell>
+                                            {emp.activeTask ? (
+                                                <div className="flex flex-col text-sm">
+                                                    <span className="font-medium">{emp.activeTask.customer_name}</span>
+                                                    <span className="text-xs text-muted-foreground max-w-[200px] truncate">{emp.activeTask.title}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted-foreground text-xs italic">
+                                                    {emp.status === 'idle' ? 'Waiting for task' : '-'}
+                                                </span>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                {employees?.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                            No employees found.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </Card>
+                )}
+            </div>
+        </PageLayout>
+    );
+}

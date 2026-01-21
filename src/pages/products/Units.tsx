@@ -25,6 +25,17 @@ import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 const Units = () => {
     const { data: units, isLoading } = useUnits();
     const createUnit = useCreateUnit();
@@ -33,6 +44,7 @@ const Units = () => {
 
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({ name: "" });
 
@@ -73,11 +85,16 @@ const Units = () => {
         }
     };
 
-    const handleDelete = async () => {
-        if (editingId && confirm("Are you sure you want to delete this unit?")) {
+    const handleDeleteClick = () => {
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (editingId) {
             try {
                 await deleteUnit.mutateAsync(editingId);
                 toast.success("Unit deleted");
+                setIsDeleteDialogOpen(false);
                 setIsDialogOpen(false);
             } catch (error) {
                 toast.error("Failed to delete unit");
@@ -193,7 +210,7 @@ const Units = () => {
                     </div>
                     <DialogFooter className="flex justify-between sm:justify-between w-full">
                         {editingId ? (
-                            <Button variant="destructive" onClick={handleDelete} type="button">
+                            <Button variant="destructive" onClick={handleDeleteClick} type="button">
                                 Delete
                             </Button>
                         ) : <div />}
@@ -209,6 +226,23 @@ const Units = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the unit.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </PageLayout>
     );
 };

@@ -181,6 +181,7 @@ const Auth = () => {
                     <Input
                       id="confirmPassword"
                       type={showPassword ? "text" : "password"}
+                      placeholder="********"
                       className="pl-10"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}

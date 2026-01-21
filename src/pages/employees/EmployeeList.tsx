@@ -22,17 +22,38 @@ import { Input } from "@/components/ui/input";
 import { DataViewToggle } from "@/components/shared"; // Assuming this exists as per ProductsList
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDeleteEmployee } from "@/api/employees";
+import { Trash } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function EmployeeList() {
     const navigate = useNavigate();
     const { data: employees, isLoading } = useEmployees();
+    const deleteEmployeeMutation = useDeleteEmployee();
     const [searchQuery, setSearchQuery] = useState("");
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [employeeToDelete, setEmployeeToDelete] = useState<string | null>(null);
 
     const filteredEmployees = employees?.filter(emp =>
         emp.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.role?.toLowerCase().includes(searchQuery.toLowerCase())
     ) || [];
+
+    const handleDelete = () => {
+        if (employeeToDelete) {
+            deleteEmployeeMutation.mutate(employeeToDelete);
+            setEmployeeToDelete(null);
+        }
+    };
 
     return (
         <PageLayout>
@@ -80,6 +101,7 @@ export default function EmployeeList() {
                                             <TableHead>Role</TableHead>
                                             <TableHead>Phone</TableHead>
                                             <TableHead>Status</TableHead>
+
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -101,6 +123,7 @@ export default function EmployeeList() {
                                                         {emp.status}
                                                     </Badge>
                                                 </TableCell>
+
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -111,9 +134,24 @@ export default function EmployeeList() {
                                 {filteredEmployees.map((emp) => (
                                     <Card
                                         key={emp.id}
-                                        className="cursor-pointer hover:border-primary/50 transition-colors"
+                                        className="cursor-pointer hover:border-primary/50 transition-colors group relative"
                                         onClick={() => navigate(`/employees/edit/${emp.id}`)}
                                     >
+                                        {/* Delete Button for Card View */}
+                                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEmployeeToDelete(emp.id);
+                                                }}
+                                            >
+                                                <Trash className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+
                                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                             <CardTitle className="text-sm font-medium">
                                                 {emp.full_name}
@@ -148,6 +186,23 @@ export default function EmployeeList() {
                     </>
                 )}
             </div>
+
+            <AlertDialog open={!!employeeToDelete} onOpenChange={(open) => !open && setEmployeeToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the employee.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </PageLayout>
     );
 }

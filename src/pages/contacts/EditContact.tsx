@@ -7,12 +7,25 @@ import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { useState } from "react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 const EditContact = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { data: contact, isLoading, error } = useContact(id!);
     const updateContact = useUpdateContact();
     const deleteContact = useDeleteContact();
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     // Redirect if load fails
     if (error) {
@@ -41,20 +54,20 @@ const EditContact = () => {
     };
 
     const handleDelete = async () => {
-        if (confirm("Are you sure you want to delete this contact? This action cannot be undone.")) {
-            try {
-                const role = contact?.role;
-                await deleteContact.mutateAsync(id!);
-                toast.success("Contact deleted");
+        // Dialog confirmation handled by UI
+        try {
+            const role = contact?.role;
+            await deleteContact.mutateAsync(id!);
+            toast.success("Contact deleted");
 
-                if (role === 'Supplier') {
-                    navigate("/contacts/suppliers");
-                } else {
-                    navigate("/contacts/customers");
-                }
-            } catch (error) {
-                toast.error("Failed to delete contact");
+            if (role === 'Supplier') {
+                navigate("/contacts/suppliers");
+            } else {
+                navigate("/contacts/customers");
             }
+        } catch (error) {
+            toast.error("Failed to delete contact");
+            setShowDeleteDialog(false);
         }
     };
 
@@ -75,7 +88,7 @@ const EditContact = () => {
                 title={`Edit ${contact?.role}`}
                 description={`Editing: ${contact?.name}`}
                 actions={
-                    <Button variant="destructive" onClick={handleDelete}>
+                    <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete Contact
                     </Button>
@@ -88,6 +101,23 @@ const EditContact = () => {
                     isSubmitting={updateContact.isPending}
                 />
             </div>
+
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the contact.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </PageLayout>
     );
 };

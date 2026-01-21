@@ -28,6 +28,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', userId)
         .single();
 
+      if (error) {
+        console.error("checkAdminRole Error:", error);
+      }
+      console.log("checkAdminRole Data:", data);
+
       if (!error && data && data.role === 'admin') {
         setIsAdmin(true);
       } else {

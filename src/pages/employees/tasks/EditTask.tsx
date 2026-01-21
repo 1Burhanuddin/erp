@@ -19,6 +19,17 @@ import {
 import { TaskStatus, PaymentStatus, PaymentMode } from "@/types/employee";
 import { supabase } from "@/lib/supabase";
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 export default function EditTask() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -27,6 +38,7 @@ export default function EditTask() {
 
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const [formData, setFormData] = useState({
         employee_id: "",
@@ -96,8 +108,11 @@ export default function EditTask() {
         }
     };
 
-    const handleDelete = async () => {
-        if (!confirm("Are you sure you want to delete this task? This cannot be undone.")) return;
+    const handleDeleteClick = () => {
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
         setLoading(true);
         try {
             const { error } = await supabase.from("employee_tasks").delete().eq("id", id);
@@ -107,6 +122,7 @@ export default function EditTask() {
         } catch (error: any) {
             toast({ title: "Error deleting", description: error.message, variant: "destructive" });
             setLoading(false);
+            setIsDeleteDialogOpen(false);
         }
     };
 
@@ -118,7 +134,7 @@ export default function EditTask() {
                 title="Edit Task"
                 description="Update assignment details"
                 actions={
-                    <Button variant="destructive" size="sm" onClick={handleDelete} className="gap-2">
+                    <Button variant="destructive" size="sm" onClick={handleDeleteClick} className="gap-2">
                         <Trash2 className="w-4 h-4" /> Delete Task
                     </Button>
                 }
@@ -243,6 +259,23 @@ export default function EditTask() {
                     </CardContent>
                 </Card>
             </div>
+
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete this task.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </PageLayout>
     );
 }

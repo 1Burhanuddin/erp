@@ -24,12 +24,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 const Bookings = () => {
     const { data: bookings, isLoading } = useBookings();
     const updateBooking = useUpdateBooking();
     const deleteBooking = useDeleteBooking();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
 
     const handleStatusChange = async (id: string, status: string) => {
         try {
@@ -40,11 +52,16 @@ const Bookings = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Are you sure you want to delete this booking?")) {
+    const handleDeleteClick = (id: string) => {
+        setBookingToDelete(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (bookingToDelete) {
             try {
-                await deleteBooking.mutateAsync(id);
+                await deleteBooking.mutateAsync(bookingToDelete);
                 toast.success("Booking deleted");
+                setBookingToDelete(null);
             } catch (error) {
                 toast.error("Failed to delete booking");
             }
@@ -136,7 +153,7 @@ const Bookings = () => {
                                                 <DropdownMenuItem onClick={() => handleStatusChange(booking.id, 'confirmed')}>Confirm</DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleStatusChange(booking.id, 'completed')}>Complete</DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleStatusChange(booking.id, 'cancelled')}>Cancel</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleDelete(booking.id)} className="text-red-600">Delete</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDeleteClick(booking.id)} className="text-red-600">Delete</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
@@ -207,7 +224,7 @@ const Bookings = () => {
                                                         <DropdownMenuItem onClick={() => handleStatusChange(booking.id, 'confirmed')}>Mark Confirmed</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleStatusChange(booking.id, 'completed')}>Mark Completed</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleStatusChange(booking.id, 'cancelled')}>Mark Cancelled</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDelete(booking.id)} className="text-red-600">Delete</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDeleteClick(booking.id)} className="text-red-600">Delete</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -219,6 +236,23 @@ const Bookings = () => {
                     </div>
                 )}
             </div>
+
+            <AlertDialog open={!!bookingToDelete} onOpenChange={(open) => !open && setBookingToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the booking.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </PageLayout>
     );
 };

@@ -296,7 +296,7 @@ const SalesInvoiceDetails = () => {
                                         {buyerState && <p className="text-gray-600 mt-1">Place of Supply: <span className="font-semibold">{sale.customer?.state}</span></p>}
                                     </div>
                                     <div className="mt-2 text-right flex flex-col items-end gap-1">
-                                        <p className="text-gray-600">Status:</p>
+                                        <p className="text-gray-600">Payment:</p>
                                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${sale.payment_status === 'Paid' ? 'bg-green-50 text-green-700 border-green-200' :
                                             sale.payment_status === 'Partial' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
                                                 'bg-red-50 text-red-700 border-red-200'

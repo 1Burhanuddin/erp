@@ -8,6 +8,16 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const EditProduct = () => {
     const { id } = useParams();
@@ -18,6 +28,8 @@ const EditProduct = () => {
     const [product, setProduct] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const deleteProduct = useDeleteProduct();
+
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -103,14 +115,14 @@ const EditProduct = () => {
     };
 
     const handleDelete = async () => {
-        if (confirm(`Are you sure you want to delete this ${isService ? 'service' : 'product'}? This action cannot be undone.`)) {
-            try {
-                await deleteProduct.mutateAsync(id!);
-                toast.success(`${isService ? "Service" : "Product"} deleted`);
-                navigate(isService ? "/services" : "/products/list");
-            } catch (error) {
-                toast.error("Failed to delete item");
-            }
+        // Dialog confirmation handled by UI
+        try {
+            await deleteProduct.mutateAsync(id!);
+            toast.success(`${isService ? "Service" : "Product"} deleted`);
+            navigate(isService ? "/services" : "/products/list");
+        } catch (error) {
+            toast.error("Failed to delete item");
+            setShowDeleteDialog(false);
         }
     };
 
@@ -131,7 +143,7 @@ const EditProduct = () => {
                 title={isService ? "Edit Service" : "Edit Product"}
                 description={`Editing: ${product?.name}`}
                 actions={
-                    <Button variant="destructive" onClick={handleDelete}>
+                    <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete {isService ? "Service" : "Product"}
                     </Button>
@@ -144,6 +156,23 @@ const EditProduct = () => {
                     fixedType={isService ? "Service" : "Product"}
                 />
             </div>
+
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the {isService ? "service" : "product"}.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </PageLayout>
     );
 };

@@ -96,6 +96,27 @@ export const useCreateEmployee = () => {
     });
 };
 
+export const useDeleteEmployee = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (employeeId: string) => {
+            const { error } = await supabase
+                .from("employees")
+                .delete()
+                .eq("id", employeeId);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["employees"] });
+            toast({ title: "Employee deleted successfully" });
+        },
+        onError: (error: any) => {
+            toast({ title: "Failed to delete employee", description: error.message, variant: "destructive" });
+        },
+    });
+};
+
 // --- Tasks Hooks ---
 
 export const useEmployeeTasks = (employeeId?: string) => {
@@ -191,16 +212,62 @@ export const useAttendance = (date?: Date) => {
     return useQuery({
         queryKey: ["attendance", queryDate],
         queryFn: async () => {
+            // 1. Get current user's store_id
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            const { data: currentUserData, error: userError } = await supabase
+                .from("employees")
+                .select("store_id")
+                .eq("user_id", user.id)
+                .single();
+
+            if (userError) throw userError;
+
+            // 2. Fetch attendance for employees in this store
+            // We use !inner join to filter attendance by the related employee's store_id
             const { data, error } = await supabase
                 .from("attendance")
-                .select("*, employees(full_name)")
-                .eq("date", queryDate);
+                .select("*, employees!inner(full_name, store_id)")
+                .eq("date", queryDate)
+                .eq("employees.store_id", currentUserData.store_id);
 
             if (error) throw error;
             return data as (Attendance & { employees: { full_name: string } })[];
         }
-    })
-}
+    });
+};
+
+export const useMyTodayAttendance = () => {
+    return useQuery({
+        queryKey: ["my_today_attendance"],
+        queryFn: async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            const today = new Date().toISOString().split('T')[0];
+
+            // Get internal ID
+            const { data: emp } = await supabase
+                .from("employees")
+                .select("id")
+                .eq("user_id", user.id)
+                .single();
+
+            if (!emp) return null;
+
+            const { data, error } = await supabase
+                .from("attendance")
+                .select("*")
+                .eq("employee_id", emp.id)
+                .eq("date", today)
+                .maybeSingle(); // Use maybeSingle as it might not exist yet
+
+            if (error) throw error;
+            return data;
+        }
+    });
+};
 
 
 export const useCheckIn = () => {

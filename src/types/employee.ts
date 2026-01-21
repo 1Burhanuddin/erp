@@ -31,7 +31,7 @@ export interface EmployeeTask {
     payment_status: 'pending' | 'paid' | 'partial';
     payment_amount?: number;
     amount_collected?: number;
-    payment_mode?: 'cash' | 'online';
+    payment_mode?: PaymentMode;
     service_id?: string;
     sales_order_id?: string;
     created_by: string | null;

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Phone, MapPin, Calendar, Clock, Loader2, Save, Mail } from "lucide-react";
+import { User, Phone, MapPin, Calendar, Clock, Loader2, Save, Mail, Edit, X } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -82,26 +82,35 @@ export default function EmployeeProfile() {
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold">
+                                <div className="h-16 w-16 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold">
                                     {employee.full_name?.charAt(0) || "U"}
                                 </div>
-                                <div>
-                                    <CardTitle>{employee.full_name}</CardTitle>
+                                <div className="min-w-0">
+                                    <CardTitle>{employee.full_name?.split(' ')[0]}</CardTitle>
                                     <CardDescription>{employee.role === 'admin' ? 'Administrator' : 'Employee'}</CardDescription>
                                 </div>
                             </div>
                             <Button
-                                variant={isEditing ? "ghost" : "outline"}
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => setIsEditing(!isEditing)}
                                 disabled={isSaving}
                             >
-                                {isEditing ? "Cancel" : "Edit Details"}
+                                {isEditing ? <X className="h-5 w-5" /> : <Edit className="h-5 w-5" />}
                             </Button>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Read-Only Fields */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2 text-muted-foreground">
+                                    <User className="h-4 w-4" /> Full Name
+                                </Label>
+                                <p className="font-medium break-words">
+                                    {employee.full_name}
+                                </p>
+                            </div>
                             <div className="space-y-2">
                                 <Label className="flex items-center gap-2 text-muted-foreground">
                                     <Mail className="h-4 w-4" /> Email

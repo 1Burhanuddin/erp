@@ -18,12 +18,32 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { TaskStatus, PaymentStatus, PaymentMode } from "@/types/employee";
+import { useContacts } from "@/api/contacts";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function AddTask() {
     const navigate = useNavigate();
     const createTask = useCreateTask();
     const { data: employees } = useEmployees();
     const { data: products } = useProducts();
+    const { data: allContacts } = useContacts();
+    // Filter for Customers
+    const contacts = allContacts?.filter(c => c.role === 'Customer' || c.role === 'Both') || [];
+    const [openCombobox, setOpenCombobox] = useState(false);
 
     // Filter for Services
     const services = products?.filter(p => (p as any).type === 'Service') || [];
@@ -143,11 +163,65 @@ export default function AddTask() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="customer_name">Customer Name</Label>
-                                    <Input
-                                        id="customer_name"
-                                        value={formData.customer_name}
-                                        onChange={e => setFormData({ ...formData, customer_name: e.target.value })}
-                                    />
+                                    <div className="flex gap-2">
+                                        <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={openCombobox}
+                                                    className="w-full justify-between"
+                                                >
+                                                    {formData.customer_name
+                                                        ? contacts?.find((c) => c.name === formData.customer_name)?.name || formData.customer_name
+                                                        : "Select customer..."}
+                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                                <Command>
+                                                    <CommandInput placeholder="Search customer..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>No customer found.</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {contacts?.map((contact) => (
+                                                                <CommandItem
+                                                                    key={contact.id}
+                                                                    value={contact.name}
+                                                                    onSelect={(currentValue) => {
+                                                                        setFormData({
+                                                                            ...formData,
+                                                                            customer_name: currentValue === formData.customer_name ? "" : currentValue,
+                                                                            customer_phone: contact.phone || "",
+                                                                            customer_address: contact.address || ""
+                                                                        });
+                                                                        setOpenCombobox(false);
+                                                                    }}
+                                                                >
+                                                                    <Check
+                                                                        className={cn(
+                                                                            "mr-2 h-4 w-4",
+                                                                            formData.customer_name === contact.name ? "opacity-100" : "opacity-0"
+                                                                        )}
+                                                                    />
+                                                                    {contact.name}
+                                                                </CommandItem>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => navigate("/contacts/customers/add")}
+                                            title="Add New Customer"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="customer_phone">Customer Phone</Label>

@@ -38,6 +38,7 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
             <SheetContent
               side="right"
               className="p-0 w-72 bg-sidebar border-r border-sidebar-foreground/10"
+              floatingClose
             >
               {sidebarContent}
             </SheetContent>

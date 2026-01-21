@@ -25,11 +25,20 @@ import EditProduct from "./pages/products/EditProduct";
 import ImportProducts from "./pages/products/ImportProducts";
 import ServicesList from "./pages/products/ServicesList";
 import Units from "./pages/products/Units";
+import AddUnit from "./pages/products/AddUnit";
+import EditUnit from "./pages/products/EditUnit";
 import Categories from "./pages/products/Categories";
+import AddCategory from "./pages/products/AddCategory";
+import EditCategory from "./pages/products/EditCategory";
 import SubCategories from "./pages/products/SubCategories";
+import AddSubCategory from "./pages/products/AddSubCategory";
+import EditSubCategory from "./pages/products/EditSubCategory";
 import Brands from "./pages/products/Brands";
+import AddBrand from "./pages/products/AddBrand";
+import EditBrand from "./pages/products/EditBrand";
 import PurchaseOrder from "./pages/purchase/PurchaseOrder";
 import AddPurchaseOrder from "./pages/purchase/AddPurchaseOrder";
+import EditPurchaseOrder from "./pages/purchase/EditPurchaseOrder";
 import GRN from "./pages/purchase/GRN";
 import PurchaseInvoice from "./pages/purchase/PurchaseInvoice";
 import PurchaseInvoiceDetails from "./pages/purchase/PurchaseInvoiceDetails";
@@ -88,6 +97,7 @@ import TaxAndBank from "./pages/settings/TaxAndBank";
 import OwnerDetails from "./pages/settings/OwnerDetails";
 import AppSettings from "./pages/settings/AppSettings";
 import DebugAuth from "./pages/debug/DebugAuth";
+import SetupWizard from "./pages/onboarding/SetupWizard";
 
 const queryClient = new QueryClient();
 
@@ -120,9 +130,17 @@ const App = () => {
                   <Route path="/products/edit/:id" element={<EditProduct />} />
                   <Route path="/products/import" element={<ImportProducts />} />
                   <Route path="/products/units" element={<Units />} />
+                  <Route path="/products/units/add" element={<AddUnit />} />
+                  <Route path="/products/units/edit/:id" element={<EditUnit />} />
                   <Route path="/products/categories" element={<Categories />} />
+                  <Route path="/products/categories/add" element={<AddCategory />} />
+                  <Route path="/products/categories/edit/:id" element={<EditCategory />} />
                   <Route path="/products/sub-categories" element={<SubCategories />} />
+                  <Route path="/products/sub-categories/add" element={<AddSubCategory />} />
+                  <Route path="/products/sub-categories/edit/:id" element={<EditSubCategory />} />
                   <Route path="/products/brands" element={<Brands />} />
+                  <Route path="/products/brands/add" element={<AddBrand />} />
+                  <Route path="/products/brands/edit/:id" element={<EditBrand />} />
 
                   <Route path="/services" element={<ServicesList />} />
                   <Route path="/services/add" element={<AddProduct />} />
@@ -130,6 +148,7 @@ const App = () => {
 
                   <Route path="/purchase/order" element={<PurchaseOrder />} />
                   <Route path="/purchase/add" element={<AddPurchaseOrder />} />
+                  <Route path="/purchase/edit/:id" element={<EditPurchaseOrder />} />
                   <Route path="/purchase/grn" element={<GRN />} />
                   <Route path="/purchase/invoice" element={<PurchaseInvoice />} />
                   <Route path="/purchase/invoice/:id" element={<PurchaseInvoiceDetails />} />
@@ -193,6 +212,7 @@ const App = () => {
 
               {/* Employee App Routes - Protected (Any Authenticated User) */}
               <Route element={<ProtectedRoute />}>
+                <Route path="/setup" element={<SetupWizard />} />
                 <Route path="/mobile/dashboard" element={<EmployeeDashboard />} />
                 <Route path="/mobile/tasks" element={<MyTasks />} />
                 <Route path="/mobile/attendance" element={<MyAttendance />} />

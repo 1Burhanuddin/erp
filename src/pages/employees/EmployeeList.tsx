@@ -108,8 +108,12 @@ export default function EmployeeList() {
                                         {filteredEmployees.map((emp) => (
                                             <TableRow
                                                 key={emp.id}
-                                                className="cursor-pointer hover:bg-muted/50"
-                                                onClick={() => navigate(`/employees/edit/${emp.id}`)}
+                                                className={`hover:bg-muted/50 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+                                                onClick={() => {
+                                                    if (emp.role === 'admin') return;
+                                                    navigate(`/employees/edit/${emp.id}`);
+                                                }}
+                                                title={emp.role === 'admin' ? "Admin profiles cannot be edited here" : "Click to edit"}
                                             >
                                                 <TableCell className="font-medium">{emp.full_name}</TableCell>
                                                 <TableCell>
@@ -134,8 +138,12 @@ export default function EmployeeList() {
                                 {filteredEmployees.map((emp) => (
                                     <Card
                                         key={emp.id}
-                                        className="cursor-pointer hover:border-primary/50 transition-colors group relative"
-                                        onClick={() => navigate(`/employees/edit/${emp.id}`)}
+                                        className={`transition-colors group relative ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-primary/50'}`}
+                                        onClick={() => {
+                                            if (emp.role === 'admin') return;
+                                            navigate(`/employees/edit/${emp.id}`);
+                                        }}
+                                        title={emp.role === 'admin' ? "Admin profiles cannot be edited here" : "Click to edit"}
                                     >
                                         {/* Delete Button for Card View */}
                                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">

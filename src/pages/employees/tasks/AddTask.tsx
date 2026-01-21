@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useCreateTask, useEmployees } from "@/api/employees";
 import { useProducts } from "@/api/products";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import {
@@ -37,6 +37,9 @@ import {
 
 export default function AddTask() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const createTask = useCreateTask();
     const { data: employees } = useEmployees();
     const { data: products } = useProducts();
@@ -62,6 +65,46 @@ export default function AddTask() {
         payment_mode: "cash" as PaymentMode // Default
     });
 
+    const draftKey = `task_form_draft_${location.pathname}`;
+
+    const handleQuickAddService = () => {
+        localStorage.setItem(draftKey, JSON.stringify(formData));
+        const returnUrl = encodeURIComponent(location.pathname);
+        navigate(`/services/add?returnUrl=${returnUrl}`);
+    };
+
+    useEffect(() => {
+        const draft = localStorage.getItem(draftKey);
+        if (draft) {
+            try {
+                const parsed = JSON.parse(draft);
+                setFormData(prev => ({ ...prev, ...parsed }));
+            } catch (e) {
+                console.error("Failed to parse draft", e);
+            }
+        }
+    }, [draftKey]);
+
+    useEffect(() => {
+        const newServiceId = searchParams.get("newService");
+        if (newServiceId && services.length > 0) {
+            const service = services.find(s => s.id === newServiceId);
+            if (service) {
+                setFormData(prev => ({
+                    ...prev,
+                    service_id: newServiceId,
+                    title: service.name,
+                    payment_amount: service.sale_price?.toString() || ""
+                }));
+                // Clear param
+                setSearchParams(params => {
+                    params.delete("newService");
+                    return params;
+                }, { replace: true });
+            }
+        }
+    }, [services, searchParams, setSearchParams]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -71,6 +114,7 @@ export default function AddTask() {
                 // If payment mode is empty string (if changed), handle it, but select forces value.
                 payment_mode: formData.payment_mode || null
             });
+            localStorage.removeItem(draftKey);
             navigate("/employees/tasks");
         } catch (error) {
             console.error("Failed", error);
@@ -89,32 +133,43 @@ export default function AddTask() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="service">Select Service</Label>
-                                    <Select
-                                        value={formData.service_id}
-                                        onValueChange={(serviceId) => {
-                                            const service = services.find(s => s.id === serviceId);
-                                            if (service) {
-                                                setFormData({
-                                                    ...formData,
-                                                    service_id: serviceId,
-                                                    title: service.name,
-                                                    payment_amount: service.sale_price?.toString() || ""
-                                                });
-                                            }
-                                        }}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a Service" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {services.map(service => (
-                                                <SelectItem key={service.id} value={service.id}>
-                                                    {service.name} (₹{service.sale_price})
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <Label htmlFor="service">Select Service <span className="text-destructive">*</span></Label>
+                                    <div className="flex gap-2">
+                                        <Select
+                                            value={formData.service_id}
+                                            onValueChange={(serviceId) => {
+                                                const service = services.find(s => s.id === serviceId);
+                                                if (service) {
+                                                    setFormData({
+                                                        ...formData,
+                                                        service_id: serviceId,
+                                                        title: service.name,
+                                                        payment_amount: service.sale_price?.toString() || ""
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="flex-1">
+                                                <SelectValue placeholder="Select a Service" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {services.map(service => (
+                                                    <SelectItem key={service.id} value={service.id}>
+                                                        {service.name} (₹{service.sale_price})
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={handleQuickAddService}
+                                            title="Add New Service"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                     {/* Hidden title input or just rely on service name */}
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
@@ -128,7 +183,7 @@ export default function AddTask() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="employee_id">Assign To</Label>
+                                    <Label htmlFor="employee_id">Assign To <span className="text-destructive">*</span></Label>
                                     <Select
                                         value={formData.employee_id}
                                         onValueChange={(v) => setFormData({ ...formData, employee_id: v })}
@@ -162,7 +217,7 @@ export default function AddTask() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="customer_name">Customer Name</Label>
+                                    <Label htmlFor="customer_name">Customer Name <span className="text-destructive">*</span></Label>
                                     <div className="flex gap-2">
                                         <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
                                             <PopoverTrigger asChild>

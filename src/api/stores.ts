@@ -41,7 +41,21 @@ export const useUpdateStore = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ id, ...updates }: { id: string; name?: string; domain?: string; description?: string; is_active?: boolean }) => {
+        mutationFn: async ({ id, ...updates }: {
+            id: string;
+            name?: string;
+            domain?: string;
+            description?: string;
+            is_active?: boolean;
+            address?: string;
+            phone?: string;
+            email?: string;
+            website?: string;
+            logo_url?: string;
+            gstin?: string;
+            currency?: string;
+            onboarding_completed?: boolean;
+        }) => {
             const { data, error } = await supabase
                 .from("stores")
                 .update(updates)

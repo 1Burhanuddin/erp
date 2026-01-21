@@ -22,21 +22,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAdminRole = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
+      const { data, error } = await supabase.rpc('is_admin');
 
       if (error) {
-        console.error("checkAdminRole Error:", error);
-      }
-      console.log("checkAdminRole Data:", data);
+        console.error("checkAdminRole RPC Error:", error);
+        // Fallback to table query if RPC fails (though RPC should exist)
+        const { data: empData, error: empError } = await supabase
+          .from('employees')
+          .select('role')
+          .eq('user_id', userId)
+          .single();
 
-      if (!error && data && data.role === 'admin') {
-        setIsAdmin(true);
+        if (!empError && empData && empData.role === 'admin') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
       } else {
-        setIsAdmin(false);
+        console.log("is_admin RPC result:", data);
+        setIsAdmin(!!data);
       }
     } catch (error) {
       console.error("Error checking admin role:", error);

@@ -2,7 +2,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { ProductForm } from "@/components/products/ProductForm";
 import { useCreateProduct } from "@/api/products";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -11,6 +11,9 @@ const AddProduct = () => {
     const navigate = useNavigate();
     const createProduct = useCreateProduct();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
+    const returnUrl = searchParams.get("returnUrl");
+
     const isService = location.pathname.includes("/services");
 
     const handleSubmit = async (data: any) => {
@@ -43,7 +46,15 @@ const AddProduct = () => {
             }
 
             toast.success(`${isService ? "Service" : "Product"} created successfully`);
-            navigate(isService ? "/services" : "/products/list");
+
+            if (returnUrl) {
+                const separator = returnUrl.includes("?") ? "&" : "?";
+                const paramName = isService ? "newService" : "newProduct";
+                navigate(`${returnUrl}${separator}${paramName}=${newProduct.id}`);
+            } else {
+                navigate(isService ? "/services" : "/products/list");
+            }
+
         } catch (error: any) {
             console.error("Error creating product:", error);
             if (error.code === '23505' || error.status === 409 || error.message?.includes("duplicate")) {

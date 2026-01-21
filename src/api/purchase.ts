@@ -143,6 +143,50 @@ export const useCreatePurchaseOrder = () => {
     });
 };
 
+export const useUpdatePurchaseOrder = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, order, items }: { id: string; order: Partial<PurchaseOrderInsert>; items: Omit<PurchaseItemInsert, "purchase_id">[] }) => {
+            // 1. Update Order Details
+            const { data: orderData, error: orderError } = await supabase
+                .from("purchase_orders")
+                .update(order)
+                .eq("id", id)
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            // 2. Delete Existing Items
+            const { error: deleteError } = await supabase
+                .from("purchase_items")
+                .delete()
+                .eq("purchase_id", id);
+
+            if (deleteError) throw deleteError;
+
+            // 3. Create New Items
+            if (items.length > 0) {
+                const itemsWithId = items.map((item) => ({
+                    ...item,
+                    purchase_id: id,
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from("purchase_items")
+                    .insert(itemsWithId);
+
+                if (itemsError) throw itemsError;
+            }
+
+            return orderData;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["purchase_orders"] });
+        },
+    });
+};
+
 export const useConvertPOToGRN = () => {
     const queryClient = useQueryClient();
     return useMutation({

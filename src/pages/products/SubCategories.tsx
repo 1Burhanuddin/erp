@@ -1,11 +1,8 @@
 import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { useCategories, useSubCategories, useCreateSubCategory, useUpdateSubCategory, useDeleteSubCategory, SubCategory } from "@/api/products";
+import { useSubCategories } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
     Table,
     TableBody,
@@ -14,113 +11,14 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Plus, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useNavigate } from "react-router-dom";
 
 const SubCategories = () => {
     const { data: subCategories, isLoading } = useSubCategories();
-    const { data: categories } = useCategories();
-    const createSubCategory = useCreateSubCategory();
-    const updateSubCategory = useUpdateSubCategory();
-    const deleteSubCategory = useDeleteSubCategory();
-
+    const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState({ name: "", description: "", category_id: "" });
-
-    const handleOpenCreate = () => {
-        setEditingId(null);
-        setFormData({ name: "", description: "", category_id: "" });
-        setIsDialogOpen(true);
-    };
-
-    const handleOpenEdit = (subCategory: SubCategory) => {
-        setEditingId(subCategory.id);
-        setFormData({
-            name: subCategory.name,
-            description: subCategory.description || "",
-            category_id: subCategory.category_id
-        });
-        setIsDialogOpen(true);
-    };
-
-    const handleSubmit = async () => {
-        if (!formData.name) {
-            toast.error("Name is required");
-            return;
-        }
-        if (!formData.category_id) {
-            toast.error("Parent Category is required");
-            return;
-        }
-
-        try {
-            if (editingId) {
-                await updateSubCategory.mutateAsync({
-                    ...formData,
-                    id: editingId,
-                    created_at: "", // ignored
-                    updated_at: ""  // ignored
-                });
-                toast.success("Sub Category updated successfully");
-            } else {
-                await createSubCategory.mutateAsync(formData);
-                toast.success("Sub Category created successfully");
-            }
-            setIsDialogOpen(false);
-        } catch (error) {
-            toast.error(editingId ? "Failed to update sub category" : "Failed to create sub category");
-        }
-    };
-
-    const handleDeleteClick = () => {
-        setIsDeleteDialogOpen(true);
-    };
-
-    const handleConfirmDelete = async () => {
-        if (editingId) {
-            try {
-                await deleteSubCategory.mutateAsync(editingId);
-                toast.success("Sub Category deleted");
-                setIsDeleteDialogOpen(false);
-                setIsDialogOpen(false);
-            } catch (error) {
-                toast.error("Failed to delete sub category");
-            }
-        }
-    };
-
-    const isSubmitting = createSubCategory.isPending || updateSubCategory.isPending;
 
     return (
         <PageLayout>
@@ -132,7 +30,7 @@ const SubCategories = () => {
                         <div className="hidden sm:block">
                             <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                         </div>
-                        <Button onClick={handleOpenCreate}>
+                        <Button onClick={() => navigate("/products/sub-categories/add")}>
                             <Plus className="mr-2 h-4 w-4" />
                             Add Sub Category
                         </Button>
@@ -159,7 +57,7 @@ const SubCategories = () => {
                                 <DataCard
                                     key={subCategory.id}
                                     className="bg-card cursor-pointer hover:bg-muted/50 transition-colors"
-                                    onClick={() => handleOpenEdit(subCategory)}
+                                    onClick={() => navigate(`/products/sub-categories/edit/${subCategory.id}`)}
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
@@ -204,7 +102,7 @@ const SubCategories = () => {
                                         <TableRow
                                             key={subCategory.id}
                                             className="cursor-pointer hover:bg-muted/50"
-                                            onClick={() => handleOpenEdit(subCategory)}
+                                            onClick={() => navigate(`/products/sub-categories/edit/${subCategory.id}`)}
                                         >
                                             <TableCell className="font-medium">{subCategory.name}</TableCell>
                                             <TableCell>{subCategory.category?.name}</TableCell>
@@ -217,87 +115,6 @@ const SubCategories = () => {
                     </div>
                 )}
             </div>
-
-            {/* Create/Edit Dialog */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{editingId ? "Edit Sub Category" : "Add New Sub Category"}</DialogTitle>
-                        <DialogDescription>
-                            {editingId ? "Update sub category details." : "Create a new sub category for your products."}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="category">Parent Category</Label>
-                            <Select
-                                value={formData.category_id}
-                                onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select parent category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {categories?.map((category) => (
-                                        <SelectItem key={category.id} value={category.id}>
-                                            {category.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
-                                id="name"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter className="flex justify-between sm:justify-between w-full">
-                        {editingId ? (
-                            <Button variant="destructive" onClick={handleDeleteClick} type="button">
-                                Delete
-                            </Button>
-                        ) : <div />}
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleSubmit} disabled={isSubmitting}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {editingId ? "Update" : "Create"}
-                            </Button>
-                        </div>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the sub category.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </PageLayout>
     );
 };

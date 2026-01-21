@@ -11,31 +11,18 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { Plus, Loader2, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Plus, Loader2, Upload, X } from "lucide-react";
 
 import {
     useCategories,
     useSubCategories,
     useBrands,
     useUnits,
-    useCreateCategory,
-    useCreateSubCategory,
-    useCreateBrand,
-    useCreateUnit,
 } from "@/api/products";
 import { useStores } from "@/api/stores";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
 interface ProductFormProps {
     initialData?: any;
@@ -43,72 +30,6 @@ interface ProductFormProps {
     isSubmitting?: boolean;
     fixedType?: 'Product' | 'Service';
 }
-
-const QuickAddDialog = ({
-    title,
-    description,
-    onSave,
-    trigger,
-    children,
-}: {
-    title: string;
-    description: string;
-    onSave: (name: string) => Promise<void>;
-    trigger: React.ReactNode;
-    children?: React.ReactNode;
-}) => {
-    const [open, setOpen] = useState(false);
-    const [name, setName] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleSave = async () => {
-        if (!name) return;
-        setIsLoading(true);
-        try {
-            await onSave(name);
-            setOpen(false);
-            setName("");
-            toast.success(`${title} added successfully`);
-        } catch (e) {
-            toast.error("Failed to add item");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{trigger}</DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                    <DialogDescription>{description}</DialogDescription>
-                </DialogHeader>
-                <div className="py-4 space-y-4">
-                    {children}
-                    <div className="space-y-2">
-                        <Label>Name</Label>
-                        <Input
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter name..."
-                            disabled={isLoading}
-                        />
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave} disabled={isLoading || !name.trim()}>
-                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        {isLoading ? "Saving..." : "Save"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
 
 const StoreSelector = ({ selectedStores, onChange }: { selectedStores: string[], onChange: (ids: string[]) => void }) => {
     const { data: stores } = useStores();
@@ -148,13 +69,12 @@ export const ProductForm = ({
     fixedType,
 }: ProductFormProps) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const { data: categories } = useCategories();
     const { data: brands } = useBrands();
     const { data: units } = useUnits();
-
-    const createCategory = useCreateCategory();
-    const createBrand = useCreateBrand();
-    const createUnit = useCreateUnit();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -182,10 +102,61 @@ export const ProductForm = ({
 
     // Fetch sub-categories only when a category is selected
     const { data: subCategories } = useSubCategories(formData.category_id || undefined);
-    const createSubCategory = useCreateSubCategory();
+
+    const draftKey = `product_form_draft_${location.pathname}`;
+
+    const handleQuickAdd = (type: 'category' | 'subcategory' | 'brand' | 'unit') => {
+        // Save draft
+        localStorage.setItem(draftKey, JSON.stringify(formData));
+
+        // Return URL including current path and search (to preserve other params if any)
+        // But we want to strip the 'new...' params if we are adding another one, to avoid stacking
+        const currentPath = location.pathname;
+        const returnUrl = encodeURIComponent(currentPath);
+
+        switch (type) {
+            case 'category':
+                navigate(`/products/categories/add?returnUrl=${returnUrl}`);
+                break;
+            case 'subcategory':
+                navigate(`/products/sub-categories/add?returnUrl=${returnUrl}&category_id=${formData.category_id}`);
+                break;
+            case 'brand':
+                navigate(`/products/brands/add?returnUrl=${returnUrl}`);
+                break;
+            case 'unit':
+                navigate(`/products/units/add?returnUrl=${returnUrl}`);
+                break;
+        }
+    };
 
     useEffect(() => {
-        if (initialData) {
+        const newCategory = searchParams.get("newCategory");
+        const newSubCategory = searchParams.get("newSubCategory");
+        const newBrand = searchParams.get("newBrand");
+        const newUnit = searchParams.get("newUnit");
+
+        const draft = localStorage.getItem(draftKey);
+
+        if (draft) {
+            try {
+                const parsedDraft = JSON.parse(draft);
+                setFormData(prev => {
+                    const updated = { ...prev, ...parsedDraft };
+                    // Apply new IDs if present
+                    if (newCategory) {
+                        updated.category_id = newCategory;
+                        updated.sub_category_id = ""; // Reset sub
+                    }
+                    if (newSubCategory) updated.sub_category_id = newSubCategory;
+                    if (newBrand) updated.brand_id = newBrand;
+                    if (newUnit) updated.unit_id = newUnit;
+                    return updated;
+                });
+            } catch (e) {
+                console.error("Failed to parse draft", e);
+            }
+        } else if (initialData) {
             setFormData({
                 name: initialData.name || "",
                 sku: initialData.sku || "",
@@ -211,7 +182,19 @@ export const ProductForm = ({
         } else if (fixedType) {
             setFormData(prev => ({ ...prev, type: fixedType }));
         }
-    }, [initialData, fixedType]);
+
+        // Clean up params if they exist
+        if (newCategory || newSubCategory || newBrand || newUnit) {
+            setSearchParams(params => {
+                params.delete("newCategory");
+                params.delete("newSubCategory");
+                params.delete("newBrand");
+                params.delete("newUnit");
+                return params;
+            }, { replace: true });
+        }
+
+    }, [initialData, fixedType, searchParams, draftKey]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -269,6 +252,8 @@ export const ProductForm = ({
             .map(f => f.trim())
             .filter(f => f.length > 0);
 
+        localStorage.removeItem(draftKey);
+
         onSubmit({
             ...formData,
             purchase_price: Number(formData.purchase_price),
@@ -321,7 +306,7 @@ export const ProductForm = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="name">
-                        {formData.type === "Service" ? "Service Name *" : "Product Name *"}
+                        {formData.type === "Service" ? "Service Name" : "Product Name"} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                         id="name"
@@ -333,7 +318,7 @@ export const ProductForm = ({
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="sku">
-                        {formData.type === "Service" ? "Service Code" : "SKU (Stock Keeping Unit)"} *
+                        {formData.type === "Service" ? "Service Code" : "SKU (Stock Keeping Unit)"} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                         id="sku"
@@ -386,18 +371,9 @@ export const ProductForm = ({
                                 ))}
                             </SelectContent>
                         </Select>
-                        <QuickAddDialog
-                            title="Add Category"
-                            description="Create a new product category"
-                            onSave={async (name) => {
-                                await createCategory.mutateAsync({ name });
-                            }}
-                            trigger={
-                                <Button type="button" variant="outline" size="icon">
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            }
-                        />
+                        <Button type="button" variant="outline" size="icon" onClick={() => handleQuickAdd('category')}>
+                            <Plus className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
 
@@ -422,46 +398,15 @@ export const ProductForm = ({
                                 ))}
                             </SelectContent>
                         </Select>
-                        <QuickAddDialog
-                            title="Add Sub Category"
-                            description="Create a new sub category"
-                            onSave={async (name) => {
-                                if (!formData.category_id) {
-                                    toast.error("Please select a parent category first");
-                                    throw new Error("Category required");
-                                }
-                                await createSubCategory.mutateAsync({
-                                    name,
-                                    category_id: formData.category_id
-                                });
-                            }}
-                            trigger={
-                                <Button type="button" variant="outline" size="icon">
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            }
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleQuickAdd('subcategory')}
+                            disabled={!formData.category_id}
                         >
-                            <div className="space-y-2">
-                                <Label>Parent Category</Label>
-                                <Select
-                                    value={formData.category_id}
-                                    onValueChange={(val) =>
-                                        setFormData({ ...formData, category_id: val, sub_category_id: "" })
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select Category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {categories?.map((c) => (
-                                            <SelectItem key={c.id} value={c.id}>
-                                                {c.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </QuickAddDialog>
+                            <Plus className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
 
@@ -488,18 +433,9 @@ export const ProductForm = ({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <QuickAddDialog
-                                        title="Add Brand"
-                                        description="Create a new brand"
-                                        onSave={async (name) => {
-                                            await createBrand.mutateAsync({ name });
-                                        }}
-                                        trigger={
-                                            <Button type="button" variant="outline" size="icon">
-                                                <Plus className="h-4 w-4" />
-                                            </Button>
-                                        }
-                                    />
+                                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuickAdd('brand')}>
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
                                 </div>
                             </div>
 
@@ -523,18 +459,9 @@ export const ProductForm = ({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <QuickAddDialog
-                                        title="Add Unit"
-                                        description="Create a new unit"
-                                        onSave={async (name) => {
-                                            await createUnit.mutateAsync({ name });
-                                        }}
-                                        trigger={
-                                            <Button type="button" variant="outline" size="icon">
-                                                <Plus className="h-4 w-4" />
-                                            </Button>
-                                        }
-                                    />
+                                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuickAdd('unit')}>
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
                                 </div>
                             </div>
                         </>
@@ -560,7 +487,7 @@ export const ProductForm = ({
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="sale_price">
-                        {formData.type === "Service" ? "Service Charge" : "Sale Price"}
+                        {formData.type === "Service" ? "Service Charge" : "Sale Price"} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                         id="sale_price"

@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { useBrands, useCreateBrand, useUpdateBrand, useDeleteBrand, Brand } from "@/api/products";
+import { useBrands } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
     Table,
     TableBody,
@@ -13,97 +11,14 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { Plus, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useNavigate } from "react-router-dom";
 
 const Brands = () => {
     const { data: brands, isLoading } = useBrands();
-    const createBrand = useCreateBrand();
-    const updateBrand = useUpdateBrand();
-    const deleteBrand = useDeleteBrand();
-
+    const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState({ name: "" });
-
-    const handleOpenCreate = () => {
-        setEditingId(null);
-        setFormData({ name: "" });
-        setIsDialogOpen(true);
-    };
-
-    const handleOpenEdit = (brand: Brand) => {
-        setEditingId(brand.id);
-        setFormData({ name: brand.name });
-        setIsDialogOpen(true);
-    };
-
-    const handleSubmit = async () => {
-        if (!formData.name) {
-            toast.error("Name is required");
-            return;
-        }
-
-        try {
-            if (editingId) {
-                await updateBrand.mutateAsync({
-                    ...formData,
-                    id: editingId,
-                    created_at: "", // ignored
-                    updated_at: ""  // ignored
-                });
-                toast.success("Brand updated successfully");
-            } else {
-                await createBrand.mutateAsync(formData);
-                toast.success("Brand created successfully");
-            }
-            setIsDialogOpen(false);
-        } catch (error) {
-            toast.error(editingId ? "Failed to update brand" : "Failed to create brand");
-        }
-    };
-
-    const handleDeleteClick = () => {
-        setIsDeleteDialogOpen(true);
-    };
-
-    const handleConfirmDelete = async () => {
-        if (editingId) {
-            try {
-                await deleteBrand.mutateAsync(editingId);
-                toast.success("Brand deleted");
-                setIsDeleteDialogOpen(false);
-                setIsDialogOpen(false);
-            } catch (error) {
-                toast.error("Failed to delete brand");
-            }
-        }
-    };
-
-    const isSubmitting = createBrand.isPending || updateBrand.isPending;
 
     return (
         <PageLayout>
@@ -115,7 +30,7 @@ const Brands = () => {
                         <div className="hidden sm:block">
                             <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                         </div>
-                        <Button onClick={handleOpenCreate}>
+                        <Button onClick={() => navigate("/products/brands/add")}>
                             <Plus className="mr-2 h-4 w-4" />
                             Add Brand
                         </Button>
@@ -142,7 +57,7 @@ const Brands = () => {
                                 <DataCard
                                     key={brand.id}
                                     className="bg-card cursor-pointer hover:bg-muted/50 transition-colors"
-                                    onClick={() => handleOpenEdit(brand)}
+                                    onClick={() => navigate(`/products/brands/edit/${brand.id}`)}
                                 >
                                     <div className="flex justify-between items-center">
                                         <span className="font-medium">{brand.name}</span>
@@ -177,7 +92,7 @@ const Brands = () => {
                                         <TableRow
                                             key={brand.id}
                                             className="cursor-pointer hover:bg-muted/50"
-                                            onClick={() => handleOpenEdit(brand)}
+                                            onClick={() => navigate(`/products/brands/edit/${brand.id}`)}
                                         >
                                             <TableCell className="font-medium">{brand.name}</TableCell>
                                         </TableRow>
@@ -188,61 +103,6 @@ const Brands = () => {
                     </div>
                 )}
             </div>
-
-            {/* Create/Edit Dialog */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{editingId ? "Edit Brand" : "Add New Brand"}</DialogTitle>
-                        <DialogDescription>
-                            {editingId ? "Update brand details." : "Create a new brand for your products."}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
-                                id="name"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter className="flex justify-between sm:justify-between w-full">
-                        {editingId ? (
-                            <Button variant="destructive" onClick={handleDeleteClick} type="button">
-                                Delete
-                            </Button>
-                        ) : <div />}
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleSubmit} disabled={isSubmitting}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {editingId ? "Update" : "Create"}
-                            </Button>
-                        </div>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the brand.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </PageLayout>
     );
 };

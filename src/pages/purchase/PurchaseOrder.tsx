@@ -55,7 +55,7 @@ const PurchaseOrder = () => {
                             <div className="col-span-full text-center py-8 text-muted-foreground">No purchase orders found.</div>
                         ) : (
                             orders?.map((order: any) => (
-                                <DataCard key={order.id} onClick={() => navigate(`/purchase/${order.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
+                                <DataCard key={order.id} onClick={() => navigate(`/purchase/edit/${order.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-foreground font-mono">{order.order_no}</h3>
@@ -105,7 +105,7 @@ const PurchaseOrder = () => {
                                     </TableRow>
                                 ) : (
                                     orders?.map((order: any) => (
-                                        <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/purchase/${order.id}`)}>
+                                        <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/purchase/edit/${order.id}`)}>
                                             <TableCell className="font-mono">{order.order_no}</TableCell>
                                             <TableCell>{order.supplier?.name || "Unknown"}</TableCell>
                                             <TableCell>{order.order_date ? format(new Date(order.order_date), "dd MMM yyyy") : "-"}</TableCell>

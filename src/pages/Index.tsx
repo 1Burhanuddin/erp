@@ -6,6 +6,9 @@ import { StatsCard } from "@/components/shared";
 import AlertsPanel from "@/components/shared/AlertsPanel";
 import DashboardChart from "@/components/DashboardChart";
 import DashboardBarChart from "@/components/DashboardBarChart";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useStores } from "@/api/stores";
 import { useRealDashboardStats, useRealDashboardCharts } from "@/api/dashboard";
 
 
@@ -36,8 +39,19 @@ const DashboardSkeleton = () => (
 );
 
 const Index = () => {
+  const navigate = useNavigate();
   const { data: stats, isLoading: statsLoading } = useRealDashboardStats();
   const { data: charts, isLoading: chartsLoading } = useRealDashboardCharts();
+  const { data: stores, isLoading: storesLoading } = useStores();
+
+  useEffect(() => {
+    if (!storesLoading && stores && stores.length > 0) {
+      const currentStore = stores[0];
+      if (!currentStore.onboarding_completed) {
+        navigate("/setup");
+      }
+    }
+  }, [stores, storesLoading, navigate]);
 
   if (statsLoading || chartsLoading) {
     return (

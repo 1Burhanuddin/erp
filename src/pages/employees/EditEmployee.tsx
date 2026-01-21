@@ -127,7 +127,7 @@ export default function EditEmployee() {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="full_name">Full Name</Label>
+                                <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
                                 <Input
                                     id="full_name"
                                     required
@@ -136,9 +136,10 @@ export default function EditEmployee() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="phone">Phone</Label>
+                                <Label htmlFor="phone">Phone <span className="text-destructive">*</span></Label>
                                 <Input
                                     id="phone"
+                                    required
                                     value={formData.phone}
                                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                 />

@@ -51,6 +51,12 @@ export const useUpdateCategory = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, ...updates }: Category) => {
+            // Remove readonly timestamp fields to avoid format errors
+            // @ts-ignore
+            delete updates.created_at;
+            // @ts-ignore
+            delete updates.updated_at;
+
             const { data, error } = await supabase
                 .from("product_categories")
                 .update(updates)
@@ -62,6 +68,86 @@ export const useUpdateCategory = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["product_categories"] });
+        },
+    });
+};
+
+// ... (Sub Categories) ...
+
+export const useUpdateSubCategory = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: SubCategory) => {
+            // @ts-ignore
+            delete updates.created_at;
+            // @ts-ignore
+            delete updates.updated_at;
+            // @ts-ignore
+            delete updates.category; // also remove joined relation if present
+
+            const { data, error } = await supabase
+                .from("product_sub_categories")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["product_sub_categories"] });
+        },
+    });
+};
+
+// ... (Brands) ...
+
+export const useUpdateBrand = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: Brand) => {
+            // @ts-ignore
+            delete updates.created_at;
+            // @ts-ignore
+            delete updates.updated_at;
+
+            const { data, error } = await supabase
+                .from("product_brands")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["product_brands"] });
+        },
+    });
+};
+
+// ... (Units) ...
+
+export const useUpdateUnit = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...updates }: Unit) => {
+            // @ts-ignore
+            delete updates.created_at;
+            // @ts-ignore
+            delete updates.updated_at;
+
+            const { data, error } = await supabase
+                .from("product_units")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["product_units"] });
         },
     });
 };
@@ -122,24 +208,7 @@ export const useCreateSubCategory = () => {
     });
 };
 
-export const useUpdateSubCategory = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...updates }: SubCategory) => {
-            const { data, error } = await supabase
-                .from("product_sub_categories")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["product_sub_categories"] });
-        },
-    });
-};
+// function moved up
 
 export const useDeleteSubCategory = () => {
     const queryClient = useQueryClient();
@@ -191,24 +260,7 @@ export const useCreateBrand = () => {
     });
 };
 
-export const useUpdateBrand = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...updates }: Brand) => {
-            const { data, error } = await supabase
-                .from("product_brands")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["product_brands"] });
-        },
-    });
-};
+// function moved up
 
 export const useDeleteBrand = () => {
     const queryClient = useQueryClient();
@@ -260,24 +312,7 @@ export const useCreateUnit = () => {
     });
 };
 
-export const useUpdateUnit = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, ...updates }: Unit) => {
-            const { data, error } = await supabase
-                .from("product_units")
-                .update(updates)
-                .eq("id", id)
-                .select()
-                .single();
-            if (error) throw error;
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["product_units"] });
-        },
-    });
-};
+// function moved up
 
 export const useDeleteUnit = () => {
     const queryClient = useQueryClient();
@@ -336,35 +371,35 @@ export const useCreateProduct = () => {
 };
 
 export const useDeleteProduct = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-  });
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase
+                .from("products")
+                .delete()
+                .eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+        },
+    });
 };
 
 export const useBulkImportProducts = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (products: ProductInsert[]) => {
-      const { data, error } = await supabase
-        .from("products")
-        .insert(products)
-        .select();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (products: ProductInsert[]) => {
+            const { data, error } = await supabase
+                .from("products")
+                .insert(products)
+                .select();
 
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-  });
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+        },
+    });
 };

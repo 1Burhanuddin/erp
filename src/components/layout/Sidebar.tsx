@@ -126,6 +126,7 @@ const navItems = [
     ],
   },
 
+  { path: "/inventory", label: "Inventory", icon: ClipboardList, description: "Manage inventory stock" },
   { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
   { path: "/reports", label: "Reports", icon: BarChart3, description: "View reports and analytics" },
   { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },

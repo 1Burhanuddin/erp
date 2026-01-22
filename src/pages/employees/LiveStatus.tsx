@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +18,17 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { DataViewToggle } from "@/components/shared";
 
 export default function LiveStatus() {
     const { data: currentEmployee } = useCurrentEmployee();
-    const [viewMode, setViewMode] = useState<"grid" | "list">("card"); // Default to card as per logic, utilizing 'grid' as identifier in UI for Cards
+    const [viewMode, setViewMode] = useState<"card" | "table">("card");
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     const { data: employees, isLoading } = useQuery({
         queryKey: ["live_status", currentEmployee?.store_id],
@@ -91,33 +99,27 @@ export default function LiveStatus() {
         }
     };
 
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />,
+            container
+        );
+    };
+
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="Live Employee Status"
                 description="Real-time field force tracking"
-                actions={
-                    <div className="flex bg-muted rounded-lg p-1">
-                        <Button
-                            variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                            size="sm"
-                            onClick={() => setViewMode('grid')}
-                        >
-                            <LayoutGrid className="w-4 h-4" />
-                        </Button>
-                        <Button
-                            variant={viewMode === 'list' ? 'default' : 'ghost'}
-                            size="sm"
-                            onClick={() => setViewMode('list')}
-                        >
-                            <List className="w-4 h-4" />
-                        </Button>
-                    </div>
-                }
             />
 
+
             <div className="p-6">
-                {viewMode === 'grid' ? (
+                {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {employees?.map(emp => (
                             <Card key={emp.id} className={`border-l-4 ${emp.status === 'working' ? 'border-l-green-500' : emp.status === 'idle' ? 'border-l-yellow-500' : 'border-l-gray-300'}`}>

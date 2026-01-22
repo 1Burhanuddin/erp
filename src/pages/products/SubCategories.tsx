@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useSubCategories } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
@@ -19,29 +20,30 @@ const SubCategories = () => {
     const { data: subCategories, isLoading } = useSubCategories();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     return (
         <PageLayout>
+            {mounted && document.getElementById('header-actions') && createPortal(
+                <div className="flex items-center gap-2">
+                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <Button onClick={() => navigate("/products/sub-categories/add")} size="sm" className="h-9">
+                        <Plus className="mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">Add Sub Category</span>
+                    </Button>
+                </div>,
+                document.getElementById('header-actions')!
+            )}
+
             <PageHeader
                 title="Product Sub Categories"
                 description="Manage product sub categories"
-                actions={
-                    <div className="flex items-center gap-2">
-                        <div className="hidden sm:block">
-                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                        </div>
-                        <Button onClick={() => navigate("/products/sub-categories/add")}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Sub Category
-                        </Button>
-                    </div>
-                }
             />
-
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>
 
             <div className="p-4">
                 {viewMode === 'card' ? (

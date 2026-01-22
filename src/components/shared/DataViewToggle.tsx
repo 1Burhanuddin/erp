@@ -8,11 +8,11 @@ interface DataViewToggleProps {
 
 export const DataViewToggle = ({ viewMode, setViewMode }: DataViewToggleProps) => {
     return (
-        <div className="flex items-center gap-1 border rounded-lg p-1 bg-muted/50">
+        <div className="flex items-center gap-1 border rounded-full p-1 bg-muted/50">
             <Button
                 variant={viewMode === 'table' ? 'secondary' : 'ghost'}
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="h-7 w-7 p-0 rounded-full"
                 onClick={() => setViewMode('table')}
             >
                 <Table className="h-4 w-4" />
@@ -20,7 +20,7 @@ export const DataViewToggle = ({ viewMode, setViewMode }: DataViewToggleProps) =
             <Button
                 variant={viewMode === 'card' ? 'secondary' : 'ghost'}
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="h-7 w-7 p-0 rounded-full"
                 onClick={() => setViewMode('card')}
             >
                 <LayoutGrid className="h-4 w-4" />

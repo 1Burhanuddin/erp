@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useContacts } from "@/api/contacts";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,12 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     // Filter contacts by the requested role and search query
     const filteredContacts = contacts?.filter(c => {
@@ -76,46 +83,44 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
 
     return (
         <PageLayout>
+            {mounted && document.getElementById('header-actions') && createPortal(
+                <div className="flex items-center gap-2">
+                    <div className="hidden sm:block w-40 md:w-60">
+                        <SearchInput
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            placeholder={`Search...`}
+                        />
+                    </div>
+                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4">
+                                <Download className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Export</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={handleExportCSV}>
+                                Export as CSV
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4" onClick={() => navigate("/contacts/import")}>
+                        <Upload className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Import</span>
+                    </Button>
+                    <Button size="sm" className="h-9 px-2 sm:px-4" onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        <span>Add {role}</span>
+                    </Button>
+                </div>,
+                document.getElementById('header-actions')!
+            )}
+
             <PageHeader
                 title={title}
                 description={description}
-                actions={
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-                        <div className="w-full sm:w-[220px]">
-                            <SearchInput
-                                value={searchQuery}
-                                onChange={setSearchQuery}
-                                placeholder={`Search...`}
-                            />
-                        </div>
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-                            <div className="hidden sm:block">
-                                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-4">
-                                        <Download className="h-4 w-4 sm:mr-2" />
-                                        <span className="hidden sm:inline">Export</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={handleExportCSV}>
-                                        Export as CSV
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-4" onClick={() => navigate("/contacts/import")}>
-                                <Upload className="h-4 w-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Import</span>
-                            </Button>
-                            <Button size="sm" className="h-8 sm:h-9 px-2 sm:px-4" onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                <span>Add {role}</span>
-                            </Button>
-                        </div>
-                    </div>
-                }
             />
 
 

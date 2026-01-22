@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { StatsCard } from "@/components/shared";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Wallet, Calendar, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -21,6 +21,13 @@ import {
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   const { data: report, isLoading, error } = useReports(
     dateRange.from && dateRange.to
       ? { startDate: dateRange.from, endDate: dateRange.to }
@@ -31,7 +38,7 @@ const Reports = () => {
     return (
       <PageLayout>
         <PageHeader title="Reports" description="Analytics and business insights" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 lg:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 lg:mb-8">
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-xl" />
           ))}
@@ -199,145 +206,119 @@ const Reports = () => {
     );
   };
 
+  const HeaderActions = () => {
+    const container = document.getElementById('header-actions');
+    if (!mounted || !container) return null;
+
+    return createPortal(
+      <div className="flex items-center gap-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-[240px] justify-start text-left font-normal rounded-full",
+                !dateRange.from && "text-muted-foreground"
+              )}
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              {dateRange.from ? (
+                dateRange.to ? (
+                  <>
+                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                    {format(dateRange.to, "LLL dd, y")}
+                  </>
+                ) : (
+                  format(dateRange.from, "LLL dd, y")
+                )
+              ) : (
+                <span>Pick a date range</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <CalendarComponent
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange.from}
+              selected={{ from: dateRange.from, to: dateRange.to }}
+              onSelect={handleDateRangeSelect}
+              numberOfMonths={2}
+            />
+          </PopoverContent>
+        </Popover>
+        {(dateRange.from || dateRange.to) && (
+          <Button variant="ghost" onClick={clearDateRange} className="rounded-full">
+            Clear
+          </Button>
+        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="rounded-full">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportAll}>
+              Export All Data
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportCSV}>
+              Export Summary
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportMonthlySales}>
+              Export Monthly Sales
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportCategoryDistribution}>
+              Export Category Distribution
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>,
+      container
+    );
+  };
+
   return (
     <PageLayout>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <PageHeader title="Reports" description="Analytics and business insights" />
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[280px] justify-start text-left font-normal",
-                  !dateRange.from && "text-muted-foreground"
-                )}
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                {dateRange.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")} -{" "}
-                      {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <CalendarComponent
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange.from}
-                selected={{ from: dateRange.from, to: dateRange.to }}
-                onSelect={handleDateRangeSelect}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
-          {(dateRange.from || dateRange.to) && (
-            <Button variant="ghost" onClick={clearDateRange}>
-              Clear
-            </Button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleExportAll}>
-                Export All Data
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportCSV}>
-                Export Summary
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportMonthlySales}>
-                Export Monthly Sales
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportCategoryDistribution}>
-                Export Category Distribution
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+      <HeaderActions />
+      <PageHeader title="Reports" description="Analytics and business insights" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 lg:mb-8">
-        <StatsCard
-          title="Total Revenue"
-          value={`$${report?.totalRevenue.toLocaleString()}`}
-          icon={<DollarSign className="h-5 w-5" />}
-          trend={{
-            value: Math.abs(report?.trends?.revenue || 0),
-            isPositive: (report?.trends?.revenue || 0) >= 0
-          }}
-        />
-        <StatsCard
-          title="Total Orders"
-          value={report?.totalOrders.toLocaleString() || "0"}
-          icon={<ShoppingCart className="h-5 w-5" />}
-          trend={{
-            value: Math.abs(report?.trends?.orders || 0),
-            isPositive: (report?.trends?.orders || 0) >= 0
-          }}
-        />
-        <StatsCard
-          title="Total Expenses"
-          value={`$${report?.totalExpenses.toLocaleString()}`}
-          icon={<Wallet className="h-5 w-5" />}
-          trend={{
-            value: Math.abs(report?.trends?.expenses || 0),
-            isPositive: (report?.trends?.expenses || 0) <= 0 // Lower expenses is positive
-          }}
-        />
-        <StatsCard
-          title="Net Profit"
-          value={`$${report?.netProfit.toLocaleString()}`}
-          icon={<TrendingUp className="h-5 w-5" />}
-          trend={{
-            value: Math.abs(report?.trends?.profit || 0),
-            isPositive: (report?.trends?.profit || 0) >= 0
-          }}
-        />
-      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-        <Card className="p-4 md:p-6 bg-card border-border">
-          <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">Monthly Sales</h3>
-          <div className="h-[250px] md:h-[300px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-foreground">Monthly Sales</h3>
+            <p className="text-sm text-muted-foreground">Revenue overview over time</p>
+          </div>
+          <div className="h-[300px]">
             {salesData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={salesData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis
                     dataKey="month"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    dy={10}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }}
-                    tickFormatter={(value) => `$${value / 1000}k`}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    tickFormatter={(value) => `₹${value / 1000}k`}
                   />
                   <Tooltip
-                    cursor={{ fill: 'transparent' }}
+                    cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
                     contentStyle={{
-                      background: "hsl(0, 0%, 100%)",
-                      border: "1px solid hsl(214, 32%, 91%)",
-                      borderRadius: "8px",
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "1rem",
                       boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                     }}
                   />
-                  <Bar dataKey="sales" fill="hsl(217, 91%, 60%)" radius={[4, 4, 0, 0]} barSize={32} />
+                  <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[50, 50, 50, 50]} barSize={30} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -348,9 +329,12 @@ const Reports = () => {
           </div>
         </Card>
 
-        <Card className="p-4 md:p-6 bg-card border-border">
-          <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">Sales by Category</h3>
-          <div className="h-[250px] md:h-[300px]">
+        <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-foreground">Sales by Category</h3>
+            <p className="text-sm text-muted-foreground">Distribution of revenue sources</p>
+          </div>
+          <div className="h-[300px]">
             {categoryData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -358,23 +342,24 @@ const Reports = () => {
                     data={categoryData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={2}
+                    innerRadius={70} // Thicker donut
+                    outerRadius={110}
+                    paddingAngle={4}
                     dataKey="value"
+                    cornerRadius={6}
                   >
                     {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                     ))}
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      background: "hsl(0, 0%, 100%)",
-                      border: "1px solid hsl(214, 32%, 91%)",
-                      borderRadius: "8px",
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "1rem",
                       boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                     }}
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                    formatter={(value: number) => [`₹${value.toLocaleString()}`, "Revenue"]}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -384,48 +369,56 @@ const Reports = () => {
               </div>
             )}
           </div>
-          <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-4">
+          <div className="flex flex-wrap justify-center gap-4 mt-6">
             {categoryData.map((item) => (
-              <div key={item.name} className="flex items-center gap-2 text-sm">
-                <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} />
-                <span className="text-muted-foreground">{item.name}</span>
+              <div key={item.name} className="flex items-center gap-2 text-sm bg-muted/30 px-3 py-1.5 rounded-full">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="text-muted-foreground font-medium">{item.name}</span>
               </div>
             ))}
           </div>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         {/* Top Products */}
-        <Card className="p-4 md:p-6 bg-card border-border">
-          <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">Top Selling Products</h3>
-          <div className="h-[250px] md:h-[300px]">
+        <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-foreground">Top Selling Products</h3>
+            <p className="text-sm text-muted-foreground">Best performing inventory items</p>
+          </div>
+          <div className="h-[300px]">
             {report?.topProducts && report.topProducts.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  layout="vertical"
                   data={report.topProducts}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(214, 32%, 91%)" />
-                  <XAxis type="number" hide />
-                  <YAxis
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis
                     dataKey="name"
-                    type="category"
-                    width={100}
-                    tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    tickFormatter={(value) => `₹${value / 1000}k`}
                   />
                   <Tooltip
-                    cursor={{ fill: 'transparent' }}
+                    cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
                     contentStyle={{
-                      background: "hsl(0, 0%, 100%)",
-                      border: "1px solid hsl(214, 32%, 91%)",
-                      borderRadius: "8px",
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "1rem",
                       boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                     }}
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                    formatter={(value: number) => [`₹${value.toLocaleString()}`, "Revenue"]}
                   />
-                  <Bar dataKey="value" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} barSize={20} />
+                  <Bar dataKey="value" fill="hsl(262, 83%, 58%)" radius={[50, 50, 50, 50]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -437,35 +430,43 @@ const Reports = () => {
         </Card>
 
         {/* Top Customers */}
-        <Card className="p-4 md:p-6 bg-card border-border">
-          <h3 className="text-base md:text-lg font-semibold text-foreground mb-4">Top Customers</h3>
-          <div className="h-[250px] md:h-[300px]">
+        <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-foreground">Top Customers</h3>
+            <p className="text-sm text-muted-foreground">Highest revenue generating clients</p>
+          </div>
+          <div className="h-[300px]">
             {report?.topCustomers && report.topCustomers.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  layout="vertical"
                   data={report.topCustomers}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(214, 32%, 91%)" />
-                  <XAxis type="number" hide />
-                  <YAxis
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis
                     dataKey="name"
-                    type="category"
-                    width={100}
-                    tick={{ fill: "hsl(215, 16%, 47%)", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    tickFormatter={(value) => `₹${value / 1000}k`}
                   />
                   <Tooltip
-                    cursor={{ fill: 'transparent' }}
+                    cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
                     contentStyle={{
-                      background: "hsl(0, 0%, 100%)",
-                      border: "1px solid hsl(214, 32%, 91%)",
-                      borderRadius: "8px",
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "1rem",
                       boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                     }}
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                    formatter={(value: number) => [`₹${value.toLocaleString()}`, "Revenue"]}
                   />
-                  <Bar dataKey="value" fill="hsl(142, 76%, 36%)" radius={[0, 4, 4, 0]} barSize={20} />
+                  <Bar dataKey="value" fill="hsl(142, 76%, 36%)" radius={[50, 50, 50, 50]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -473,6 +474,99 @@ const Reports = () => {
                 No customer data available
               </div>
             )}
+          </div>
+        </Card>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Total Revenue - Primary Style */}
+        <Card className="p-6 bg-primary text-primary-foreground rounded-[2rem] border-0 relative overflow-hidden group min-h-[160px]">
+          <div className="relative z-10">
+            <div className="flex justify-between items-start mb-6">
+              <span className="text-primary-foreground/80 font-medium">Total Revenue</span>
+              <div className="h-8 w-8 rounded-full bg-primary-foreground/20 flex items-center justify-center backdrop-blur-sm">
+                <DollarSign className="h-4 w-4 text-primary-foreground" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold mb-4">₹{report?.totalRevenue.toLocaleString()}</h2>
+            <div className="flex items-center gap-2 text-xs font-medium bg-primary-foreground/10 w-fit px-2 py-1 rounded-lg backdrop-blur-sm">
+              <span className={cn(
+                "flex items-center",
+                (report?.trends?.revenue || 0) >= 0 ? "text-primary-foreground" : "text-primary-foreground/80"
+              )}>
+                {(report?.trends?.revenue || 0) >= 0 ? "+" : ""}
+                {report?.trends?.revenue || 0}% from last month
+              </span>
+            </div>
+          </div>
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-primary-foreground/5 rounded-full blur-2xl group-hover:bg-primary-foreground/10 transition-colors" />
+        </Card>
+
+        {/* Total Orders */}
+        <Card className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
+          <div className="flex justify-between items-start mb-6">
+            <span className="text-muted-foreground font-medium">Total Orders</span>
+            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold mb-4">{report?.totalOrders.toLocaleString()}</h2>
+          <div className="flex items-center gap-2 text-xs font-medium">
+            <span className={cn(
+              "px-1.5 py-0.5 rounded",
+              (report?.trends?.orders || 0) >= 0
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
+                : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400"
+            )}>
+              {(report?.trends?.orders || 0) >= 0 ? "+" : ""}
+              {report?.trends?.orders || 0}%
+            </span>
+            <span className="text-muted-foreground">from last month</span>
+          </div>
+        </Card>
+
+        {/* Total Expenses */}
+        <Card className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
+          <div className="flex justify-between items-start mb-6">
+            <span className="text-muted-foreground font-medium">Total Expenses</span>
+            <div className="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+              <Wallet className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold mb-4">₹{report?.totalExpenses.toLocaleString()}</h2>
+          <div className="flex items-center gap-2 text-xs font-medium">
+            <span className={cn(
+              "px-1.5 py-0.5 rounded",
+              (report?.trends?.expenses || 0) <= 0
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
+                : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400"
+            )}>
+              {(report?.trends?.expenses || 0) > 0 ? "+" : ""}
+              {report?.trends?.expenses || 0}%
+            </span>
+            <span className="text-muted-foreground">from last month</span>
+          </div>
+        </Card>
+
+        {/* Net Profit */}
+        <Card className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
+          <div className="flex justify-between items-start mb-6">
+            <span className="text-muted-foreground font-medium">Net Profit</span>
+            <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold mb-4">₹{report?.netProfit.toLocaleString()}</h2>
+          <div className="flex items-center gap-2 text-xs font-medium">
+            <span className={cn(
+              "px-1.5 py-0.5 rounded",
+              (report?.trends?.profit || 0) >= 0
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
+                : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400"
+            )}>
+              {(report?.trends?.profit || 0) >= 0 ? "+" : ""}
+              {report?.trends?.profit || 0}%
+            </span>
+            <span className="text-muted-foreground">from last month</span>
           </div>
         </Card>
       </div>

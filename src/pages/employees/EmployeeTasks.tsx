@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useEmployeeTasks, useEmployees } from "@/api/employees"; // useEmployees for user name if needed
 import { Button } from "@/components/ui/button";
@@ -17,9 +18,8 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Calendar, CheckCircle2, Clock, MapPin } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { DataViewToggle } from "@/components/shared";
+import { Plus, Calendar, CheckCircle2, Clock, MapPin } from "lucide-react";
+import { SearchInput, DataViewToggle } from "@/components/shared";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -37,6 +37,12 @@ export default function EmployeeTasks() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     const filteredTasks = tasks?.filter(task => {
         const matchesSearch =
@@ -58,42 +64,50 @@ export default function EmployeeTasks() {
         }
     };
 
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <>
+                <div className="w-32 md:w-40 hidden md:block">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="h-9 rounded-full">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="accepted">Accepted</SelectItem>
+                            <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="hidden md:block">
+                    <SearchInput
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search tasks..."
+                        className="w-64"
+                    />
+                </div>
+
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                <Button onClick={() => navigate("/employees/tasks/add")} className="rounded-full h-9">
+                    <Plus className="w-4 h-4 mr-2" /> Create Task
+                </Button>
+            </>,
+            container
+        );
+    };
+
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="Tasks"
                 description="Manage and assign tasks to employees"
-                actions={
-                    <div className="flex items-center gap-3">
-                        <div className="w-40 hidden md:block">
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="accepted">Accepted</SelectItem>
-                                    <SelectItem value="in_progress">In Progress</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="relative w-64 hidden md:block">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search tasks..."
-                                className="pl-8"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                        <Button onClick={() => navigate("/employees/tasks/add")}>
-                            <Plus className="w-4 h-4 mr-2" /> Create Task
-                        </Button>
-                    </div>
-                }
             />
 
             <div className="p-4 md:p-6">

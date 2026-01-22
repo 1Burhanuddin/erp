@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useAttendance } from "@/api/employees";
 import { PageLayout, PageHeader } from "@/components/layout";
 import {
@@ -14,64 +15,64 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Loader2, LayoutGrid, List, Clock, User, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2, User, Clock, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DataViewToggle } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function AttendancePage() {
     const [date, setDate] = useState<Date>(new Date());
-    const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+    const [viewMode, setViewMode] = useState<"card" | "table">("table");
     const { data: attendanceLogs, isLoading } = useAttendance(date);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant={"outline"}
+                            className={cn(
+                                "w-[240px] justify-start text-left font-normal rounded-full",
+                                !date && "text-muted-foreground"
+                            )}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date ? format(date, "PPP") : <span>Pick a date</span>}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={(d) => d && setDate(d)}
+                            initialFocus
+                        />
+                    </PopoverContent>
+                </Popover>
+
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </>,
+            container
+        );
+    };
 
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="Attendance Log"
                 description="Daily daily check-in/out records"
-                actions={
-                    <div className="flex gap-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                        "w-[240px] justify-start text-left font-normal",
-                                        !date && "text-muted-foreground"
-                                    )}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="end">
-                                <Calendar
-                                    mode="single"
-                                    selected={date}
-                                    onSelect={(d) => d && setDate(d)}
-                                    initialFocus
-                                />
-                            </PopoverContent>
-                        </Popover>
-
-                        <div className="flex bg-muted rounded-lg p-1">
-                            <Button
-                                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                                size="sm"
-                                onClick={() => setViewMode('grid')}
-                            >
-                                <LayoutGrid className="w-4 h-4" />
-                            </Button>
-                            <Button
-                                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                                size="sm"
-                                onClick={() => setViewMode('list')}
-                            >
-                                <List className="w-4 h-4" />
-                            </Button>
-                        </div>
-                    </div>
-                }
             />
 
             <div className="p-4 md:p-6">
@@ -84,7 +85,7 @@ export default function AttendancePage() {
                         <User className="h-12 w-12 mb-4 opacity-20" />
                         <p>No attendance records found for this date.</p>
                     </Card>
-                ) : viewMode === 'list' ? (
+                ) : viewMode === 'table' ? (
                     <Card>
                         <Table>
                             <TableHeader>

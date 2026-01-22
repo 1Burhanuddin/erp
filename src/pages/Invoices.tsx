@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Plus, FileText, Download, Send } from "lucide-react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { SearchInput, StatusBadge, DataCard } from "@/components/shared";
@@ -15,6 +16,12 @@ import {
 
 const Invoices = () => {
   const [search, setSearch] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   const filteredInvoices = mockInvoices.filter(
     (invoice) =>
@@ -39,15 +46,17 @@ const Invoices = () => {
 
   return (
     <PageLayout>
+      {mounted && document.getElementById('header-actions') && createPortal(
+        <Button className="flex items-center gap-2 h-9">
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">New Invoice</span>
+        </Button>,
+        document.getElementById('header-actions')!
+      )}
+
       <PageHeader
         title="Invoices"
         description="Create and manage invoices"
-        actions={
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">New Invoice</span>
-          </Button>
-        }
       />
 
       <SearchInput

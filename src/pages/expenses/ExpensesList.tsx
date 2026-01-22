@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useExpenses } from "@/api/expenses";
@@ -20,6 +21,12 @@ const ExpensesList = () => {
     const { data: expenses, isLoading, error } = useExpenses();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     if (error) {
         return (
@@ -31,26 +38,21 @@ const ExpensesList = () => {
 
     return (
         <PageLayout>
+            {mounted && document.getElementById('header-actions') && createPortal(
+                <div className="flex items-center gap-2">
+                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <Button onClick={() => navigate("/expenses/add")} size="sm" className="h-9">
+                        <Plus className="mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">Add Expense</span>
+                    </Button>
+                </div>,
+                document.getElementById('header-actions')!
+            )}
+
             <PageHeader
                 title="Expenses"
                 description="Manage your business expenses"
-                actions={
-                    <div className="flex items-center gap-2">
-                        <div className="hidden sm:block">
-                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                        </div>
-                        <Button onClick={() => navigate("/expenses/add")}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Expense
-                        </Button>
-                    </div>
-                }
             />
-
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>
 
             <div className="p-4">
                 {viewMode === 'card' ? (

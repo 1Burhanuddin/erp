@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useEmployees } from "@/api/employees";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { DataViewToggle } from "@/components/shared"; // Assuming this exists as per ProductsList
+import { DataViewToggle } from "@/components/shared";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteEmployee } from "@/api/employees";
@@ -42,6 +43,12 @@ export default function EmployeeList() {
     const [searchQuery, setSearchQuery] = useState("");
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [employeeToDelete, setEmployeeToDelete] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     const filteredEmployees = employees?.filter(emp =>
         emp.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -57,26 +64,28 @@ export default function EmployeeList() {
 
     return (
         <PageLayout>
+            {mounted && document.getElementById('header-actions') && createPortal(
+                <div className="flex items-center gap-2">
+                    <div className="relative w-40 md:w-64 hidden sm:block">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search..."
+                            className="pl-8 h-9"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <Button onClick={() => navigate("/employees/add")} size="sm" className="h-9">
+                        <Plus className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Add Employee</span>
+                    </Button>
+                </div>,
+                document.getElementById('header-actions')!
+            )}
+
             <PageHeader
                 title="Employees"
                 description="Manage your staff profiles"
-                actions={
-                    <div className="flex items-center gap-3">
-                        <div className="relative w-64 hidden md:block">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search employees..."
-                                className="pl-8"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                        <Button onClick={() => navigate("/employees/add")}>
-                            <Plus className="w-4 h-4 mr-2" /> Add Employee
-                        </Button>
-                    </div>
-                }
             />
 
             <div className="p-4 md:p-6">

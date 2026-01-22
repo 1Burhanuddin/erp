@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard, SearchInput } from "@/components/shared";
 import { useProducts } from "@/api/products";
@@ -21,6 +22,12 @@ const ServicesList = () => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     // Filter for SERVICES only
     const filteredServices = products?.filter(product => {
@@ -40,27 +47,27 @@ const ServicesList = () => {
 
     return (
         <PageLayout>
+            {mounted && document.getElementById('header-actions') && createPortal(
+                <div className="flex items-center gap-2">
+                    <div className="hidden sm:block w-40 md:w-60">
+                        <SearchInput
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            placeholder="Search services..."
+                        />
+                    </div>
+                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <Button size="sm" className="h-9 px-2 sm:px-4" onClick={() => navigate("/services/add")}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        <span className="hidden sm:inline">Add Service</span>
+                    </Button>
+                </div>,
+                document.getElementById('header-actions')!
+            )}
+
             <PageHeader
                 title="Services"
                 description="Manage your service offerings"
-                actions={
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-                        <div className="w-full sm:w-[220px]">
-                            <SearchInput
-                                value={searchQuery}
-                                onChange={setSearchQuery}
-                                placeholder="Search services..."
-                            />
-                        </div>
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                            <Button size="sm" className="h-8 sm:h-9 px-2 sm:px-4" onClick={() => navigate("/services/add")}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                <span>Add Service</span>
-                            </Button>
-                        </div>
-                    </div>
-                }
             />
 
             <div className="p-4">

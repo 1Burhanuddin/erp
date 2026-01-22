@@ -51,14 +51,14 @@ const HeaderActions = () => {
         <>
             <Button
                 onClick={() => navigate('/sell/order')}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-9 px-4 text-xs md:text-sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 px-4 text-xs md:text-sm"
             >
                 <Plus className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                 Add Sale
             </Button>
             <Button
                 variant="outline"
-                className="rounded-full h-9 px-4 border-slate-200 dark:border-slate-800 text-xs md:text-sm hidden sm:flex"
+                className="h-9 px-4 border-slate-200 dark:border-slate-800 text-xs md:text-sm hidden sm:flex"
             >
                 Import
             </Button>
@@ -157,7 +157,7 @@ const Index = () => {
                         <Card className="p-6 rounded-[2rem] border-0 shadow-sm">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-semibold">Recent Activity</h3>
-                                <Button size="sm" variant="outline" className="h-7 text-xs rounded-full" onClick={() => navigate('/audit-logs')}>View All</Button>
+                                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate('/audit-logs')}>View All</Button>
                             </div>
                             <div className="space-y-4">
                                 {isRecentLoading ? (
@@ -286,7 +286,7 @@ const Index = () => {
                 <Card className="p-6 rounded-[2rem] border-0 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-semibold text-lg">Team Collaboration</h3>
-                        <Button variant="outline" className="rounded-full h-9 px-4 text-xs md:text-sm border-slate-200 dark:border-slate-800" onClick={() => navigate('/employees/add')}>
+                        <Button variant="outline" className="h-9 px-4 text-xs md:text-sm border-slate-200 dark:border-slate-800" onClick={() => navigate('/employees/add')}>
                             + Add Member
                         </Button>
                     </div>

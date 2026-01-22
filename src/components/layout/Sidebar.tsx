@@ -20,6 +20,7 @@ import {
   History,
   Wrench,
   Smartphone,
+  Contact,
 } from "lucide-react";
 import {
   Collapsible,
@@ -67,7 +68,7 @@ const navItems = [
   {
     path: "/contacts",
     label: "Contacts",
-    icon: Users,
+    icon: Contact,
     children: [
       { path: "/contacts/suppliers", label: "Suppliers", description: "Manage your supplier database" },
       { path: "/contacts/customers", label: "Customers", description: "Manage your customer database" },
@@ -202,7 +203,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 justify-center cursor-pointer",
+                "flex items-center gap-3 px-3 py-2.5 rounded-full transition-all duration-200 justify-center cursor-pointer",
                 active ? "bg-sidebar-accent text-sidebar-primary-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
               )}>
                 {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
@@ -233,7 +234,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
         <CollapsibleTrigger asChild>
           <div className={cn(
-            "flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
+            "flex items-center justify-between px-3 py-2.5 rounded-full transition-all duration-200 cursor-pointer",
             active ? "bg-sidebar-accent text-sidebar-primary-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
           )}>
             <div className="flex items-center gap-3">
@@ -246,7 +247,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
         <CollapsibleContent className="pl-4 space-y-1 mt-1 overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
           {item.children.map(child => (
             <Link key={child.path} to={child.path} onClick={onMobileClick} className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+              "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200 text-sm",
               isActive(child.path) ? "bg-sidebar-accent/10 text-sidebar-accent" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/5"
             )}>
               <span>{child.label}</span>
@@ -262,7 +263,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
       to={item.path}
       onClick={onMobileClick}
       className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+        "flex items-center gap-3 px-3 py-2.5 rounded-full transition-all duration-200",
         isCollapsed && "justify-center px-2",
         active
           ? "bg-sidebar-accent text-sidebar-primary-foreground"

@@ -349,3 +349,51 @@ export const useCheckOut = () => {
         },
     });
 };
+// ... existing code ...
+
+export const useTeamMembers = () => {
+    return useQuery({
+        queryKey: ["team_members"],
+        queryFn: async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            const { data: currentUserData } = await supabase
+                .from("employees")
+                .select("store_id")
+                .eq("user_id", user.id)
+                .single();
+
+            if (!currentUserData) throw new Error("User not linked to employee");
+
+            const { data, error } = await supabase
+                .from("employees")
+                .select(`
+                    id, 
+                    full_name, 
+                    role, 
+                    employee_tasks (
+                        title,
+                        status,
+                        created_at
+                    )
+                `)
+                .eq("store_id", currentUserData.store_id)
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+
+            // Process to attach only the "latest" task
+            return data.map((emp: any) => {
+                // Sort tasks by created_at desc
+                const tasks = emp.employee_tasks?.sort((a: any, b: any) =>
+                    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                ) || [];
+                return {
+                    ...emp,
+                    latest_task: tasks[0] || null
+                };
+            });
+        },
+    });
+};

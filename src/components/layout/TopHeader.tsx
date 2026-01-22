@@ -28,6 +28,8 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
         </div>
 
         {/* Mobile menu trigger (Right) */}
+        <div className="ml-auto flex items-center gap-2" id="header-actions" />
+
         <div className="lg:hidden">
           <Sheet>
             <SheetTrigger asChild>

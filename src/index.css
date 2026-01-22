@@ -180,6 +180,21 @@
     --sidebar-accent: 240 5% 26%;
     /* Lighter for visibility */
   }
+
+  /* Forest (Custom Green) */
+  [data-theme='forest'] {
+    --primary: 124 42% 19%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 124 42% 19%;
+    --sidebar-accent: 124 42% 19%;
+  }
+
+  .dark[data-theme='forest'] {
+    --primary: 124 42% 40%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 124 42% 40%;
+    --sidebar-accent: 124 42% 40%;
+  }
 }
 
 @layer base {

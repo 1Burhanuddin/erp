@@ -87,6 +87,7 @@ export default function AppSettings() {
                                         {[
                                             { name: "blue", color: "#2563eb" },
                                             { name: "teal", color: "#0d9488" },
+                                            { name: "forest", color: "#1e4620" },
                                             { name: "golden", color: "#d97706" },
                                             { name: "red", color: "#dc2626" },
                                             { name: "zinc", color: "#18181b" },

@@ -6,14 +6,7 @@ export const useRealDashboardStats = () => {
   return useQuery({
     queryKey: ['real-dashboard-stats'],
     queryFn: async () => {
-      // 1. Total Customers
-      const { count: customersCount } = await supabase
-        .from('contacts')
-        .select('*', { count: 'exact', head: true })
-        .eq('role', 'Customer');
-
-      // 2. Total Revenue (Sum of Paid Amounts in Sales Orders)
-      // We fetch all orders that have any payment made (paid_amount > 0)
+      // 1. Total Revenue (Sum of Paid Amounts in Sales Orders)
       const { data: sales } = await supabase
         .from('sales_orders')
         .select('paid_amount')
@@ -21,15 +14,30 @@ export const useRealDashboardStats = () => {
 
       const totalRevenue = sales?.reduce((sum, order) => sum + (Number(order.paid_amount) || 0), 0) || 0;
 
-      // 3. Pending Orders (Sales Orders not fully paid)
+      // 2. Today's Sales
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { data: todaySalesData } = await supabase
+        .from('sales_orders')
+        .select('total_amount')
+        .gte('created_at', todayStart.toISOString());
+
+      const todaySales = todaySalesData?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
+
+      // 3. Total Expenses
+      const { data: expensesData } = await supabase
+        .from('expenses')
+        .select('amount');
+
+      const totalExpenses = expensesData?.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0) || 0;
+
+      // 4. Pending Orders (Sales Orders not fully paid)
       const { count: pendingOrdersCount } = await supabase
         .from('sales_orders')
         .select('*', { count: 'exact', head: true })
         .neq('payment_status', 'Paid');
 
-      // 4. Low Stock Items
-      // Determining low stock requires fetching products. 
-      // We can check how many products have stock < 10 (arbitrary threshold)
+      // 5. Low Stock Items
       const { count: lowStockCount } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
@@ -37,28 +45,34 @@ export const useRealDashboardStats = () => {
 
       return [
         {
-          title: "Total Customers",
-          value: customersCount?.toLocaleString() || "0",
-          trend: { value: 0, isPositive: true }, // Trend hard to calc without history
-          iconType: 'users'
-        },
-        {
           title: "Total Revenue",
           value: `₹${totalRevenue.toLocaleString()}`,
           trend: { value: 0, isPositive: true },
           iconType: 'dollar'
         },
         {
+          title: "Today's Sales",
+          value: `₹${todaySales.toLocaleString()}`,
+          trend: { value: 0, isPositive: true },
+          iconType: 'trending-up'
+        },
+        {
+          title: "Total Expenses",
+          value: `₹${totalExpenses.toLocaleString()}`,
+          trend: { value: 0, isPositive: false },
+          iconType: 'credit-card'
+        },
+        {
           title: "Pending Orders",
           value: pendingOrdersCount?.toString() || "0",
           trend: { value: 0, isPositive: false },
-          iconType: 'target'
+          iconType: 'clock'
         },
         {
           title: "Low Stock Items",
           value: lowStockCount?.toString() || "0",
           trend: { value: 0, isPositive: false },
-          iconType: 'award' // Using award icon temporarily or change to Alert icon in UI
+          iconType: 'alert-triangle'
         }
       ];
     }
@@ -112,6 +126,31 @@ export const useRealDashboardCharts = () => {
         lineChart: chartData, // Re-using same structure for both if compatible
         barChart: chartData
       };
+    }
+  });
+};
+
+export const useRecentActivity = () => {
+  return useQuery({
+    queryKey: ['recent-activity'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sales_orders')
+        .select(`
+          id,
+          order_no,
+          total_amount,
+          created_at,
+          payment_status,
+          contacts (
+            business_name
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      return data;
     }
   });
 };

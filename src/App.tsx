@@ -98,6 +98,7 @@ import OwnerDetails from "./pages/settings/OwnerDetails";
 import AppSettings from "./pages/settings/AppSettings";
 import DebugAuth from "./pages/debug/DebugAuth";
 import SetupWizard from "./pages/onboarding/SetupWizard";
+import DemoDashboard from "./pages/DemoDashboard";
 
 const queryClient = new QueryClient();
 

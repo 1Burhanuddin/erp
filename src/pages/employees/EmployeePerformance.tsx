@@ -128,7 +128,7 @@ export default function EmployeePerformance() {
 
                 {/* KPI Cards */}
                 <div className="grid gap-6 md:grid-cols-3">
-                    <Card className="rounded-[2rem] border-0 shadow-sm p-6 flex items-center gap-4">
+                    <Card className="rounded-3xl border-0 shadow-sm p-6 flex items-center gap-4">
                         <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                             <IndianRupee className="h-6 w-6" />
                         </div>
@@ -139,7 +139,7 @@ export default function EmployeePerformance() {
                         </div>
                     </Card>
 
-                    <Card className="rounded-[2rem] border-0 shadow-sm p-6 flex items-center gap-4">
+                    <Card className="rounded-3xl border-0 shadow-sm p-6 flex items-center gap-4">
                         <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
                             <CheckCircle className="h-6 w-6" />
                         </div>
@@ -150,7 +150,7 @@ export default function EmployeePerformance() {
                         </div>
                     </Card>
 
-                    <Card className="rounded-[2rem] border-0 shadow-sm p-6 flex items-center gap-4">
+                    <Card className="rounded-3xl border-0 shadow-sm p-6 flex items-center gap-4">
                         <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
                             <Users className="h-6 w-6" />
                         </div>
@@ -163,7 +163,7 @@ export default function EmployeePerformance() {
                 </div>
 
                 {/* Charts */}
-                <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+                <Card className="rounded-3xl border-0 shadow-sm p-6">
                     <div className="mb-6">
                         <h3 className="font-semibold text-lg">Per-Employee Breakdown</h3>
                         <p className="text-sm text-muted-foreground">Task completion vs Revenue generation</p>
@@ -226,7 +226,7 @@ export default function EmployeePerformance() {
                 </Card>
 
                 {/* Detailed Table */}
-                <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+                <Card className="rounded-3xl border-0 shadow-sm p-6">
                     <div className="mb-6">
                         <h3 className="font-semibold text-lg">Detailed Metrics</h3>
                         <p className="text-sm text-muted-foreground">Performance data for the selected period.</p>

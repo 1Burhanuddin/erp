@@ -127,7 +127,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
 
             <div className="p-4">
                 {viewMode === 'card' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-40 w-full rounded-xl" />
@@ -138,7 +138,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                             </div>
                         ) : (
                             filteredContacts.map((contact) => (
-                                <DataCard key={contact.id} onClick={() => navigate(`/contacts/edit/${contact.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
+                                <DataCard key={contact.id} onClick={() => navigate(`/contacts/edit/${contact.id}`)} className="cursor-pointer transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-foreground">{contact.name}</h3>

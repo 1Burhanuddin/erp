@@ -126,7 +126,7 @@ const ProductsList = () => {
 
             <div className="p-4">
                 {viewMode === 'card' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-40 w-full rounded-xl" />
@@ -137,8 +137,8 @@ const ProductsList = () => {
                             </div>
                         ) : (
                             filteredProducts.map((product: any) => (
-                                <DataCard key={product.id} onClick={() => navigate(`/products/edit/${product.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
-                                    <div className="flex justify-between items-start">
+                                <DataCard key={product.id} onClick={() => navigate(`/products/edit/${product.id}`)} className="cursor-pointer transition-colors">
+                                    <div className="flex flex-col gap-2 items-start mb-2">
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <h3 className="font-semibold text-foreground">{product.name}</h3>

@@ -99,6 +99,7 @@ import AppSettings from "./pages/settings/AppSettings";
 import DebugAuth from "./pages/debug/DebugAuth";
 import SetupWizard from "./pages/onboarding/SetupWizard";
 import DemoDashboard from "./pages/DemoDashboard";
+import DemoCards from "./pages/DemoCards";
 
 const queryClient = new QueryClient();
 
@@ -207,6 +208,7 @@ const App = () => {
                   <Route path="/employees/live" element={<LiveStatus />} />
                   <Route path="/employees/performance" element={<EmployeePerformance />} />
                   <Route path="/employees/attendance" element={<Attendance />} />
+                  <Route path="/demo-cards" element={<DemoCards />} />
 
                 </Route>
               </Route>

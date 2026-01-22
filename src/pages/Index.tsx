@@ -100,7 +100,7 @@ const Index = () => {
                     {/* Left Column (Analytics) - Spans 8 cols */}
                     <div className="lg:col-span-8 space-y-6">
                         {/* Sales Analytics Graph */}
-                        <Card className="p-6 rounded-[2rem] border-0 shadow-sm">
+                        <Card className="p-6 rounded-3xl border-0 shadow-sm">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-semibold">Sales Analytics</h3>
                                 <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ const Index = () => {
                         </Card>
 
                         {/* Recent Activity / Mini List */}
-                        <Card className="p-6 rounded-[2rem] border-0 shadow-sm">
+                        <Card className="p-6 rounded-3xl border-0 shadow-sm">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-semibold">Recent Activity</h3>
                                 <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate('/audit-logs')}>View All</Button>
@@ -194,7 +194,7 @@ const Index = () => {
                     <div className="lg:col-span-4 space-y-6">
 
                         {/* Alerts Section */}
-                        <Card className="p-6 rounded-[2rem] border-0 shadow-sm">
+                        <Card className="p-6 rounded-3xl border-0 shadow-sm">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-semibold text-red-600 dark:text-red-400">Attention Needed</h3>
                                 <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
@@ -237,7 +237,7 @@ const Index = () => {
                         </Card>
 
                         {/* Expenses vs Revenue (Donut) */}
-                        <Card className="p-6 rounded-[2rem] border-0 shadow-sm flex flex-col items-center justify-center relative min-h-[350px]">
+                        <Card className="p-6 rounded-3xl border-0 shadow-sm flex flex-col items-center justify-center relative min-h-[350px]">
                             <h3 className="font-semibold absolute top-6 left-6">Financial Overview</h3>
                             <div className="h-[220px] w-[220px] mt-8 relative">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -283,7 +283,7 @@ const Index = () => {
                 </div>
 
                 {/* Team Collaboration Section (New Large Row) */}
-                <Card className="p-6 rounded-[2rem] border-0 shadow-sm">
+                <Card className="p-6 rounded-3xl border-0 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-semibold text-lg">Team Collaboration</h3>
                         <Button variant="outline" className="h-9 px-4 text-xs md:text-sm border-slate-200 dark:border-slate-800" onClick={() => navigate('/employees/add')}>
@@ -348,7 +348,7 @@ const Index = () => {
                     {/* I need to make sure I don't delete the stats cards block */}
                     {/* Copying previous stats cards implementation exactly as is */}
                     {/* Total Revenue */}
-                    <Card className="p-6 bg-primary text-primary-foreground rounded-[2rem] border-0 relative overflow-hidden group min-h-[160px]">
+                    <Card className="p-6 bg-primary text-primary-foreground rounded-3xl border-0 relative overflow-hidden group min-h-[160px]">
                         <div className="relative z-10">
                             <div className="flex justify-between items-start mb-6">
                                 <span className="text-primary-foreground/80 font-medium">Total Revenue</span>
@@ -369,7 +369,7 @@ const Index = () => {
                     </Card>
 
                     {/* Today's Sales */}
-                    <Card className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
+                    <Card className="p-6 rounded-3xl border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
                         <div className="flex justify-between items-start mb-6">
                             <span className="text-muted-foreground font-medium">Today's Sales</span>
                             <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
@@ -387,7 +387,7 @@ const Index = () => {
                     </Card>
 
                     {/* Total Expenses */}
-                    <Card className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
+                    <Card className="p-6 rounded-3xl border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
                         <div className="flex justify-between items-start mb-6">
                             <span className="text-muted-foreground font-medium">Total Expenses</span>
                             <div className="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -406,7 +406,7 @@ const Index = () => {
 
                     {/* Pending Orders - Clickable */}
                     <Card
-                        className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px] cursor-pointer hover:bg-muted/50"
+                        className="p-6 rounded-3xl border-0 shadow-sm hover:shadow-md transition-all min-h-[160px] cursor-pointer hover:bg-muted/50"
                         onClick={() => navigate('/sell/order')}
                     >
                         <div className="flex justify-between items-start mb-6">

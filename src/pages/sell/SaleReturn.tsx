@@ -45,7 +45,7 @@ const SaleReturn = () => {
 
             <div className="bg-white rounded-md shadow mt-6">
                 {viewMode === 'card' ? (
-                    <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-36 w-full rounded-xl" />
@@ -54,7 +54,7 @@ const SaleReturn = () => {
                             <div className="col-span-full text-center py-8 text-muted-foreground">No returns found.</div>
                         ) : (
                             returns?.map((ret: any) => (
-                                <DataCard key={ret.id} onClick={() => navigate(`/sell/return/${ret.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
+                                <DataCard key={ret.id} onClick={() => navigate(`/sell/return/${ret.id}`)} className="cursor-pointer transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-foreground font-mono">{ret.sale?.order_no || "-"}</h3>

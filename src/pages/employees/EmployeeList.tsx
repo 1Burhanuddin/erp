@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { DataViewToggle } from "@/components/shared";
+import { DataCard, DataViewToggle } from "@/components/shared";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteEmployee } from "@/api/employees";
@@ -143,39 +143,26 @@ export default function EmployeeList() {
                                 </Table>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {filteredEmployees.map((emp) => (
-                                    <Card
+                                    <DataCard
                                         key={emp.id}
-                                        className={`transition-colors group relative ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:border-primary/50'}`}
+                                        className={`group relative ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
                                         onClick={() => {
                                             if (emp.role === 'admin') return;
                                             navigate(`/employees/edit/${emp.id}`);
                                         }}
-                                        title={emp.role === 'admin' ? "Admin profiles cannot be edited here" : "Click to edit"}
+                                        hover={emp.role !== 'admin'}
                                     >
-                                        {/* Delete Button for Card View */}
-                                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setEmployeeToDelete(emp.id);
-                                                }}
-                                            >
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
-                                        </div>
 
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                            <CardTitle className="text-sm font-medium">
+
+                                        <div className="flex flex-row items-center justify-between space-y-0 pb-2 mb-2">
+                                            <div className="text-sm font-medium">
                                                 {emp.full_name}
-                                            </CardTitle>
+                                            </div>
                                             <User className="h-4 w-4 text-muted-foreground" />
-                                        </CardHeader>
-                                        <CardContent>
+                                        </div>
+                                        <div>
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-xs text-muted-foreground">Role</span>
@@ -195,8 +182,8 @@ export default function EmployeeList() {
                                                     </div>
                                                 )}
                                             </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </DataCard>
                                 ))}
                             </div>
                         )}

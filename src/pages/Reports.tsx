@@ -285,8 +285,8 @@ const Reports = () => {
       <PageHeader title="Reports" description="Analytics and business insights" />
 
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+        <Card className="rounded-3xl border-0 shadow-sm p-6">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-foreground">Monthly Sales</h3>
             <p className="text-sm text-muted-foreground">Revenue overview over time</p>
@@ -329,7 +329,7 @@ const Reports = () => {
           </div>
         </Card>
 
-        <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+        <Card className="rounded-3xl border-0 shadow-sm p-6">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-foreground">Sales by Category</h3>
             <p className="text-sm text-muted-foreground">Distribution of revenue sources</p>
@@ -380,9 +380,9 @@ const Reports = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
         {/* Top Products */}
-        <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+        <Card className="rounded-3xl border-0 shadow-sm p-6">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-foreground">Top Selling Products</h3>
             <p className="text-sm text-muted-foreground">Best performing inventory items</p>
@@ -430,7 +430,7 @@ const Reports = () => {
         </Card>
 
         {/* Top Customers */}
-        <Card className="rounded-[2rem] border-0 shadow-sm p-6">
+        <Card className="rounded-3xl border-0 shadow-sm p-6">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-foreground">Top Customers</h3>
             <p className="text-sm text-muted-foreground">Highest revenue generating clients</p>
@@ -477,9 +477,9 @@ const Reports = () => {
           </div>
         </Card>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         {/* Total Revenue - Primary Style */}
-        <Card className="p-6 bg-primary text-primary-foreground rounded-[2rem] border-0 relative overflow-hidden group min-h-[160px]">
+        <Card className="p-6 bg-primary text-primary-foreground rounded-3xl border-0 relative overflow-hidden group min-h-[160px]">
           <div className="relative z-10">
             <div className="flex justify-between items-start mb-6">
               <span className="text-primary-foreground/80 font-medium">Total Revenue</span>
@@ -502,7 +502,7 @@ const Reports = () => {
         </Card>
 
         {/* Total Orders */}
-        <Card className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
+        <Card className="p-6 rounded-3xl border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
           <div className="flex justify-between items-start mb-6">
             <span className="text-muted-foreground font-medium">Total Orders</span>
             <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -525,7 +525,7 @@ const Reports = () => {
         </Card>
 
         {/* Total Expenses */}
-        <Card className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
+        <Card className="p-6 rounded-3xl border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
           <div className="flex justify-between items-start mb-6">
             <span className="text-muted-foreground font-medium">Total Expenses</span>
             <div className="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
@@ -548,7 +548,7 @@ const Reports = () => {
         </Card>
 
         {/* Net Profit */}
-        <Card className="p-6 rounded-[2rem] border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
+        <Card className="p-6 rounded-3xl border-0 shadow-sm hover:shadow-md transition-all min-h-[160px]">
           <div className="flex justify-between items-start mb-6">
             <span className="text-muted-foreground font-medium">Net Profit</span>
             <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">

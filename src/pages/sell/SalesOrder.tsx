@@ -50,7 +50,7 @@ const SalesOrder = () => {
 
             <div className="p-4">
                 {viewMode === 'card' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-36 w-full rounded-xl" />
@@ -59,7 +59,7 @@ const SalesOrder = () => {
                             <div className="col-span-full text-center py-8 text-muted-foreground">No pending sales orders found.</div>
                         ) : (
                             sales?.map((sale: any) => (
-                                <DataCard key={sale.id} onClick={() => { }} className="hover:border-primary/50 transition-colors">
+                                <DataCard key={sale.id} onClick={() => { }} className="transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-foreground font-mono">{sale.order_no}</h3>

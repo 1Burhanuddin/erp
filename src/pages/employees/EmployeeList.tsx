@@ -102,7 +102,7 @@ export default function EmployeeList() {
                 ) : (
                     <>
                         {viewMode === 'table' ? (
-                            <div className="bg-card rounded-md border">
+                            <div className="bg-card rounded-3xl border-0 shadow-sm overflow-hidden">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>

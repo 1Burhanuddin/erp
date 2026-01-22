@@ -95,8 +95,8 @@ export const useRealDashboardCharts = () => {
       // 2. Expenses Data
       const { data: expensesData } = await supabase
         .from('expenses')
-        .select('date, amount')
-        .gte('date', startDate);
+        .select('expense_date, amount')
+        .gte('expense_date', startDate);
 
       // Aggregate by Month
       const months = eachMonthOfInterval({
@@ -111,7 +111,7 @@ export const useRealDashboardCharts = () => {
         const salesInMonth = salesData?.filter(s => s.order_date.startsWith(monthKey))
           .reduce((sum, s) => sum + Number(s.total_amount), 0) || 0;
 
-        const expensesInMonth = expensesData?.filter(e => e.date.startsWith(monthKey))
+        const expensesInMonth = expensesData?.filter(e => e.expense_date?.startsWith(monthKey))
           .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
         return {
@@ -143,7 +143,8 @@ export const useRecentActivity = () => {
           created_at,
           payment_status,
           contacts (
-            business_name
+            name,
+            company
           )
         `)
         .order('created_at', { ascending: false })

@@ -195,43 +195,39 @@ const Index = () => {
 
                         {/* Alerts Section */}
                         <Card className="p-6 rounded-3xl border-0 shadow-sm">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-semibold text-red-600 dark:text-red-400">Attention Needed</h3>
-                                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="font-semibold text-lg flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                                    Attention Needed
+                                </h3>
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-1">
                                 {/* Low Stock Alert */}
                                 <div
-                                    className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl cursor-pointer hover:bg-amber-100/80 transition-colors"
+                                    className="flex items-center justify-between p-3 rounded-2xl cursor-pointer hover:bg-muted/50 transition-all group"
                                     onClick={() => navigate('/inventory')}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600">
-                                            <AlertOctagon className="h-4 w-4" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-amber-900 dark:text-amber-100">Low Stock Items</p>
-                                            <p className="text-xs text-amber-700 dark:text-amber-400">Inventory warning</p>
-                                        </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-foreground">Low Stock Items</p>
+                                        <p className="text-xs text-muted-foreground">Inventory warning</p>
                                     </div>
-                                    <Badge variant="outline" className="bg-amber-100/50 border-amber-200 text-amber-700">{lowStock?.value || 0}</Badge>
+                                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 rounded-full h-7 px-3">
+                                        {lowStock?.value || 0}
+                                    </Badge>
                                 </div>
 
                                 {/* Pending Orders Alert */}
                                 <div
-                                    className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/30 rounded-xl cursor-pointer hover:bg-orange-100/80 transition-colors"
+                                    className="flex items-center justify-between p-3 rounded-2xl cursor-pointer hover:bg-muted/50 transition-all group"
                                     onClick={() => navigate('/sell/order')}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center text-orange-600">
-                                            <AlertTriangle className="h-4 w-4" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-orange-900 dark:text-orange-100">Pending Orders</p>
-                                            <p className="text-xs text-orange-700 dark:text-orange-400">Unpaid invoices</p>
-                                        </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-foreground">Pending Orders</p>
+                                        <p className="text-xs text-muted-foreground">Unpaid invoices</p>
                                     </div>
-                                    <Badge variant="outline" className="bg-orange-100/50 border-orange-200 text-orange-700">{pendingOrders?.value || 0}</Badge>
+                                    <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400 rounded-full h-7 px-3">
+                                        {pendingOrders?.value || 0}
+                                    </Badge>
                                 </div>
                             </div>
                         </Card>

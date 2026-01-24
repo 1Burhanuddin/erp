@@ -122,7 +122,7 @@ const DirectSale = () => {
 
     return (
         <PageLayout>
-            <PageHeader title="Direct Sale (POS)" description="Quick sale counter" />
+
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4">
                 {/* Left: Input Panel */}

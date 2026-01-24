@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Check, X, Pencil } from "lucide-react";
+import { Loader2, Check, X, Edit } from "lucide-react";
 
 interface BusinessActionButtonsProps {
     isEditing: boolean;
@@ -28,7 +28,7 @@ export const BusinessActionButtons = ({ isEditing, onEdit, onCancel, onSave, isP
     return (
         <div className="flex justify-end">
             <Button onClick={onEdit} variant="outline">
-                <Pencil className="mr-2 h-4 w-4" /> Edit Details
+                <Edit className="mr-2 h-4 w-4" /> Edit Details
             </Button>
         </div>
     );

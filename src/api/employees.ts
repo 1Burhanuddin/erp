@@ -17,9 +17,10 @@ export const useEmployees = () => {
                 .from("employees")
                 .select("store_id")
                 .eq("user_id", user.id) // Updated column
-                .single();
+                .maybeSingle();
 
             if (userError) throw userError;
+            if (!currentUserData) return []; // User has no store, so no employees to show
 
             // 2. Fetch employees for this store
             const { data, error } = await supabase
@@ -48,9 +49,10 @@ export const useCurrentEmployee = () => {
                 .from("employees")
                 .select("*")
                 .eq("user_id", user.id)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
+            if (!data) return null;
 
             // Fallback: If employee profile doesn't have email, use data from Auth
             if (!data.email && user.email) {
@@ -74,7 +76,7 @@ export const useCreateEmployee = () => {
                 .from("employees")
                 .select("store_id")
                 .eq("user_id", user.id)
-                .single();
+                .maybeSingle();
 
             if (!adminData?.store_id) throw new Error("Admin not assigned to a store");
 
@@ -362,9 +364,9 @@ export const useTeamMembers = () => {
                 .from("employees")
                 .select("store_id")
                 .eq("user_id", user.id)
-                .single();
+                .maybeSingle();
 
-            if (!currentUserData) throw new Error("User not linked to employee");
+            if (!currentUserData) return []; // User not linked to employee, return empty team
 
             const { data, error } = await supabase
                 .from("employees")

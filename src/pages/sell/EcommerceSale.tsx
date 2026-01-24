@@ -4,6 +4,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
 import {
     Table,
@@ -20,11 +21,19 @@ import { format } from "date-fns";
 const EcommerceSale = () => {
     // Fetch all, filter by channel 'Online'
     const { data: allSales, isLoading } = useSalesOrders();
-    const sales = allSales?.filter((s: any) => s.channel === 'Online');
+
 
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const sales = allSales?.filter((s: any) =>
+        s.channel === 'Online' &&
+        (!searchQuery.trim() ||
+            s.order_no?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -45,13 +54,12 @@ const EcommerceSale = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="E-Commerce Sales"
-                description="Manage online sales orders"
-            // No 'Create' button here as Ecommerce sales usually come from external source or could be added manually if we add a 'Channel' selector to AddSalesInvoice. 
-            // For now, it's a view.
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search online sales..."
             />
+            <HeaderActions />
 
             <div className="sm:hidden mb-4">
                 <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
@@ -65,7 +73,9 @@ const EcommerceSale = () => {
                                 <Skeleton key={i} className="h-36 w-full rounded-xl" />
                             ))
                         ) : sales?.length === 0 ? (
-                            <div className="col-span-full text-center py-8 text-muted-foreground">No online sales found.</div>
+                            <div className="col-span-full text-center py-8 text-muted-foreground">
+                                {searchQuery ? `No online sales found matching "${searchQuery}"` : "No online sales found."}
+                            </div>
                         ) : (
                             sales?.map((sale: any) => (
                                 <DataCard key={sale.id} onClick={() => navigate(`/sell/invoice/${sale.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
@@ -118,7 +128,7 @@ const EcommerceSale = () => {
                                             colSpan={5}
                                             className="h-24 text-center text-muted-foreground"
                                         >
-                                            No online sales found.
+                                            {searchQuery ? `No online sales found matching "${searchQuery}"` : "No online sales found."}
                                         </TableCell>
                                     </TableRow>
                                 ) : (

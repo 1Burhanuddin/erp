@@ -8,6 +8,18 @@ import { MapPin, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 export default function EmployeeDashboard() {
     const { user } = useAuth();
     const { data: attendanceLogs, isLoading: isLoadingAttendance } = useAttendance(new Date());
@@ -52,94 +64,113 @@ export default function EmployeeDashboard() {
 
     return (
         <EmployeeLayout>
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-bold">Hello, {user?.email?.split('@')[0]}</h2>
-                        <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, d MMM")}</p>
-                    </div>
+            <div className="space-y-6 pb-20 px-4 pt-2">
 
-                    <div className="text-right">
-                        <Badge variant={isCheckedIn ? "default" : "secondary"}>
-                            {isCheckedIn ? "On Duty" : "Off Duty"}
-                        </Badge>
+                {/* Hero Attendance Card (Theme Color) */}
+                <div className="relative overflow-hidden rounded-[2.5rem] bg-primary text-primary-foreground shadow-xl shadow-primary/20 p-8">
+                    {/* Background Patterns */}
+                    <div className="absolute top-0 right-0 p-12 opacity-10 transform translate-x-1/2 -translate-y-1/2">
+                        <div className="w-48 h-48 rounded-full border-[24px] border-white/30" />
                     </div>
-                </div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
 
-                {/* Attendance Action Card */}
-                <Card className="border-2 border-primary/10 shadow-lg">
-                    <CardContent className="pt-6 text-center space-y-4">
-                        <div className="bg-primary/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                            <Clock className="w-8 h-8 text-primary" />
+                    <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+
+                        <div className="relative">
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center ${isCheckedIn ? 'bg-white/20 backdrop-blur-md animate-pulse' : 'bg-white/10'}`}>
+                                <MapPin className="w-8 h-8 text-primary-foreground" />
+                            </div>
+                            {isCheckedIn && (
+                                <span className="absolute -top-1 -right-1 flex h-6 w-6">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-6 w-6 bg-green-400 border-2 border-primary"></span>
+                                </span>
+                            )}
                         </div>
 
                         <div>
                             {isCheckedIn ? (
                                 <>
-                                    <h3 className="text-2xl font-bold text-foreground">Checked In</h3>
-                                    <p className="text-muted-foreground text-sm">Since {format(new Date(todaySession!.check_in!), "h:mm a")}</p>
+                                    <h3 className="text-3xl font-bold tracking-tight">On Duty</h3>
+                                    <p className="text-primary-foreground/80 mt-1 font-medium">Checked in at {format(new Date(todaySession!.check_in!), "h:mm a")}</p>
                                 </>
                             ) : hasCompletedShift ? (
                                 <>
-                                    <h3 className="text-2xl font-bold text-foreground">Shift Completed</h3>
-                                    <p className="text-muted-foreground text-sm">You have checked out at {format(new Date(todaySession!.check_out!), "h:mm a")}</p>
+                                    <h3 className="text-3xl font-bold tracking-tight">Shift Found</h3>
+                                    <p className="text-primary-foreground/80 mt-1 font-medium">Have a great evening!</p>
                                 </>
                             ) : (
                                 <>
-                                    <h3 className="text-2xl font-bold text-foreground">Not Checked In</h3>
-                                    <p className="text-muted-foreground text-sm">Mark your attendance to start receiving tasks.</p>
+                                    <h3 className="text-3xl font-bold tracking-tight">Not Checked In</h3>
+                                    <p className="text-primary-foreground/80 mt-1 font-medium">Ready to start your day?</p>
                                 </>
                             )}
                         </div>
 
                         {isCheckedIn ? (
-                            <Button
-                                variant="destructive"
-                                size="lg"
-                                className="w-full max-w-xs"
-                                onClick={handleCheckOut}
-                                disabled={checkOut.isPending}
-                            >
-                                Check Out
-                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant="secondary"
+                                        size="lg"
+                                        className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg bg-white/90 text-destructive hover:bg-white"
+                                        disabled={checkOut.isPending}
+                                    >
+                                        Check Out
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent className="w-[90%] rounded-2xl">
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>End Shift?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Are you sure you want to check out now? This will mark the end of your shift for today.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleCheckOut} className="bg-destructive text-destructive-foreground">Confirm Check Out</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         ) : hasCompletedShift ? (
                             <Button
-                                variant="outline"
+                                variant="secondary"
                                 size="lg"
-                                className="w-full max-w-xs"
+                                className="w-full h-14 rounded-2xl text-lg font-bold bg-white/20 backdrop-blur text-primary-foreground/50 hover:bg-white/30 border-0"
                                 disabled
                             >
-                                Done for Today
+                                Shift Completed
                             </Button>
                         ) : (
                             <Button
                                 size="lg"
-                                className="w-full max-w-xs"
+                                className="w-full h-14 rounded-2xl text-lg font-bold bg-white text-primary hover:bg-white/90 shadow-lg"
                                 onClick={handleCheckIn}
                                 disabled={checkIn.isPending}
                             >
-                                Check In Now
+                                Swipe to Check In
                             </Button>
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
-                {/* Stats Grid */}
+                {/* Stats Grid - Pastel Glass Widgets */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Card>
-                        <CardContent className="pt-6 flex flex-col items-center">
-                            <AlertCircle className="w-8 h-8 text-orange-500 mb-2" />
-                            <span className="text-2xl font-bold">{pendingCount}</span>
-                            <span className="text-xs text-muted-foreground">Pending Tasks</span>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="pt-6 flex flex-col items-center">
-                            <CheckCircle2 className="w-8 h-8 text-green-500 mb-2" />
-                            <span className="text-2xl font-bold">{completedCount}</span>
-                            <span className="text-xs text-muted-foreground">Completed</span>
-                        </CardContent>
-                    </Card>
+                    <div className="p-6 rounded-[2rem] bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/50 flex flex-col items-center justify-center text-center space-y-2 backdrop-blur-sm">
+                        <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-2">
+                            <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <span className="text-4xl font-black text-orange-900 dark:text-orange-100">{pendingCount}</span>
+                        <span className="text-xs font-bold text-orange-600/70 dark:text-orange-400 uppercase tracking-widest">Pending</span>
+                    </div>
+
+                    <div className="p-6 rounded-[2rem] bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 flex flex-col items-center justify-center text-center space-y-2 backdrop-blur-sm">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-2">
+                            <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <span className="text-4xl font-black text-emerald-900 dark:text-emerald-100">{completedCount}</span>
+                        <span className="text-xs font-bold text-emerald-600/70 dark:text-emerald-400 uppercase tracking-widest">Done</span>
+                    </div>
                 </div>
 
             </div>

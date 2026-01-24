@@ -4,6 +4,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { useBrands } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -17,10 +18,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
 const Brands = () => {
-    const { data: brands, isLoading } = useBrands();
+    const { data: rawBrands, isLoading } = useBrands();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const brands = rawBrands?.filter(b =>
+        !searchQuery.trim() || b.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -29,6 +35,11 @@ const Brands = () => {
 
     return (
         <PageLayout>
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search brands..."
+            />
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
@@ -39,11 +50,6 @@ const Brands = () => {
                 </div>,
                 document.getElementById('header-actions')!
             )}
-
-            <PageHeader
-                title="Product Brands"
-                description="Manage product brands"
-            />
 
             <div className="p-4">
                 {viewMode === 'card' ? (

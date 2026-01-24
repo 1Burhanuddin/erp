@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { ExpandableSearch } from "@/components/ui/expandable-search";
+
 const Inventory = () => {
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
@@ -45,13 +47,6 @@ const Inventory = () => {
 
     return createPortal(
       <div className="flex items-center gap-2">
-        <div className="hidden sm:block w-40 md:w-60">
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="Search products..."
-          />
-        </div>
         <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       </div>,
       container
@@ -60,19 +55,14 @@ const Inventory = () => {
 
   return (
     <PageLayout>
-      <HeaderActions />
-      <div className="sm:hidden mb-4">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search products..."
-        />
-      </div>
-
-      <PageHeader
-        title="Inventory"
-        description="Manage your product inventory"
+      <ExpandableSearch
+        value={search}
+        onChange={setSearch}
+        placeholder="Search products..."
       />
+      <HeaderActions />
+
+
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

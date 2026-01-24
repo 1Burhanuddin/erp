@@ -35,8 +35,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 
-export default function EmployeeList() {
+const EmployeeList = () => {
     const navigate = useNavigate();
     const { data: employees, isLoading } = useEmployees();
     const deleteEmployeeMutation = useDeleteEmployee();
@@ -62,31 +64,32 @@ export default function EmployeeList() {
         }
     };
 
+    // Portal actions to the header
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                <Button onClick={() => navigate("/employees/add")} size="sm" className="h-9">
+                    <Plus className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Add Employee</span>
+                </Button>
+            </div>,
+            container
+        );
+    };
+
     return (
         <PageLayout>
-            {mounted && document.getElementById('header-actions') && createPortal(
-                <div className="flex items-center gap-2">
-                    <div className="relative w-40 md:w-64 hidden sm:block">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search..."
-                            className="pl-8 h-9"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                    <Button onClick={() => navigate("/employees/add")} size="sm" className="h-9">
-                        <Plus className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Add Employee</span>
-                    </Button>
-                </div>,
-                document.getElementById('header-actions')!
-            )}
-
-            <PageHeader
-                title="Employees"
-                description="Manage your staff profiles"
+            <HeaderActions />
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search employees..."
             />
+
+
 
             <div>
                 {isLoading ? (
@@ -210,3 +213,5 @@ export default function EmployeeList() {
         </PageLayout>
     );
 }
+
+export default EmployeeList;

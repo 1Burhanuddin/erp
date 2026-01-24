@@ -4,6 +4,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useBookings, useUpdateBooking, useDeleteBooking, Booking } from "@/api/bookings";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus, Calendar, Clock, MapPin, Phone, Mail } from "lucide-react";
 import {
     Table,
@@ -43,7 +44,14 @@ const Bookings = () => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const filteredBookings = bookings?.filter(b =>
+        !searchQuery.trim() ||
+        b.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.service_type?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -99,11 +107,12 @@ const Bookings = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Web Bookings"
-                description="Manage service requests from website"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search bookings..."
             />
+            <HeaderActions />
 
             <div className="sm:hidden mb-4">
                 <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
@@ -116,10 +125,10 @@ const Bookings = () => {
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-48 w-full rounded-xl" />
                             ))
-                        ) : bookings?.length === 0 ? (
+                        ) : filteredBookings?.length === 0 ? (
                             <div className="col-span-full text-center py-8 text-muted-foreground">No bookings found.</div>
                         ) : (
-                            bookings?.map((booking) => (
+                            filteredBookings?.map((booking) => (
                                 <DataCard key={booking.id}>
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
@@ -199,14 +208,14 @@ const Bookings = () => {
                                             <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
                                         </TableRow>
                                     ))
-                                ) : bookings?.length === 0 ? (
+                                ) : filteredBookings?.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                                             No bookings found.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    bookings?.map((booking) => (
+                                    filteredBookings?.map((booking) => (
                                         <TableRow key={booking.id}>
                                             <TableCell>
                                                 <div className="font-medium">{booking.customer_name}</div>

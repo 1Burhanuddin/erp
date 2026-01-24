@@ -4,6 +4,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { useCategories, Category } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -17,10 +18,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
 const Categories = () => {
-    const { data: categories, isLoading } = useCategories();
+    const { data: rawCategories, isLoading } = useCategories();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const categories = rawCategories?.filter(c =>
+        !searchQuery.trim() || c.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -29,6 +35,11 @@ const Categories = () => {
 
     return (
         <PageLayout>
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search categories..."
+            />
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
@@ -39,11 +50,6 @@ const Categories = () => {
                 </div>,
                 document.getElementById('header-actions')!
             )}
-
-            <PageHeader
-                title="Product Categories"
-                description="Manage product categories"
-            />
 
             <div className="p-4">
                 {viewMode === 'card' ? (

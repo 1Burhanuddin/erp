@@ -119,10 +119,7 @@ export default function EmployeePerformance() {
     return (
         <PageLayout>
             <HeaderActions />
-            <PageHeader
-                title="Performance Analytics"
-                description="Employee productivity and revenue metrics"
-            />
+
 
             <div className="p-4 md:p-6 space-y-6">
 

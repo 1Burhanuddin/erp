@@ -70,10 +70,7 @@ export default function AttendancePage() {
     return (
         <PageLayout>
             <HeaderActions />
-            <PageHeader
-                title="Attendance Log"
-                description="Daily daily check-in/out records"
-            />
+
 
             <div className="p-4 md:p-6">
                 {isLoading ? (

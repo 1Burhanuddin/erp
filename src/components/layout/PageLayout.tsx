@@ -9,7 +9,7 @@ interface PageLayoutProps {
 
 const PageLayout = ({ children }: PageLayoutProps) => {
   return (
-    <div className="px-2 py-4">{children}</div>
+    <div className="px-2 py-4 overflow-x-hidden">{children}</div>
   );
 };
 

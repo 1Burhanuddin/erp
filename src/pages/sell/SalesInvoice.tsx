@@ -4,6 +4,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
 import {
     Table,
@@ -18,9 +19,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 const SalesInvoice = () => {
-    const { data: sales, isLoading } = useSalesOrders();
+    const { data: salesOrders, isLoading } = useSalesOrders();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -28,29 +30,31 @@ const SalesInvoice = () => {
         return () => setMounted(false);
     }, []);
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
-
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button onClick={() => navigate("/sell/add")} size="sm" className="h-9">
-                    <Plus className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Create Invoice</span>
-                </Button>
-            </div>,
-            container
-        );
-    };
+    // Invoices are essentially Completed Sales Orders in this simplified ERP
+    const filteredOrders = salesOrders?.filter(order =>
+        (!searchQuery.trim() ||
+            order.order_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+        order.status === 'Completed' // Filter for Invoices/Completed
+    ) || [];
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Sales Invoices"
-                description="Manage your sales and invoices"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search invoices..."
             />
+            {mounted && document.getElementById('header-actions') && createPortal(
+                <div className="flex items-center gap-2">
+                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <Button onClick={() => navigate("/sell/add")} size="sm" className="h-9">
+                        <Plus className="mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">Create Invoice</span>
+                    </Button>
+                </div>,
+                document.getElementById('header-actions')
+            )}
 
             {/* Mobile View Toggle */}
             <div className="sm:hidden mb-4">
@@ -64,10 +68,10 @@ const SalesInvoice = () => {
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-36 w-full rounded-xl" />
                             ))
-                        ) : sales?.length === 0 ? (
+                        ) : filteredOrders?.length === 0 ? (
                             <div className="col-span-full text-center py-8 text-muted-foreground">No sales invoices found.</div>
                         ) : (
-                            sales?.map((sale: any) => (
+                            filteredOrders?.map((sale: any) => (
                                 <DataCard key={sale.id} onClick={() => navigate(`/sell/invoice/${sale.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
@@ -112,7 +116,7 @@ const SalesInvoice = () => {
                                             <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
                                         </TableRow>
                                     ))
-                                ) : sales?.length === 0 ? (
+                                ) : filteredOrders?.length === 0 ? (
                                     <TableRow>
                                         <TableCell
                                             colSpan={5}
@@ -122,7 +126,7 @@ const SalesInvoice = () => {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    sales?.map((sale: any) => (
+                                    filteredOrders?.map((sale: any) => (
                                         <TableRow
                                             key={sale.id}
                                             className="cursor-pointer hover:bg-muted/50"

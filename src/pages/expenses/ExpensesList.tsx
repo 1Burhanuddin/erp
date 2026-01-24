@@ -5,6 +5,7 @@ import { DataViewToggle, DataCard } from "@/components/shared";
 import { useExpenses } from "@/api/expenses";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -18,10 +19,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
 const ExpensesList = () => {
-    const { data: expenses, isLoading, error } = useExpenses();
+    const { data: rawExpenses, isLoading, error } = useExpenses();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const expenses = rawExpenses?.filter((e: any) =>
+        !searchQuery.trim() ||
+        e.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -38,6 +46,11 @@ const ExpensesList = () => {
 
     return (
         <PageLayout>
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search expenses..."
+            />
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
@@ -49,11 +62,6 @@ const ExpensesList = () => {
                 document.getElementById('header-actions')!
             )}
 
-            <PageHeader
-                title="Expenses"
-                description="Manage your business expenses"
-            />
-
             <div className="p-4">
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -62,7 +70,9 @@ const ExpensesList = () => {
                                 <Skeleton key={i} className="h-40 w-full rounded-xl" />
                             ))
                         ) : expenses?.length === 0 ? (
-                            <div className="col-span-full text-center py-8 text-muted-foreground">No expenses found. Add one to get started.</div>
+                            <div className="col-span-full text-center py-8 text-muted-foreground">
+                                {searchQuery ? `No expenses found matching "${searchQuery}"` : "No expenses found. Add one to get started."}
+                            </div>
                         ) : (
                             expenses?.map((expense: any) => (
                                 <DataCard key={expense.id} onClick={() => navigate(`/expenses/edit/${expense.id}`)} className="cursor-pointer transition-colors">

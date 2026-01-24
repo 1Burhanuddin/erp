@@ -86,12 +86,13 @@ const AuditLogs = () => {
 
     return (
         <PageLayout>
-            <PageHeader title="Audit Logs" description="Track all changes made to your data" />
+
+
 
             {/* Filters */}
             <Card className="mb-6">
                 <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row gap-4 items-end">
+                    <div className="flex flex-col md:flex-row gap-4 md:items-end">
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <Label>Table</Label>

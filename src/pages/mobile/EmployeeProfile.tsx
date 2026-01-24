@@ -5,17 +5,37 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Phone, MapPin, Calendar, Clock, Loader2, Save, Mail, Edit, X } from "lucide-react";
+import { User, Phone, MapPin, Calendar, Clock, Loader2, Save, Mail, Edit, X, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function EmployeeProfile() {
     const { data: employee, isLoading } = useCurrentEmployee();
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const queryClient = useQueryClient();
+    const { signOut } = useAuth();
+    const navigate = useNavigate();
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+    const handleSignOut = async () => {
+        await signOut();
+        navigate('/');
+    };
 
     // Form State
     const [phone, setPhone] = useState("");
@@ -73,11 +93,6 @@ export default function EmployeeProfile() {
     return (
         <EmployeeLayout>
             <div className="space-y-6 max-w-2xl mx-auto">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">My Profile</h2>
-                    <p className="text-muted-foreground">Manage your personal information.</p>
-                </div>
-
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -176,7 +191,31 @@ export default function EmployeeProfile() {
                         )}
                     </CardContent>
                 </Card>
+
+                <div className="pt-6">
+                    <Button variant="destructive" className="w-full gap-2" onClick={() => setShowLogoutDialog(true)}>
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                    </Button>
+                </div>
             </div>
+
+            <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Log Out</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to log out of your account?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSignOut} className="bg-destructive hover:bg-destructive/90">
+                            Log Out
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </EmployeeLayout>
     );
 }

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
 import {
     Table,
@@ -19,9 +20,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const SaleReturn = () => {
     const navigate = useNavigate();
-    const { data: returns, isLoading } = useSaleReturns();
+    const { data: rawReturns, isLoading } = useSaleReturns();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const returns = rawReturns?.filter((r: any) =>
+        !searchQuery.trim() ||
+        r.sale?.order_no?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.sale?.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.reason?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -46,11 +55,12 @@ const SaleReturn = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Sales Returns"
-                description="Manage customer returns and credit notes"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search returns..."
             />
+            <HeaderActions />
 
             {/* Mobile View Toggle */}
             <div className="sm:hidden mb-4">

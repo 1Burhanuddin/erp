@@ -1,40 +1,26 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Plus, Pencil, Trash2, Loader2, Link as LinkIcon, Copy } from "lucide-react";
-import { useStores, useCreateStore, useUpdateStore, useDeleteStore } from "@/api/stores";
+import { Globe, Plus, Trash2, Loader2, Link as LinkIcon, Copy } from "lucide-react";
+import { useStores, useUpdateStore, useDeleteStore } from "@/api/stores";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
 
 export function StoresTab() {
+    const navigate = useNavigate();
     const { data: stores, isLoading } = useStores();
-    const createStore = useCreateStore();
+    // const createStore = useCreateStore(); // Moved to AddStore page
     const updateStore = useUpdateStore();
     const deleteStore = useDeleteStore();
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingStore, setEditingStore] = useState<any>(null); // For edit dialog
 
-    // Form states
-    const [formData, setFormData] = useState({ name: "", domain: "", description: "" });
+    // const [isCreateOpen, setIsCreateOpen] = useState(false); // Removed
+    // const [formData, setFormData] = useState({ name: "", domain: "", description: "" }); // Removed
 
-    const handleCreate = async () => {
-        if (!formData.name) return;
-        try {
-            await createStore.mutateAsync(formData);
-            toast.success("Store created successfully");
-            setIsCreateOpen(false);
-            setFormData({ name: "", domain: "", description: "" });
-        } catch (error) {
-            toast.error("Failed to create store");
-        }
-    };
+    /* createStore logic moved to AddStore page */
 
     const handleDelete = async (id: string, name: string) => {
         if (confirm(`Are you sure you want to delete ${name}?`)) {
@@ -72,56 +58,9 @@ export function StoresTab() {
                         Manage your connected e-commerce stores and channels.
                     </p>
                 </div>
-                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" /> Add New Store
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add New Store</DialogTitle>
-                            <DialogDescription>Create a new channel to sell your products.</DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label>Store Name</Label>
-                                <Input
-                                    placeholder="e.g. My AC Store"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Domain / URL</Label>
-                                <div className="relative">
-                                    <Globe className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        className="pl-9"
-                                        placeholder="https://example.com"
-                                        value={formData.domain}
-                                        onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Description</Label>
-                                <Textarea
-                                    placeholder="Internal description for this store..."
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                            <Button onClick={handleCreate} disabled={createStore.isPending}>
-                                {createStore.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Create Store
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                <Button onClick={() => navigate("/settings/stores/add")}>
+                    <Plus className="mr-2 h-4 w-4" /> Add New Store
+                </Button>
             </div>
 
             <Card>

@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Calendar, CheckCircle2, Clock, MapPin } from "lucide-react";
-import { SearchInput, DataViewToggle } from "@/components/shared";
+import { DataViewToggle } from "@/components/shared";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -84,14 +85,7 @@ export default function EmployeeTasks() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="hidden md:block">
-                    <SearchInput
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search tasks..."
-                        className="w-64"
-                    />
-                </div>
+
 
                 <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                 <Button onClick={() => navigate("/employees/tasks/add")} className="rounded-full h-9">
@@ -104,11 +98,12 @@ export default function EmployeeTasks() {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Tasks"
-                description="Manage and assign tasks to employees"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search tasks..."
             />
+            <HeaderActions />
 
             <div className="p-4 md:p-6">
                 {isLoading ? (

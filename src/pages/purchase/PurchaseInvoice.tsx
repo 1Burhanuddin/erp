@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { usePurchaseOrders } from "@/api/purchase";
-import { SearchInput } from "@/components/shared";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -52,13 +52,7 @@ const PurchaseInvoice = () => {
 
         return createPortal(
             <div className="flex items-center gap-2">
-                <div className="hidden sm:block w-40 md:w-60">
-                    <SearchInput
-                        value={search}
-                        onChange={setSearch}
-                        placeholder="Search invoices..."
-                    />
-                </div>
+
                 <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4">
                     <Filter className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">Filter</span>
@@ -70,11 +64,12 @@ const PurchaseInvoice = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Purchase Invoices"
-                description="Manage and view purchase invoices"
+            <ExpandableSearch
+                value={search}
+                onChange={setSearch}
+                placeholder="Search invoices..."
             />
+            <HeaderActions />
 
             <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden mt-4">
                 <Table>

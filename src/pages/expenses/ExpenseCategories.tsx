@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useExpenseCategories, useCreateExpenseCategory, useUpdateExpenseCategory, useDeleteExpenseCategory } from "@/api/expenses";
-import { Plus, Pencil, Trash2, Loader2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -97,15 +98,7 @@ const ExpenseCategories = () => {
 
         return createPortal(
             <div className="flex items-center gap-2">
-                <div className="relative w-40 md:w-60 hidden sm:block">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search categories..."
-                        className="pl-8 h-9"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
+
                 <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                     <DialogTrigger asChild>
                         <Button size="sm" className="h-9">
@@ -161,23 +154,12 @@ const ExpenseCategories = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <div className="sm:hidden mb-4">
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search categories..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
-
-            <PageHeader
-                title="Expense Categories"
-                description="Manage categories for your operational expenses."
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search categories..."
             />
+            <HeaderActions />
 
             <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden mt-6">
                 <Table>
@@ -185,7 +167,6 @@ const ExpenseCategories = () => {
                         <TableRow>
                             <TableHead>Name</TableHead>
                             <TableHead>Description</TableHead>
-                            <TableHead className="w-[100px] text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -197,29 +178,13 @@ const ExpenseCategories = () => {
                             </TableRow>
                         ) : (
                             filteredCategories.map((category: any) => (
-                                <TableRow key={category.id}>
+                                <TableRow
+                                    key={category.id}
+                                    onClick={() => openEdit(category)}
+                                    className="cursor-pointer hover:bg-muted/50"
+                                >
                                     <TableCell className="font-medium">{category.name}</TableCell>
                                     <TableCell>{category.description || "-"}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => openEdit(category)}
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-destructive hover:text-destructive"
-                                                onClick={() => setDeleteId(category.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
                                 </TableRow>
                             ))
                         )}
@@ -251,10 +216,24 @@ const ExpenseCategories = () => {
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             />
                         </div>
-                        <DialogFooter>
-                            <Button type="submit" disabled={updateMutation.isPending}>
-                                {updateMutation.isPending ? "Updating..." : "Update"}
-                            </Button>
+                        <DialogFooter className="flex sm:justify-between flex-row items-center gap-2">
+                            {editCategory && (
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    onClick={() => {
+                                        setDeleteId(editCategory.id);
+                                        setEditCategory(null);
+                                    }}
+                                >
+                                    Delete
+                                </Button>
+                            )}
+                            <div className="flex gap-2">
+                                <Button type="submit" disabled={updateMutation.isPending}>
+                                    {updateMutation.isPending ? "Updating..." : "Update"}
+                                </Button>
+                            </div>
                         </DialogFooter>
                     </form>
                 </DialogContent>

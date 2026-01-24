@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
 import {
     Table,
@@ -18,14 +20,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 const SalesOrder = () => {
-    // Fetch all sales, then filter for Pending
-    const { data: allSales, isLoading } = useSalesOrders();
-    // Filter only Pending status (or check against other criteria for 'Order')
-    // In this system, 'Pending' = Sales Order
-    const sales = allSales?.filter((s: any) => s.status === 'Pending');
+    const { data: salesOrders, isLoading } = useSalesOrders();
 
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -33,33 +32,31 @@ const SalesOrder = () => {
         return () => setMounted(false);
     }, []);
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
-
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button onClick={() => navigate("/sell/order/add")} size="sm" className="h-9">
-                    <Plus className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Create Order</span>
-                </Button>
-            </div>,
-            container
-        );
-    };
+    const filteredOrders = salesOrders?.filter(order =>
+        // In this system, 'Pending' = Sales Order
+        order.status === 'Pending' &&
+        (!searchQuery.trim() ||
+            order.order_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    ) || [];
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Sales Orders"
-                description="Manage pending sales orders"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search sales orders..."
             />
-
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>
+            {mounted && document.getElementById('header-actions') && createPortal(
+                <div className="flex items-center gap-2">
+                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    <Button onClick={() => navigate("/sell/order/add")} size="sm" className="h-9">
+                        <Plus className="mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">Create Order</span>
+                    </Button>
+                </div>,
+                document.getElementById('header-actions')
+            )}
 
             <div className="p-4">
                 {viewMode === 'card' ? (
@@ -68,10 +65,10 @@ const SalesOrder = () => {
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-36 w-full rounded-xl" />
                             ))
-                        ) : sales?.length === 0 ? (
+                        ) : filteredOrders?.length === 0 ? (
                             <div className="col-span-full text-center py-8 text-muted-foreground">No pending sales orders found.</div>
                         ) : (
-                            sales?.map((sale: any) => (
+                            filteredOrders?.map((sale: any) => (
                                 <DataCard key={sale.id} onClick={() => { }} className="transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
@@ -114,7 +111,7 @@ const SalesOrder = () => {
                                             <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
                                         </TableRow>
                                     ))
-                                ) : sales?.length === 0 ? (
+                                ) : filteredOrders?.length === 0 ? (
                                     <TableRow>
                                         <TableCell
                                             colSpan={5}
@@ -124,7 +121,7 @@ const SalesOrder = () => {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    sales?.map((sale: any) => (
+                                    filteredOrders?.map((sale: any) => (
                                         <TableRow
                                             key={sale.id}
                                             className="hover:bg-muted/50"
@@ -153,3 +150,4 @@ const SalesOrder = () => {
 };
 
 export default SalesOrder;
+

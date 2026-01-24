@@ -3,6 +3,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { DataCard } from "@/components/shared";
 import { usePurchaseOrders, useConvertPOToGRN } from "@/api/purchase";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -20,9 +21,17 @@ import { useNavigate } from "react-router-dom";
 
 const GRN = () => {
     const { data: allOrders, isLoading } = usePurchaseOrders();
+    const [searchQuery, setSearchQuery] = useState('');
+
     // Filter locally
-    const pendingOrders = allOrders?.filter((o: any) => o.status === 'Pending') || [];
-    const receivedOrders = allOrders?.filter((o: any) => o.status === 'Received') || [];
+    const filteredAll = allOrders?.filter((o: any) =>
+        !searchQuery.trim() ||
+        o.order_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
+
+    const pendingOrders = filteredAll.filter((o: any) => o.status === 'Pending');
+    const receivedOrders = filteredAll.filter((o: any) => o.status === 'Received');
 
     const convertToGRN = useConvertPOToGRN();
     const navigate = useNavigate();
@@ -89,9 +98,10 @@ const GRN = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Goods Received Note (GRN)"
-                description="Manage pending and received orders"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search orders..."
             />
 
             <div className="p-4 space-y-6">

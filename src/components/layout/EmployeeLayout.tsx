@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -11,7 +12,6 @@ import {
     ChevronRight,
     User,
 } from 'lucide-react';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import TopHeader from '@/components/layout/TopHeader';
 
 interface EmployeeLayoutProps {
     children: ReactNode;
@@ -36,12 +37,19 @@ const navItems = [
     { href: '/mobile/profile', label: 'Profile', icon: User },
 ];
 
+const getPageTitle = (pathname: string) => {
+    const item = navItems.find((item) => item.href === pathname);
+    return item ? item.label : "My Work";
+};
+
 export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
     const { signOut, isAdmin } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const pageTitle = getPageTitle(location.pathname);
 
     const handleSignOut = () => {
         setShowLogoutDialog(true);
@@ -52,7 +60,56 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
         navigate('/');
     };
 
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    // Content for the Mobile Hamburger Menu (Sheet)
+    // We render this as a JSX element (not a component) to pass to TopHeader
+    // TopHeader will clone it to inject props if needed, but we handle click via closure mostly.
+    const sidebarContent = useMemo(() => (
+        <div className="flex flex-col h-full">
+            <div className="p-4 border-b">
+                <h1 className="font-bold text-lg text-primary">My Work</h1>
+            </div>
+            <nav className="flex-1 p-4 space-y-2">
+                {navItems.map((item) => {
+                    const isActive = location.pathname === item.href;
+                    return (
+                        <Link
+                            key={item.href}
+                            to={item.href}
+                            className={cn(
+                                "flex items-center gap-3 px-3 py-2 rounded-full transition-colors",
+                                isActive
+                                    ? "bg-primary text-primary-foreground"
+                                    : "text-foreground hover:bg-muted"
+                            )}
+                        >
+                            <item.icon className="h-5 w-5 shrink-0" />
+                            <span>{item.label}</span>
+                        </Link>
+                    );
+                })}
+            </nav>
+            <div className="p-4 border-t space-y-2">
+                {isAdmin && (
+                    <Button
+                        variant="default"
+                        className="w-full gap-2 justify-start"
+                        onClick={() => navigate('/')}
+                    >
+                        <LayoutDashboard className="h-4 w-4 shrink-0" />
+                        Back to ERP
+                    </Button>
+                )}
+                <Button
+                    variant="outline"
+                    className="w-full gap-2 justify-start"
+                    onClick={() => handleSignOut()}
+                >
+                    <LogOut className="h-4 w-4 shrink-0" />
+                    Sign Out
+                </Button>
+            </div>
+        </div>
+    ), [location.pathname, isAdmin]);
 
     return (
         <div className="min-h-screen bg-background flex flex-col md:flex-row">
@@ -121,22 +178,29 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                 </div>
             </aside>
 
+            {/* Main Content Area */}
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
-                {/* Mobile Header */}
-                <header className="md:hidden bg-background border-b px-4 py-3 flex justify-between items-center sticky top-0 z-10 shrink-0">
-                    <h1 className="font-bold text-lg text-primary">My Work</h1>
-                    <div className="flex items-center gap-2">
-                        {isAdmin && (
-                            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-primary">
-                                <LayoutDashboard className="h-4 w-4" />
-                            </Button>
-                        )}
-                        <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
-                            <LogOut className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </header>
+                {/* Top Header - Common for Mobile and Desktop (Sidebar logic handled by Desktop Sidebar above, empty for mobile) */}
+                <TopHeader
+                    title={pageTitle}
+                    sidebarContent={null} // Removed mobile sidebar content as requested
+                />
 
+                {/* Portal for Mobile "Back to ERP" Action in Header */}
+                {isAdmin && createPortal(
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden"
+                        onClick={() => navigate('/')}
+                        title="Back to ERP"
+                    >
+                        <LayoutDashboard className="h-5 w-5" />
+                    </Button>,
+                    document.getElementById('header-actions') || document.body
+                )}
+
+                {/* Page Content */}
                 <main className="flex-1 p-4 pb-20 md:pb-4 overflow-auto">
                     {children}
                 </main>

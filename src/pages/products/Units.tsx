@@ -4,6 +4,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { useUnits } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -17,10 +18,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
 const Units = () => {
-    const { data: units, isLoading } = useUnits();
+    const { data: rawUnits, isLoading } = useUnits();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const units = rawUnits?.filter(u =>
+        !searchQuery.trim() || u.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -29,6 +35,11 @@ const Units = () => {
 
     return (
         <PageLayout>
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search units..."
+            />
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
@@ -39,11 +50,6 @@ const Units = () => {
                 </div>,
                 document.getElementById('header-actions')!
             )}
-
-            <PageHeader
-                title="Product Units"
-                description="Manage product units (e.g., kg, pcs)"
-            />
 
             <div className="p-4">
                 {viewMode === 'card' ? (

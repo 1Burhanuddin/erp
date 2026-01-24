@@ -91,8 +91,11 @@ import MyAttendance from "./pages/mobile/MyAttendance";
 import EmployeeProfile from "./pages/mobile/EmployeeProfile";
 // Settings Pages
 import UserProfile from "./pages/settings/UserProfile";
+import ChangePassword from "./pages/settings/ChangePassword";
+import ChangeEmail from "./pages/settings/ChangeEmail";
 import BusinessDetails from "./pages/settings/BusinessDetails";
 import StoresSettings from "./pages/settings/StoresSettings";
+import AddStore from "./pages/settings/AddStore";
 import TaxAndBank from "./pages/settings/TaxAndBank";
 import OwnerDetails from "./pages/settings/OwnerDetails";
 import AppSettings from "./pages/settings/AppSettings";
@@ -192,8 +195,11 @@ const App = () => {
                   <Route path="/audit-logs/:id" element={<AuditLogDetails />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/settings/profile" element={<UserProfile />} />
+                  <Route path="/settings/password" element={<ChangePassword />} />
+                  <Route path="/settings/email" element={<ChangeEmail />} />
                   <Route path="/settings/business" element={<BusinessDetails />} />
                   <Route path="/settings/stores" element={<StoresSettings />} />
+                  <Route path="/settings/stores/add" element={<AddStore />} />
                   <Route path="/settings/tax-bank" element={<TaxAndBank />} />
                   <Route path="/settings/owner" element={<OwnerDetails />} />
                   <Route path="/settings/app" element={<AppSettings />} />

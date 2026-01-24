@@ -1,15 +1,18 @@
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Loader2, LogOut, ArrowLeft } from "lucide-react";
+import { User, Loader2, LogOut, Phone, MapPin, Calendar, Clock, Mail, Edit, X, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { useUpdateProfile, useUpdatePassword } from "@/api/profile";
+import { useCurrentEmployee } from "@/api/employees";
 import { toast } from "sonner";
-import { SettingsField, BusinessActionButtons } from "@/components/settings/SettingsCommon";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
+import { Employee } from "@/types/employee";
 
 import {
     AlertDialog,
@@ -24,53 +27,44 @@ import {
 
 export default function UserProfile() {
     const navigate = useNavigate();
-    const [user, setUser] = useState<any>(null);
-    const [fullName, setFullName] = useState("");
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
 
-    // Password state
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const { data: employee, isLoading: isLoadingEmployee } = useCurrentEmployee();
 
-    const updateProfileMutation = useUpdateProfile();
-    const updatePasswordMutation = useUpdatePassword();
-    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    // Profile Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [phone, setPhone] = useState("");
+    const [address, setAddress] = useState("");
+
     const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
     useEffect(() => {
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
-            setFullName(user?.user_metadata?.full_name || "");
-            setLoading(false);
-        };
-        getUser();
-    }, []);
-
-    const handleProfileUpdate = () => {
-        updateProfileMutation.mutate({ full_name: fullName }, {
-            onSuccess: () => {
-                setIsEditingProfile(false);
-                toast.success("Profile updated");
-            }
-        });
-    };
-
-    const handlePasswordUpdate = () => {
-        if (password !== confirmPassword) {
-            toast.error("Passwords do not match");
-            return;
+        if (employee && !isEditing) {
+            setPhone(employee.phone || "");
+            setAddress(employee.address || "");
         }
-        if (password.length < 6) {
-            toast.error("Password must be at least 6 characters");
-            return;
+    }, [employee, isEditing]);
+
+    const handleProfileUpdate = async () => {
+        if (!employee) return;
+        setIsSaving(true);
+        try {
+            const { error } = await supabase
+                .from("employees")
+                .update({ phone, address })
+                .eq("id", employee.id);
+
+            if (error) throw error;
+
+            await queryClient.invalidateQueries({ queryKey: ["current_employee"] });
+            toast.success("Profile updated successfully");
+            setIsEditing(false);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update profile");
+        } finally {
+            setIsSaving(false);
         }
-        updatePasswordMutation.mutate(password, {
-            onSuccess: () => {
-                setPassword("");
-                setConfirmPassword("");
-            }
-        });
     };
 
     const handleLogout = async () => {
@@ -82,104 +76,161 @@ export default function UserProfile() {
         }
     };
 
-    if (loading) {
-        return <PageLayout><PageHeader title="User Profile" description="Loading..." /></PageLayout>;
+    if (isLoadingEmployee) {
+        return (
+            <PageLayout>
+                <div className="space-y-6 max-w-4xl">
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <Skeleton className="h-16 w-16 rounded-full" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-6 w-32" />
+                                        <Skeleton className="h-4 w-24" />
+                                    </div>
+                                </div>
+                                <Skeleton className="h-8 w-8" />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-6 w-full" /></div>
+                                <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-6 w-full" /></div>
+                                <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-6 w-full" /></div>
+                                <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-6 w-full" /></div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Skeleton className="h-12 w-full" />
+                </div>
+            </PageLayout>
+        );
     }
+
+    const fallbackUser: Partial<Employee> = {
+        full_name: "User",
+        email: "user@example.com",
+        role: "employee",
+    };
+
+    const displayUser: Partial<Employee> = employee || fallbackUser;
 
     return (
         <PageLayout>
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">User Profile</h1>
-                <p className="text-muted-foreground">Manage your personal details and security.</p>
-            </div>
-
             <div className="space-y-6 max-w-4xl">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <User className="h-5 w-5 text-primary" />
-                            Personal Information
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <SettingsField
-                                label="Full Name"
-                                value={fullName}
-                                onChange={setFullName}
-                                isEditing={isEditingProfile}
-                                placeholder="Your full name"
-                            />
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <div className="p-2 border rounded-md bg-muted/50 text-foreground min-h-[40px] flex items-center px-3 opacity-70 cursor-not-allowed">
-                                    {user?.email || ""}
-                                </div>
-                                <p className="text-[10px] text-muted-foreground">Email cannot be changed.</p>
-                            </div>
-                        </div>
-                        <BusinessActionButtons
-                            isEditing={isEditingProfile}
-                            onEdit={() => setIsEditingProfile(true)}
-                            onCancel={() => { setIsEditingProfile(false); setFullName(user?.user_metadata?.full_name || ""); }}
-                            onSave={handleProfileUpdate}
-                            isPending={updateProfileMutation.isPending}
-                        />
-                    </CardContent>
-                </Card>
 
+                {/* Personal Information Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Security</CardTitle>
-                        <CardDescription>Update your password.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="newPassword">New Password</Label>
-                                <Input
-                                    id="newPassword"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="h-16 w-16 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold">
+                                    {displayUser.full_name?.charAt(0) || "U"}
+                                </div>
+                                <div className="min-w-0">
+                                    <CardTitle>{displayUser.full_name}</CardTitle>
+                                    <CardDescription>{displayUser.role === 'admin' ? 'Administrator' : 'Employee'}</CardDescription>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                                <Input
-                                    id="confirmPassword"
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end">
-                            <Button variant="outline" onClick={handlePasswordUpdate} disabled={updatePasswordMutation.isPending || !password}>
-                                {updatePasswordMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Update Password
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsEditing(!isEditing)}
+                                disabled={isSaving}
+                            >
+                                {isEditing ? <X className="h-5 w-5" /> : <Edit className="h-5 w-5" />}
                             </Button>
                         </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {/* Read-Only Fields */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2 text-muted-foreground">
+                                    <User className="h-4 w-4" /> Full Name
+                                </Label>
+                                <p className="font-medium break-words">
+                                    {displayUser.full_name}
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2 text-muted-foreground">
+                                    <Mail className="h-4 w-4" /> Email
+                                </Label>
+                                <p className="font-medium break-all">
+                                    {displayUser.email || "N/A"}
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2 text-muted-foreground">
+                                    <Calendar className="h-4 w-4" /> Joining Date
+                                </Label>
+                                <p className="font-medium">
+                                    {displayUser.joining_date ? format(new Date(displayUser.joining_date), "PP") : "N/A"}
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2 text-muted-foreground">
+                                    <Clock className="h-4 w-4" /> Shift Start
+                                </Label>
+                                <p className="font-medium">
+                                    {displayUser.shift_start || "09:00 AM"}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Editable Fields */}
+                        <div className="space-y-4 pt-4 border-t">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone" className="flex items-center gap-2">
+                                        <Phone className="h-4 w-4" /> Phone Number
+                                    </Label>
+                                    <Input
+                                        id="phone"
+                                        value={isEditing ? phone : (displayUser.phone || "Not set")}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        disabled={!isEditing}
+                                        className={!isEditing ? "bg-muted border-none" : ""}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="address" className="flex items-center gap-2">
+                                        <MapPin className="h-4 w-4" /> Address
+                                    </Label>
+                                    <Input
+                                        id="address"
+                                        value={isEditing ? address : (displayUser.address || "Not set")}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        disabled={!isEditing}
+                                        className={!isEditing ? "bg-muted border-none" : ""}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {isEditing && (
+                            <div className="flex justify-end pt-4">
+                                <Button onClick={handleProfileUpdate} disabled={isSaving}>
+                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                    Save Changes
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
-                <Card className="border-destructive/20 bg-destructive/5">
-                    <CardHeader>
-                        <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                        <CardDescription>Sign out of your account.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button
-                            variant="destructive"
-                            onClick={() => setIsLogoutDialogOpen(true)}
-                        >
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Sign Out
-                        </Button>
-                    </CardContent>
-                </Card>
+                <div className="pt-6">
+                    <Button variant="destructive" className="w-full h-12 text-lg gap-2" onClick={() => setIsLogoutDialogOpen(true)}>
+                        <LogOut className="h-5 w-5" />
+                        Sign Out
+                    </Button>
+                </div>
             </div>
 
+            {/* Logout Confirmation */}
             <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>

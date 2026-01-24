@@ -4,6 +4,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { useSubCategories } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -17,10 +18,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
 const SubCategories = () => {
-    const { data: subCategories, isLoading } = useSubCategories();
+    const { data: rawSubCategories, isLoading } = useSubCategories();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const subCategories = rawSubCategories?.filter(sc =>
+        !searchQuery.trim() ||
+        sc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sc.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -29,6 +37,11 @@ const SubCategories = () => {
 
     return (
         <PageLayout>
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search sub-categories..."
+            />
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
@@ -39,11 +52,6 @@ const SubCategories = () => {
                 </div>,
                 document.getElementById('header-actions')!
             )}
-
-            <PageHeader
-                title="Product Sub Categories"
-                description="Manage product sub categories"
-            />
 
             <div className="p-4">
                 {viewMode === 'card' ? (

@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { usePurchaseReturns } from "@/api/purchaseReturns";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -17,8 +18,16 @@ import { format } from "date-fns";
 
 const PurchaseReturn = () => {
     const navigate = useNavigate();
-    const { data: returns, isLoading } = usePurchaseReturns();
+    const { data: rawReturns, isLoading } = usePurchaseReturns();
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const returns = rawReturns?.filter((r: any) =>
+        !searchQuery.trim() ||
+        r.purchase?.order_no?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.purchase?.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.reason?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -40,11 +49,12 @@ const PurchaseReturn = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Purchase Returns"
-                description="Manage returns to suppliers"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search returns..."
             />
+            <HeaderActions />
 
             <div className="p-4">
                 <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">

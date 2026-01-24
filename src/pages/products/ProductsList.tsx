@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard, SearchInput } from "@/components/shared";
+import { DataViewToggle, DataCard } from "@/components/shared";
 import { useProducts } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 
 const ProductsList = () => {
     const { data: products, isLoading } = useProducts();
@@ -82,15 +83,13 @@ const ProductsList = () => {
 
     return (
         <PageLayout>
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search products..."
+            />
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
-                    <div className="hidden sm:block w-40 md:w-60">
-                        <SearchInput
-                            value={searchQuery}
-                            onChange={setSearchQuery}
-                            placeholder="Search products..."
-                        />
-                    </div>
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -117,10 +116,7 @@ const ProductsList = () => {
                 document.getElementById('header-actions')!
             )}
 
-            <PageHeader
-                title="Products"
-                description="Manage your products inventory"
-            />
+
 
 
 

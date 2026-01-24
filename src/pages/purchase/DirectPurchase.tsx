@@ -171,7 +171,7 @@ const DirectPurchase = () => {
 
     return (
         <PageLayout>
-            <PageHeader title="Direct Purchase" description="Immediate stock entry" />
+
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4">
                 {/* Left: Input Panel */}

@@ -112,10 +112,7 @@ export default function LiveStatus() {
     return (
         <PageLayout>
             <HeaderActions />
-            <PageHeader
-                title="Live Employee Status"
-                description="Real-time field force tracking"
-            />
+
 
 
             <div className="p-6">
@@ -185,7 +182,7 @@ export default function LiveStatus() {
                         )}
                     </div>
                 ) : (
-                    <Card>
+                    <Card className="rounded-3xl border-0 shadow-sm overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

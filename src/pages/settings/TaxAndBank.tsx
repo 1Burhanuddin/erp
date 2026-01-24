@@ -151,9 +151,9 @@ export default function TaxAndBank() {
                 </div>
             </div>
 
-            <div className="space-y-6 max-w-4xl">
+            <div className="space-y-6 max-w-4xl mx-auto">
                 {/* Tax Rates Section */}
-                <Card>
+                <Card className="rounded-2xl shadow-sm">
                     <CardHeader className="cursor-pointer select-none" onClick={() => setIsTaxExpanded(!isTaxExpanded)}>
                         <div className="flex items-center justify-between">
                             <div>
@@ -183,11 +183,11 @@ export default function TaxAndBank() {
                                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                                     </div>
                                 ) : taxRates.length === 0 ? (
-                                    <div className="text-center py-8 text-muted-foreground border rounded-md bg-muted/20">
+                                    <div className="text-center py-8 text-muted-foreground border rounded-xl bg-muted/20">
                                         No tax rates found. Add one to get started.
                                     </div>
                                 ) : (
-                                    <div className="border rounded-md">
+                                    <div className="border rounded-xl overflow-hidden">
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>
@@ -226,7 +226,7 @@ export default function TaxAndBank() {
                 </Card>
 
                 {/* Tax Info Section */}
-                <Card>
+                <Card className="rounded-2xl shadow-sm">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Building2 className="h-5 w-5 text-primary" />
@@ -262,7 +262,7 @@ export default function TaxAndBank() {
                 </Card>
 
                 {/* Bank Details Section */}
-                <Card>
+                <Card className="rounded-2xl shadow-sm">
                     <CardHeader>
                         <CardTitle>Bank Details</CardTitle>
                         <CardDescription>For receiving payments.</CardDescription>
@@ -370,6 +370,6 @@ export default function TaxAndBank() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </PageLayout>
+        </PageLayout >
     );
 }

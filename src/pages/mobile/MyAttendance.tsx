@@ -23,10 +23,6 @@ export default function MyAttendance() {
     return (
         <EmployeeLayout>
             <div className="space-y-6 max-w-md mx-auto">
-                <div>
-                    <h1 className="text-2xl font-bold">My Attendance</h1>
-                    <p className="text-muted-foreground text-sm">History of your check-ins</p>
-                </div>
 
                 {isLoading ? (
                     <div className="space-y-4">

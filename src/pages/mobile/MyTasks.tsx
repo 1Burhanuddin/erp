@@ -18,6 +18,9 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { format, isToday, parseISO, isYesterday, isSameWeek, isSameMonth, subWeeks, isBefore, startOfDay, subDays } from "date-fns";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
+
+import { PageHeader } from "@/components/layout";
 
 export default function MyTasks() {
     const { user } = useAuth();
@@ -25,29 +28,77 @@ export default function MyTasks() {
     const { data: todayAttendance } = useMyTodayAttendance();
     const updateTask = useUpdateTask();
 
+    // Local state for 'reached_site' since it's not in the DB enum
+    const [reachedSiteTasks, setReachedSiteTasks] = useState<Record<string, boolean>>(() => {
+        // Initialize from localStorage
+        try {
+            const saved = localStorage.getItem('reachedSiteTasks');
+            return saved ? JSON.parse(saved) : {};
+        } catch (e) {
+            return {};
+        }
+    });
+
+    const markReachedSite = (taskId: string) => {
+        const newState = { ...reachedSiteTasks, [taskId]: true };
+        setReachedSiteTasks(newState);
+        localStorage.setItem('reachedSiteTasks', JSON.stringify(newState));
+        toast({
+            title: "Reached Site",
+            description: "You have marked yourself as arrived.",
+        });
+    };
+
     // UI State
     const [activeTab, setActiveTab] = useState<"active" | "history">("active");
     const [searchQuery, setSearchQuery] = useState("");
+    const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
 
     // Payment Modal State
     const [selectedTask, setSelectedTask] = useState<string | null>(null);
     const [amountCollected, setAmountCollected] = useState("");
     const [paymentMode, setPaymentMode] = useState<"cash" | "online">("cash");
 
-    const handleStatusChange = (taskId: string, newStatus: string) => {
-        if (newStatus === 'accepted' && !todayAttendance) {
-            toast({
-                title: "Check-in Required",
-                description: "You must check in for the day before accepting tasks.",
-                variant: "destructive"
-            });
-            return;
+    const handleStatusChange = async (taskId: string, newStatus: string) => {
+        if (newStatus === 'accepted') {
+            if (!todayAttendance) {
+                toast({
+                    title: "Check-in Required",
+                    description: "You must check in for the day before accepting tasks.",
+                    variant: "destructive"
+                });
+                return;
+            }
+            if (todayAttendance.check_out) {
+                toast({
+                    title: "Shift Ended",
+                    description: "You have checked out for the day. Cannot accept new tasks.",
+                    variant: "destructive"
+                });
+                return;
+            }
         }
 
-        updateTask.mutate({
-            id: taskId,
-            updates: { status: newStatus as any }
-        });
+        setUpdatingTaskId(taskId);
+
+        // Clean up local state if moving away from accepted/reached
+        if (newStatus !== 'accepted') {
+            const newState = { ...reachedSiteTasks };
+            delete newState[taskId];
+            setReachedSiteTasks(newState);
+            localStorage.setItem('reachedSiteTasks', JSON.stringify(newState));
+        }
+
+        try {
+            await updateTask.mutateAsync({
+                id: taskId,
+                updates: { status: newStatus as any }
+            });
+        } catch (error) {
+            // Error handling handled by mutation typically, but we clear loading here
+        } finally {
+            setUpdatingTaskId(null);
+        }
     };
 
     const handleCompleteTask = async () => {
@@ -59,19 +110,23 @@ export default function MyTasks() {
             return;
         }
 
-        await updateTask.mutateAsync({
-            id: selectedTask,
-            updates: {
-                status: 'completed',
-                completed_at: new Date().toISOString(),
-                amount_collected: Number(amountCollected),
-                payment_mode: paymentMode,
-                payment_status: 'paid'
-            }
-        });
+        try {
+            await updateTask.mutateAsync({
+                id: selectedTask,
+                updates: {
+                    status: 'completed',
+                    completed_at: new Date().toISOString(),
+                    amount_collected: Number(amountCollected),
+                    payment_mode: paymentMode,
+                    payment_status: 'paid'
+                }
+            });
 
-        setSelectedTask(null);
-        setAmountCollected("");
+            setSelectedTask(null);
+            setAmountCollected("");
+        } catch (error) {
+            // Error state
+        }
     };
 
     // Filter Logic
@@ -163,22 +218,13 @@ export default function MyTasks() {
 
     return (
         <EmployeeLayout>
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search tasks..."
+            />
             <div className=""> {/* Removed gap-4 from parent container to let Tabs handle spacing */}
                 <div className="flex flex-col gap-4 sticky top-0 bg-background z-10 pb-4 pt-2">
-                    <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold">My Tasks</h1>
-                    </div>
-
-                    {/* Search Bar */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search tasks..."
-                            className="pl-9 bg-muted/30"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
 
                     {/* Tabs */}
                     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "history")} className="w-full">
@@ -189,7 +235,7 @@ export default function MyTasks() {
                     </Tabs>
                 </div>
 
-                <div className="pb-20"> {/* Add padding for bottom nav if exists, or just spacing */}
+                <div className="pb-24 px-4 space-y-6">
                     {activeTab === 'active' && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             {activeTasks.length === 0 ? (
@@ -198,86 +244,99 @@ export default function MyTasks() {
                                 </div>
                             ) : (
                                 activeTasks.map(task => (
-                                    <Card key={task.id} className="overflow-hidden border-l-4 border-l-primary shadow-sm bg-card">
-                                        <CardHeader className="p-4 pb-2 bg-muted/20">
+                                    <Card key={task.id} className="overflow-hidden border-0 shadow-md rounded-2xl relative group">
+                                        <CardContent className="p-5 space-y-4">
+                                            {/* Header */}
                                             <div className="flex justify-between items-start">
-                                                <CardTitle className="text-base font-semibold">{task.title}</CardTitle>
-                                                <Badge variant={task.status === 'in_progress' ? 'default' : 'secondary'} className="capitalize">
+                                                <h3 className="font-bold text-lg leading-tight">{task.title}</h3>
+                                                <Badge variant={task.status === 'in_progress' ? 'default' : 'secondary'} className="capitalize shrink-0">
                                                     {task.status.replace('_', ' ')}
                                                 </Badge>
                                             </div>
-                                        </CardHeader>
-                                        <CardContent className="p-4 space-y-3">
-                                            <div className="flex items-start gap-3">
-                                                <div className="bg-blue-100 p-1.5 rounded-full shrink-0">
-                                                    <MapPin className="w-4 h-4 text-blue-600" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-sm">{task.customer_name}</p>
-                                                    <p className="text-sm text-muted-foreground leading-snug">{task.customer_address}</p>
+
+                                            {/* Customer & Location */}
+                                            <div className="space-y-2">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="bg-primary/10 p-2 rounded-full mt-0.5 shrink-0">
+                                                        <MapPin className="w-4 h-4 text-primary" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-sm">{task.customer_name}</p>
+                                                        <p className="text-xs text-muted-foreground leading-snug mt-0.5">{task.customer_address}</p>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {task.status !== 'pending' && (
-                                                <div className="flex items-center gap-3">
-                                                    <div className="bg-green-100 p-1.5 rounded-full shrink-0">
-                                                        <Phone className="w-4 h-4 text-green-600" />
-                                                    </div>
-                                                    <a href={`tel:${task.customer_phone}`} className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
-                                                        {task.customer_phone}
-                                                    </a>
-                                                </div>
-                                            )}
-
+                                            {/* Description (Optional) */}
                                             {task.description && (
-                                                <div className="bg-muted/30 p-3 rounded text-sm text-foreground/80 border">
+                                                <div className="bg-muted/30 p-3 rounded-xl text-sm text-foreground/80 border border-border/50">
                                                     {task.description}
                                                 </div>
                                             )}
 
+                                            {/* Payment Info */}
                                             {task.payment_amount && task.payment_amount > 0 && (
-                                                <div className="flex items-center gap-2 font-medium text-green-700 bg-green-50 p-2 rounded border border-green-100">
+                                                <div className="flex items-center gap-2 font-bold text-primary bg-primary/5 p-3 rounded-xl border border-primary/10">
                                                     <IndianRupee className="w-4 h-4" />
-                                                    To Collect: <span className="font-bold">₹{task.payment_amount}</span>
+                                                    <span>To Collect:</span>
+                                                    <span className="text-lg">₹{task.payment_amount}</span>
                                                 </div>
                                             )}
-
                                         </CardContent>
-                                        <CardFooter className="p-4 pt-0 flex gap-2">
+
+                                        {/* Action Buttons */}
+                                        <div className="px-5 pb-5">
                                             {task.status === 'pending' && (
                                                 <Button
-                                                    className="w-full"
+                                                    size="lg"
+                                                    className="w-full font-semibold shadow-lg shadow-primary/20"
                                                     onClick={() => handleStatusChange(task.id, 'accepted')}
-                                                    disabled={updateTask.isPending}
+                                                    disabled={updatingTaskId === task.id || updateTask.isPending}
                                                 >
-                                                    {updateTask.isPending ? "Accepting..." : "Accept Task"}
+                                                    {updatingTaskId === task.id ? "Accepting..." : "Accept Task"}
                                                 </Button>
                                             )}
 
                                             {task.status === 'accepted' && (
                                                 <>
-                                                    <Button variant="outline" className="flex-1" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(task.customer_address || "")}`)}>
-                                                        <Navigation className="w-4 h-4 mr-2" /> Navigate
-                                                    </Button>
-                                                    <Button
-                                                        className="flex-1"
-                                                        onClick={() => handleStatusChange(task.id, 'in_progress')}
-                                                        disabled={updateTask.isPending}
-                                                    >
-                                                        {updateTask.isPending ? "Starting..." : "Start Work"}
-                                                    </Button>
+                                                    {/* If NOT reached site yet */}
+                                                    {!reachedSiteTasks[task.id] && (
+                                                        <div className="flex gap-3">
+                                                            <Button variant="outline" size="lg" className="flex-1 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(task.customer_address || "")}`)}>
+                                                                <Navigation className="w-4 h-4 mr-2" /> Navigate
+                                                            </Button>
+                                                            <Button
+                                                                size="lg"
+                                                                className="flex-[2] shadow-lg shadow-primary/20"
+                                                                onClick={() => markReachedSite(task.id)}
+                                                            >
+                                                                Reached Site
+                                                            </Button>
+                                                        </div>
+                                                    )}
+
+                                                    {/* If Reached Site (Local State) */}
+                                                    {reachedSiteTasks[task.id] && (
+                                                        <div className="relative w-full h-14 bg-muted/50 rounded-full overflow-hidden border border-primary/20 select-none touch-none">
+                                                            {/* Background Text */}
+                                                            <div className="absolute inset-0 flex items-center justify-center text-primary/50 font-semibold tracking-widest text-sm uppercase">
+                                                                Slide to Start Work
+                                                            </div>
+                                                            <SwipeSlider onComplete={() => handleStatusChange(task.id, 'in_progress')} isLoading={updateTask.isPending} />
+                                                        </div>
+                                                    )}
                                                 </>
                                             )}
 
                                             {task.status === 'in_progress' && (
                                                 <div className="w-full">
                                                     {selectedTask === task.id ? (
-                                                        <div className="space-y-4 pt-4 border-t mt-2 animate-in fade-in slide-in-from-top-2">
-                                                            <div className="space-y-2">
-                                                                <Label className="text-xs font-semibold text-muted-foreground uppercase">Collection Details</Label>
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    <div className="space-y-2">
-                                                                        <Label htmlFor="amt" className="text-xs">Amount (₹)</Label>
+                                                        <div className="space-y-4 pt-4 border-t border-dashed mt-2 animate-in fade-in slide-in-from-top-2">
+                                                            <div className="space-y-3">
+                                                                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Collection & Completion</Label>
+                                                                <div className="grid grid-cols-2 gap-3">
+                                                                    <div className="space-y-1.5">
+                                                                        <Label htmlFor="amt" className="text-xs font-medium">Amount (₹)</Label>
                                                                         <Input
                                                                             id="amt"
                                                                             type="number"
@@ -285,12 +344,13 @@ export default function MyTasks() {
                                                                             value={amountCollected}
                                                                             onChange={(e) => setAmountCollected(e.target.value)}
                                                                             autoFocus
+                                                                            className="h-10 rounded-lg"
                                                                         />
                                                                     </div>
-                                                                    <div className="space-y-2">
-                                                                        <Label className="text-xs">Mode</Label>
+                                                                    <div className="space-y-1.5">
+                                                                        <Label className="text-xs font-medium">Mode</Label>
                                                                         <Select value={paymentMode} onValueChange={(v: any) => setPaymentMode(v)}>
-                                                                            <SelectTrigger>
+                                                                            <SelectTrigger className="h-10 rounded-lg">
                                                                                 <SelectValue />
                                                                             </SelectTrigger>
                                                                             <SelectContent>
@@ -302,9 +362,10 @@ export default function MyTasks() {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex gap-2 pt-2">
+                                                            <div className="flex gap-2">
                                                                 <Button
                                                                     variant="outline"
+                                                                    size="lg"
                                                                     className="flex-1"
                                                                     onClick={() => {
                                                                         setSelectedTask(null);
@@ -314,7 +375,8 @@ export default function MyTasks() {
                                                                     Cancel
                                                                 </Button>
                                                                 <Button
-                                                                    className="flex-1"
+                                                                    size="lg"
+                                                                    className="flex-[2]"
                                                                     onClick={handleCompleteTask}
                                                                     disabled={updateTask.isPending}
                                                                 >
@@ -324,7 +386,8 @@ export default function MyTasks() {
                                                         </div>
                                                     ) : (
                                                         <Button
-                                                            className="w-full"
+                                                            size="lg"
+                                                            className="w-full font-semibold shadow-lg shadow-primary/20"
                                                             variant="default"
                                                             onClick={() => {
                                                                 setSelectedTask(task.id);
@@ -336,7 +399,7 @@ export default function MyTasks() {
                                                     )}
                                                 </div>
                                             )}
-                                        </CardFooter>
+                                        </div>
                                     </Card>
                                 ))
                             )}
@@ -363,5 +426,65 @@ export default function MyTasks() {
                 </div>
             </div>
         </EmployeeLayout>
+    );
+}
+
+// Inline Swipe Slider Component for "Swipe to Start"
+function SwipeSlider({ onComplete, isLoading }: { onComplete: () => void, isLoading: boolean }) {
+    const [sliderValue, setSliderValue] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSliderValue(parseInt(e.target.value));
+    };
+
+    const handleEnd = () => {
+        setIsDragging(false);
+        if (sliderValue >= 95) {
+            setSliderValue(100);
+            onComplete();
+        } else {
+            setSliderValue(0);
+        }
+    };
+
+    return (
+        <div className="relative w-full h-14 bg-muted rounded-full overflow-hidden border border-primary/20 shadow-inner">
+            {/* Success Fill */}
+            <div
+                className="absolute left-0 top-0 bottom-0 bg-primary/20 transition-all duration-75 ease-linear"
+                style={{ width: `${sliderValue}%` }}
+            />
+
+            {/* Text */}
+            <div className={`absolute inset-0 flex items-center justify-center font-semibold tracking-widest text-sm uppercase pointer-events-none transition-opacity duration-300 ${sliderValue > 50 ? 'opacity-0' : 'text-primary/60 animate-pulse'}`}>
+                {isLoading ? "Starting..." : "Swipe to Start"}
+            </div>
+
+            {/* Thumb Visual */}
+            <div
+                className="absolute top-1 bottom-1 w-12 bg-primary rounded-full flex items-center justify-center shadow-md pointer-events-none transition-all duration-75 ease-linear"
+                style={{ left: `calc(${sliderValue}% - ${sliderValue * 0.48}px + 4px)` }} // Adjust for thumb width + padding
+            >
+                <div className="text-primary-foreground">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                </div>
+            </div>
+
+            {/* Input Range Overlay */}
+            <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliderValue}
+                onChange={handleInput}
+                onTouchStart={() => setIsDragging(true)}
+                onTouchEnd={handleEnd}
+                onMouseDown={() => setIsDragging(true)}
+                onMouseUp={handleEnd}
+                disabled={isLoading}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            />
+        </div>
     );
 }

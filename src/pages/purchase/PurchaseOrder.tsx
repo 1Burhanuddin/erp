@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { usePurchaseOrders } from "@/api/purchase";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import {
@@ -18,9 +19,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 const PurchaseOrder = () => {
-    const { data: orders, isLoading } = usePurchaseOrders();
+    const { data: rawOrders, isLoading } = usePurchaseOrders();
+    // Basic filter
+    const orders = rawOrders?.filter(o =>
+        !searchQuery.trim() ||
+        o.order_no?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -46,11 +55,12 @@ const PurchaseOrder = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Purchase Orders"
-                description="Manage your purchase orders"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search orders..."
             />
+            <HeaderActions />
 
             <div>
                 {viewMode === 'card' ? (

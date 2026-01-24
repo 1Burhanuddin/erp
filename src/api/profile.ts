@@ -23,11 +23,7 @@ export const useUpdateProfile = () => {
         },
         onSuccess: () => {
             toast.success("Profile updated successfully");
-            // Invalidate user query to refresh UI immediately if we had one,
-            // or just rely on the session updating. But reloading window is sometimes safer for Auth state.
-            // For now, let's just assume the UI updates from local state or context.
-            // We can also invalidate a "user" query if we had one.
-            window.location.reload(); // Simple way to refresh all user data in Sidebar/Layout
+            window.location.reload();
         },
         onError: (error: any) => {
             toast.error(error.message || "Failed to update profile");
@@ -49,6 +45,39 @@ export const useUpdatePassword = () => {
         },
         onError: (error: any) => {
             toast.error(error.message || "Failed to update password");
+        }
+    });
+};
+
+export const useUpdateEmail = () => {
+    return useMutation({
+        mutationFn: async (email: string) => {
+            console.log("Attempting to update email to:", email);
+            const { data, error } = await supabase.auth.updateUser({
+                email: email,
+            });
+
+            if (error) {
+                console.error("Supabase Email Update Error:", error);
+                throw error;
+            }
+            return data;
+        },
+        onSuccess: (data) => {
+            if (data.user?.new_email) {
+                toast.success(`Confirmation link sent to ${data.user.new_email}. Please check your inbox.`);
+            } else {
+                toast.success("Email updated successfully");
+            }
+        },
+        onError: (error: any) => {
+            console.error("Email Update Mutation Error:", error);
+            // 422 usually means validation error or 'same email' or 'already registered'
+            let msg = error.message;
+            if (error.status === 422) {
+                msg = "Unable to update email. This email might be already in use or invalid.";
+            }
+            toast.error(msg || "Failed to update email");
         }
     });
 };

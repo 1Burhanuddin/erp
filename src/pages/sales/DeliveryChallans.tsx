@@ -4,6 +4,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useDeliveryChallans } from "@/api/sales";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
 import {
     Table,
@@ -18,10 +19,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 const DeliveryChallans = () => {
-    const { data: challans, isLoading } = useDeliveryChallans();
+    const { data: rawChallans, isLoading } = useDeliveryChallans();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const challans = rawChallans?.filter((c: any) =>
+        !searchQuery.trim() ||
+        c.order_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -46,11 +54,12 @@ const DeliveryChallans = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Delivery Challans"
-                description="Manage delivery challans"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search challans..."
             />
+            <HeaderActions />
 
             {/* Mobile View Toggle */}
             <div className="sm:hidden mb-4">
@@ -65,7 +74,9 @@ const DeliveryChallans = () => {
                                 <Skeleton key={i} className="h-36 w-full rounded-xl" />
                             ))
                         ) : challans?.length === 0 ? (
-                            <div className="col-span-full text-center py-8 text-muted-foreground">No delivery challans found.</div>
+                            <div className="col-span-full text-center py-8 text-muted-foreground">
+                                {searchQuery ? `No delivery challans found matching "${searchQuery}"` : "No delivery challans found."}
+                            </div>
                         ) : (
                             challans?.map((challan: any) => (
                                 <DataCard key={challan.id} onClick={() => navigate(`/sales/challans/edit/${challan.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
@@ -116,7 +127,7 @@ const DeliveryChallans = () => {
                                             colSpan={5}
                                             className="h-24 text-center text-muted-foreground"
                                         >
-                                            No delivery challans found.
+                                            {searchQuery ? `No delivery challans found matching "${searchQuery}"` : "No delivery challans found."}
                                         </TableCell>
                                     </TableRow>
                                 ) : (

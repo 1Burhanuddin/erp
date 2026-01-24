@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Plus, Calendar, FileText, Package } from "lucide-react";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -19,9 +20,16 @@ import { DataCard } from "@/components/shared";
 
 const StockAdjustment = () => {
     const navigate = useNavigate();
-    const { data: adjustments, isLoading } = useStockAdjustments();
+    const { data: rawAdjustments, isLoading } = useStockAdjustments();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const adjustments = rawAdjustments?.filter((adj: any) =>
+        !searchQuery.trim() ||
+        adj.reference_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        adj.reason?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -45,11 +53,12 @@ const StockAdjustment = () => {
 
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Stock Adjustments"
-                description="Manage stock adjustments"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search adjustments..."
             />
+            <HeaderActions />
 
             {/* Mobile View Toggle (Visible only on small screens) */}
             <div className="sm:hidden mb-4">
@@ -103,7 +112,9 @@ const StockAdjustment = () => {
                             </DataCard>
                         ))
                     ) : (
-                        <div className="col-span-full text-center py-8 text-muted-foreground">No stock adjustments found.</div>
+                        <div className="col-span-full text-center py-8 text-muted-foreground">
+                            {searchQuery ? `No adjustments found matching "${searchQuery}"` : "No stock adjustments found."}
+                        </div>
                     )}
                 </div>
             ) : (

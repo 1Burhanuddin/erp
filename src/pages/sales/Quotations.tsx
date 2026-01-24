@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuotations } from "@/api/sales";
@@ -19,9 +21,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Quotations = () => {
     const navigate = useNavigate();
-    const { data: quotations, isLoading, error } = useQuotations();
+    const { data: rawQuotations, isLoading } = useQuotations();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const quotations = rawQuotations?.filter((q: any) =>
+        !searchQuery.trim() ||
+        q.quotation_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -44,20 +53,16 @@ const Quotations = () => {
         );
     };
 
-    if (error) return <div>Error loading quotations</div>;
-
     return (
         <PageLayout>
-            <HeaderActions />
-            <PageHeader
-                title="Quotations"
-                description="Manage sales quotations and estimates"
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search quotations..."
             />
+            <HeaderActions />
 
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>
+
 
             <div className="p-4">
                 {viewMode === 'card' ? (
@@ -67,7 +72,9 @@ const Quotations = () => {
                                 <Skeleton key={i} className="h-36 w-full rounded-xl" />
                             ))
                         ) : quotations?.length === 0 ? (
-                            <div className="col-span-full text-center py-8 text-muted-foreground">No quotations found.</div>
+                            <div className="col-span-full text-center py-8 text-muted-foreground">
+                                {searchQuery ? `No quotations found matching "${searchQuery}"` : "No quotations found."}
+                            </div>
                         ) : (
                             quotations?.map((q: any) => (
                                 <DataCard key={q.id} onClick={() => navigate(`/sales/quotations/edit/${q.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
@@ -114,8 +121,11 @@ const Quotations = () => {
                                     ))
                                 ) : quotations?.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                            No quotations found.
+                                        <TableCell
+                                            colSpan={5}
+                                            className="h-24 text-center text-muted-foreground"
+                                        >
+                                            {searchQuery ? `No quotations found matching "${searchQuery}"` : "No quotations found."}
                                         </TableCell>
                                     </TableRow>
                                 ) : (

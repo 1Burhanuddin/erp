@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/shared";
 import { useDeals, useUpdateDeal, useCreateDeal, Deal } from "@/api/deals";
 import { Button } from "@/components/ui/button";
 import { Plus, MoreHorizontal } from "lucide-react";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ const Deals = () => {
   const contacts = contactsData || [];
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [newDeal, setNewDeal] = useState({
     title: "",
     value: "",
@@ -65,20 +67,28 @@ const Deals = () => {
       const grouped: Record<string, Deal[]> = {};
       COLUMNS.forEach(col => grouped[col.id] = []);
       deals.forEach(deal => {
+        // Filter by search query
+        if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase();
+          const matches =
+            deal.title.toLowerCase().includes(query) ||
+            deal.contacts?.name?.toLowerCase().includes(query) ||
+            deal.contacts?.company?.toLowerCase().includes(query);
+
+          if (!matches) return;
+        }
+
         // Map legacy/granular statuses to "Negotiation"
         let status = deal.status;
         if (status === 'Qualified' || status === 'Proposal') status = 'Negotiation';
 
         if (grouped[status]) {
           grouped[status].push(deal);
-        } else {
-          // Fallback for unknown statuses, maybe put in 'New' or ignore
-          // grouped['New'].push(deal);
         }
       });
       setColumns(grouped);
     }
-  }, [deals]);
+  }, [deals, searchQuery]);
 
 
   const onDragEnd = (result: any) => {
@@ -158,8 +168,14 @@ const Deals = () => {
 
   return (
     <PageLayout>
+      <ExpandableSearch
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Search deals..."
+        className="mb-4"
+      />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <PageHeader title="Deals Pipeline" description="Track and manage your deals" />
+
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>

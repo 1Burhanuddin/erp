@@ -23,6 +23,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ExpandableSearch } from "@/components/ui/expandable-search";
 
 interface ContactListProps {
     role: "Supplier" | "Customer";
@@ -81,17 +82,17 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
         );
     };
 
+
+
     return (
         <PageLayout>
+            <ExpandableSearch
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={`Search ${role?.toLowerCase()}s...`}
+            />
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
-                    <div className="hidden sm:block w-40 md:w-60">
-                        <SearchInput
-                            value={searchQuery}
-                            onChange={setSearchQuery}
-                            placeholder={`Search...`}
-                        />
-                    </div>
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -118,10 +119,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                 document.getElementById('header-actions')!
             )}
 
-            <PageHeader
-                title={title}
-                description={description}
-            />
+
 
 
 

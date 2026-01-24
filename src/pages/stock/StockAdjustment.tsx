@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -20,22 +21,34 @@ const StockAdjustment = () => {
     const navigate = useNavigate();
     const { data: adjustments, isLoading } = useStockAdjustments();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                <Button onClick={() => navigate("/stock/adjustment/add")} size="sm" className="h-9">
+                    <Plus className="mr-2 h-4 w-4" /> <span className="hidden sm:inline">New Adjustment</span> <span className="sm:hidden">New</span>
+                </Button>
+            </div>,
+            container
+        );
+    };
 
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="Stock Adjustments"
                 description="Manage stock adjustments"
-                actions={
-                    <div className="flex items-center gap-2">
-                        <div className="hidden sm:block">
-                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                        </div>
-                        <Button onClick={() => navigate("/stock/adjustment/add")}>
-                            <Plus className="mr-2 h-4 w-4" /> <span className="hidden sm:inline">New Adjustment</span> <span className="sm:hidden">New</span>
-                        </Button>
-                    </div>
-                }
             />
 
             {/* Mobile View Toggle (Visible only on small screens) */}
@@ -44,7 +57,7 @@ const StockAdjustment = () => {
             </div>
 
             {viewMode === 'card' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {isLoading ? (
                         <div className="col-span-full text-center py-8 text-muted-foreground">Loading...</div>
                     ) : adjustments && adjustments.length > 0 ? (
@@ -94,7 +107,7 @@ const StockAdjustment = () => {
                     )}
                 </div>
             ) : (
-                <div className="bg-white rounded-md shadow mt-6">
+                <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden mt-6">
                     <Table>
                         <TableHeader>
                             <TableRow>

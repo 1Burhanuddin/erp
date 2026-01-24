@@ -122,11 +122,12 @@ export default function LiveStatus() {
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {employees?.map(emp => (
-                            <Card key={emp.id} className={`border-l-4 ${emp.status === 'working' ? 'border-l-green-500' : emp.status === 'idle' ? 'border-l-yellow-500' : 'border-l-gray-300'}`}>
-                                <CardHeader className="pb-2">
+                            <Card key={emp.id} className="rounded-3xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                                <div className={`h-1 w-full ${emp.status === 'working' ? 'bg-green-500' : emp.status === 'idle' ? 'bg-yellow-500' : 'bg-gray-300'}`} />
+                                <CardHeader className="pb-2 pt-4">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <Avatar className="shrink-0">
+                                            <Avatar className="shrink-0 h-10 w-10">
                                                 <AvatarFallback>{emp.full_name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                             </Avatar>
                                             <div className="min-w-0">
@@ -141,34 +142,36 @@ export default function LiveStatus() {
                                 </CardHeader>
                                 <CardContent className="text-sm space-y-3 pt-2">
                                     {emp.attendance ? (
-                                        <div className="flex justify-between items-center text-muted-foreground">
+                                        <div className="flex justify-between items-center text-muted-foreground p-2 bg-secondary/30 rounded-xl">
                                             <div className="flex items-center gap-2">
                                                 <Clock className="w-4 h-4" />
-                                                <span>In: {format(new Date(emp.attendance.check_in), "h:mm a")}</span>
+                                                <span className="font-medium">{format(new Date(emp.attendance.check_in), "h:mm a")}</span>
                                             </div>
-                                            {emp.attendance.check_out && (
+                                            {emp.attendance.check_out ? (
                                                 <span>Out: {format(new Date(emp.attendance.check_out), "h:mm a")}</span>
-                                            )}
+                                            ) : <span className="text-green-600 text-xs font-medium">Active</span>}
                                         </div>
                                     ) : (
-                                        <div className="text-muted-foreground italic flex items-center gap-2">
+                                        <div className="text-muted-foreground italic flex items-center gap-2 p-2 bg-secondary/30 rounded-xl">
                                             <AlertCircle className="w-4 h-4" /> Not checked in yet
                                         </div>
                                     )}
 
                                     {emp.activeTask && (
-                                        <div className="bg-muted/50 p-3 rounded-md space-y-1 border">
+                                        <div className="bg-primary/5 p-3 rounded-2xl space-y-1">
                                             <div className="font-medium text-primary flex items-center gap-2">
                                                 <MapPin className="w-4 h-4" />
                                                 {emp.activeTask.customer_name}
                                             </div>
-                                            <p className="text-xs text-muted-foreground line-clamp-1">{emp.activeTask.title}</p>
-                                            <p className="text-xs text-muted-foreground line-clamp-1">{emp.activeTask.customer_address}</p>
+                                            <div className="text-xs text-muted-foreground">
+                                                <p className="line-clamp-1 font-medium">{emp.activeTask.title}</p>
+                                                <p className="line-clamp-1">{emp.activeTask.customer_address}</p>
+                                            </div>
                                         </div>
                                     )}
 
                                     {emp.status === 'idle' && emp.attendance && (
-                                        <div className="text-yellow-600 text-xs flex items-center gap-2 bg-yellow-50 p-2 rounded">
+                                        <div className="text-yellow-700 text-xs flex items-center gap-2 bg-yellow-50 p-2 rounded-xl">
                                             <AlertCircle className="w-3 h-3" /> Waiting for next assignment
                                         </div>
                                     )}

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Menu, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -9,6 +10,15 @@ interface TopHeaderProps {
 }
 
 const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  // Clone sidebarContent to inject the onLinkClick prop if it's a valid React element
+  const contentWithProps = React.isValidElement(sidebarContent)
+    ? React.cloneElement(sidebarContent as React.ReactElement<any>, {
+      onLinkClick: () => setMobileMenuOpen(false),
+    })
+    : sidebarContent;
+
   return (
     <header className="sticky top-0 z-40 bg-background border-b border-border">
       <div className="flex items-center gap-4 h-16 px-4 md:px-6">
@@ -31,7 +41,7 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
         <div className="ml-auto flex items-center gap-2" id="header-actions" />
 
         <div className="lg:hidden">
-          <Sheet>
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-9 w-9">
                 <Menu className="h-5 w-5" />
@@ -42,7 +52,7 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
               className="p-0 w-72 bg-sidebar border-r border-sidebar-foreground/10"
               floatingClose
             >
-              {sidebarContent}
+              {contentWithProps}
             </SheetContent>
           </Sheet>
         </div>

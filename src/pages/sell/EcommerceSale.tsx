@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
@@ -23,19 +24,33 @@ const EcommerceSale = () => {
 
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>,
+            container
+        );
+    };
 
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="E-Commerce Sales"
                 description="Manage online sales orders"
-                // No 'Create' button here as Ecommerce sales usually come from external source or could be added manually if we add a 'Channel' selector to AddSalesInvoice. 
-                // For now, it's a view.
-                actions={
-                    <div className="hidden sm:block">
-                        <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                    </div>
-                }
+            // No 'Create' button here as Ecommerce sales usually come from external source or could be added manually if we add a 'Channel' selector to AddSalesInvoice. 
+            // For now, it's a view.
             />
 
             <div className="sm:hidden mb-4">
@@ -44,7 +59,7 @@ const EcommerceSale = () => {
 
             <div className="p-4">
                 {viewMode === 'card' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-36 w-full rounded-xl" />
@@ -75,7 +90,7 @@ const EcommerceSale = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-md border bg-card">
+                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

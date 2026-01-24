@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { PageLayout, PageHeader } from "@/components/layout";
@@ -16,21 +18,36 @@ import { format } from "date-fns";
 const PurchaseReturn = () => {
     const navigate = useNavigate();
     const { data: returns, isLoading } = usePurchaseReturns();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <Button onClick={() => navigate("/purchase/return/add")} size="sm" className="h-9">
+                <Plus className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">New Return</span>
+            </Button>,
+            container
+        );
+    };
 
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="Purchase Returns"
                 description="Manage returns to suppliers"
-                actions={
-                    <Button onClick={() => navigate("/purchase/return/add")}>
-                        <Plus className="mr-2 h-4 w-4" /> New Return
-                    </Button>
-                }
             />
 
             <div className="p-4">
-                <div className="rounded-md border bg-card">
+                <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                     <Table>
                         <TableHeader>
                             <TableRow>

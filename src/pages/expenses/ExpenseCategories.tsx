@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,12 @@ const ExpenseCategories = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const [formData, setFormData] = useState({ name: "", description: "" });
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     const handleCreate = (e: React.FormEvent) => {
         e.preventDefault();
@@ -84,6 +91,64 @@ const ExpenseCategories = () => {
         cat.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <div className="relative w-40 md:w-60 hidden sm:block">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search categories..."
+                        className="pl-8 h-9"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                    <DialogTrigger asChild>
+                        <Button size="sm" className="h-9">
+                            <Plus className="mr-2 h-4 w-4" /> <span className="hidden sm:inline">Add Category</span><span className="sm:hidden">Add</span>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Add Expense Category</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleCreate} className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Name</Label>
+                                <Input
+                                    id="name"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    placeholder="e.g. Rent, Utilities"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="description">Description (Optional)</Label>
+                                <Input
+                                    id="description"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    placeholder="Additional details..."
+                                />
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit" disabled={createMutation.isPending}>
+                                    {createMutation.isPending ? "Creating..." : "Create"}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>,
+            container
+        );
+    };
+
     if (isLoading) {
         return (
             <PageLayout>
@@ -96,65 +161,25 @@ const ExpenseCategories = () => {
 
     return (
         <PageLayout>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <div>
-                    <PageHeader
-                        title="Expense Categories"
-                        description="Manage categories for your operational expenses."
+            <HeaderActions />
+            <div className="sm:hidden mb-4">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search categories..."
+                        className="pl-8"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search categories..."
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Plus className="mr-2 h-4 w-4" /> Add Category
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Add Expense Category</DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={handleCreate} className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input
-                                        id="name"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        placeholder="e.g. Rent, Utilities"
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="description">Description (Optional)</Label>
-                                    <Input
-                                        id="description"
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        placeholder="Additional details..."
-                                    />
-                                </div>
-                                <DialogFooter>
-                                    <Button type="submit" disabled={createMutation.isPending}>
-                                        {createMutation.isPending ? "Creating..." : "Create"}
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
                 </div>
             </div>
 
-            <Card>
+            <PageHeader
+                title="Expense Categories"
+                description="Manage categories for your operational expenses."
+            />
+
+            <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden mt-6">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -200,7 +225,7 @@ const ExpenseCategories = () => {
                         )}
                     </TableBody>
                 </Table>
-            </Card>
+            </div>
 
             {/* Edit Dialog */}
             <Dialog open={!!editCategory} onOpenChange={(open) => !open && setEditCategory(null)}>

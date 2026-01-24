@@ -177,9 +177,9 @@ const AuditLogs = () => {
             </Card>
 
             {/* Audit Logs Table */}
-            <Card>
+            <Card className="border-0 shadow-none">
                 <CardContent className="p-0">
-                    <div className="rounded-md border">
+                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

@@ -84,7 +84,7 @@ const ServicesList = () => {
                         ) : (
                             filteredServices.map((service: any) => (
                                 <DataCard key={service.id} onClick={() => navigate(`/services/edit/${service.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
-                                    <div className="flex justify-between items-start">
+                                    <div className="flex flex-col gap-2 items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-foreground">{service.name}</h3>
                                             <p className="font-mono text-xs text-muted-foreground">{service.sku}</p>
@@ -101,7 +101,7 @@ const ServicesList = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-md border bg-card">
+                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

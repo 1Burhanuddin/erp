@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
@@ -20,23 +21,35 @@ const SalesInvoice = () => {
     const { data: sales, isLoading } = useSalesOrders();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                <Button onClick={() => navigate("/sell/add")} size="sm" className="h-9">
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Create Invoice</span>
+                </Button>
+            </div>,
+            container
+        );
+    };
 
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="Sales Invoices"
                 description="Manage your sales and invoices"
-                actions={
-                    <div className="flex items-center gap-2">
-                        <div className="hidden sm:block">
-                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                        </div>
-                        <Button onClick={() => navigate("/sell/add")}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Invoice
-                        </Button>
-                    </div>
-                }
             />
 
             {/* Mobile View Toggle */}
@@ -77,7 +90,7 @@ const SalesInvoice = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-md border bg-card">
+                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

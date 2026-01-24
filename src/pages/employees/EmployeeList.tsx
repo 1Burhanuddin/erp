@@ -88,7 +88,7 @@ export default function EmployeeList() {
                 description="Manage your staff profiles"
             />
 
-            <div className="p-4 md:p-6">
+            <div>
                 {isLoading ? (
                     <div className="space-y-4">
                         <Skeleton className="h-12 w-full" />

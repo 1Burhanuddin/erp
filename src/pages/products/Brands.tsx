@@ -69,7 +69,7 @@ const Brands = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-md border bg-card">
+                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { usePurchaseOrders } from "@/api/purchase";
@@ -20,33 +21,40 @@ const PurchaseOrder = () => {
     const { data: orders, isLoading } = usePurchaseOrders();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+                <Button onClick={() => navigate("/purchase/add")} size="sm" className="h-9">
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Create Order</span>
+                </Button>
+            </div>,
+            container
+        );
+    };
 
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="Purchase Orders"
                 description="Manage your purchase orders"
-                actions={
-                    <div className="flex items-center gap-2">
-                        <div className="hidden sm:block">
-                            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                        </div>
-                        <Button onClick={() => navigate("/purchase/add")}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Purchase Order
-                        </Button>
-                    </div>
-                }
             />
 
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>
-
-            <div className="p-4">
+            <div>
                 {viewMode === 'card' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-32 w-full rounded-xl" />
@@ -56,12 +64,12 @@ const PurchaseOrder = () => {
                         ) : (
                             orders?.map((order: any) => (
                                 <DataCard key={order.id} onClick={() => navigate(`/purchase/edit/${order.id}`)} className="cursor-pointer hover:border-primary/50 transition-colors">
-                                    <div className="flex justify-between items-start mb-2">
+                                    <div className="flex flex-col gap-2 items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-foreground font-mono">{order.order_no}</h3>
                                             <p className="text-sm text-muted-foreground">{order.supplier?.name || "Unknown"}</p>
                                         </div>
-                                        <div className="font-medium">
+                                        <div className="font-medium text-lg">
                                             ₹{order.total_amount?.toFixed(2)}
                                         </div>
                                     </div>
@@ -74,7 +82,7 @@ const PurchaseOrder = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-md border bg-card">
+                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

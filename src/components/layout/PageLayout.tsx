@@ -9,7 +9,7 @@ interface PageLayoutProps {
 
 const PageLayout = ({ children }: PageLayoutProps) => {
   return (
-    <div className="p-4">{children}</div>
+    <div className="px-2 py-4">{children}</div>
   );
 };
 

@@ -43,7 +43,7 @@ export default function AttendancePage() {
                         <Button
                             variant={"outline"}
                             className={cn(
-                                "w-[240px] justify-start text-left font-normal rounded-full",
+                                "w-[140px] sm:w-[240px] justify-start text-left font-normal rounded-full",
                                 !date && "text-muted-foreground"
                             )}
                         >
@@ -86,7 +86,7 @@ export default function AttendancePage() {
                         <p>No attendance records found for this date.</p>
                     </Card>
                 ) : viewMode === 'table' ? (
-                    <Card>
+                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -131,12 +131,12 @@ export default function AttendancePage() {
                                 ))}
                             </TableBody>
                         </Table>
-                    </Card>
+                    </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                         {attendanceLogs.map((log) => (
-                            <Card key={log.id}>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <Card key={log.id} className="rounded-3xl border-0 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-muted/20">
                                     <div className="flex items-center gap-3">
                                         <Avatar>
                                             <AvatarFallback>{log.employees?.full_name?.substring(0, 2).toUpperCase()}</AvatarFallback>

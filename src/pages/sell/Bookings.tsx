@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useBookings, useUpdateBooking, useDeleteBooking, Booking } from "@/api/bookings";
@@ -42,6 +43,12 @@ const Bookings = () => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     const handleStatusChange = async (id: string, status: string) => {
         try {
@@ -78,16 +85,24 @@ const Bookings = () => {
         }
     };
 
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>,
+            container
+        );
+    };
+
     return (
         <PageLayout>
+            <HeaderActions />
             <PageHeader
                 title="Web Bookings"
                 description="Manage service requests from website"
-                actions={
-                    <div className="hidden sm:block">
-                        <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                    </div>
-                }
             />
 
             <div className="sm:hidden mb-4">
@@ -96,7 +111,7 @@ const Bookings = () => {
 
             <div className="p-4">
                 {viewMode === 'card' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, i) => (
                                 <Skeleton key={i} className="h-48 w-full rounded-xl" />
@@ -162,7 +177,7 @@ const Bookings = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-md border bg-card">
+                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

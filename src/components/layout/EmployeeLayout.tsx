@@ -14,8 +14,16 @@ import {
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from "@/components/ui/button";
-// In ERP, button might be in different path?
-// ERP has "@/components/ui/button". Confirmed in list_dir earlier (Step 1378 shows ui folder)
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface EmployeeLayoutProps {
     children: ReactNode;
@@ -33,7 +41,13 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const handleSignOut = async () => {
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+    const handleSignOut = () => {
+        setShowLogoutDialog(true);
+    };
+
+    const handleConfirmSignOut = async () => {
         await signOut();
         navigate('/');
     };
@@ -69,7 +83,7 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                                 key={item.href}
                                 to={item.href}
                                 className={cn(
-                                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group relative",
+                                    "flex items-center gap-3 px-3 py-2 rounded-full transition-colors group relative",
                                     isActive
                                         ? "bg-primary text-primary-foreground"
                                         : "text-foreground hover:bg-muted",
@@ -137,8 +151,8 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                             key={item.href}
                             to={item.href}
                             className={cn(
-                                "flex flex-col items-center justify-center w-full h-full space-y-1",
-                                isActive ? "text-primary" : "text-muted-foreground"
+                                "flex flex-col items-center justify-center w-full h-full space-y-1 rounded-full px-1",
+                                isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
                             )}
                         >
                             <item.icon className={cn("h-5 w-5", isActive && "fill-current")} />
@@ -147,6 +161,23 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                     );
                 })}
             </nav>
+
+            <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Log Out</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to log out of your account?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmSignOut} className="bg-destructive hover:bg-destructive/90">
+                            Log Out
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

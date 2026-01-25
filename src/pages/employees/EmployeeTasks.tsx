@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useEmployeeTasks, useEmployees } from "@/api/employees"; // useEmployees for user name if needed
 import { Button } from "@/components/ui/button";
@@ -65,15 +65,20 @@ export default function EmployeeTasks() {
         }
     };
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <>
-                <div className="w-32 md:w-40 hidden md:block">
+
+    return (
+        <PageLayout>
+            <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
+                <ExpandableSearch
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    placeholder="Search tasks..."
+                    className="w-full"
+                />
+                <div className="w-full md:w-48">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="h-9 rounded-full">
+                        <SelectTrigger className="h-11 rounded-full bg-background shadow-sm border-muted">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -85,25 +90,17 @@ export default function EmployeeTasks() {
                         </SelectContent>
                     </Select>
                 </div>
+            </div>
 
-
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button onClick={() => navigate("/employees/tasks/add")} className="rounded-full h-9">
-                    <Plus className="w-4 h-4 mr-2" /> Create Task
-                </Button>
-            </>,
-            container
-        );
-    };
-
-    return (
-        <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search tasks..."
-            />
-            <HeaderActions />
+            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
+            <Button
+                onClick={() => navigate("/employees/tasks/add")}
+                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
+                size="lg"
+            >
+                <Plus className="mr-2 h-5 w-5" />
+                <span className="font-medium text-base">Create Task</span>
+            </Button>
 
             <div className="p-4 md:p-6">
                 {isLoading ? (

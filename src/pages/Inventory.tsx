@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+
 import { Plus, Package } from "lucide-react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { SearchInput, StatusBadge, DataCard, DataViewToggle } from "@/components/shared";
@@ -41,17 +41,7 @@ const Inventory = () => {
     return { label: "In Stock", type: "success" };
   };
 
-  const HeaderActions = () => {
-    const container = document.getElementById('header-actions');
-    if (!mounted || !container) return null;
 
-    return createPortal(
-      <div className="flex items-center gap-2">
-        <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-      </div>,
-      container
-    );
-  };
 
   return (
     <PageLayout>
@@ -60,7 +50,7 @@ const Inventory = () => {
         onChange={setSearch}
         placeholder="Search products..."
       />
-      <HeaderActions />
+      <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
 
 
 

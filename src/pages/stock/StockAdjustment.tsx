@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+
 import { useNavigate } from "react-router-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -36,20 +36,7 @@ const StockAdjustment = () => {
         return () => setMounted(false);
     }, []);
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button onClick={() => navigate("/stock/adjustment/add")} size="sm" className="h-9">
-                    <Plus className="mr-2 h-4 w-4" /> <span className="hidden sm:inline">New Adjustment</span> <span className="sm:hidden">New</span>
-                </Button>
-            </div>,
-            container
-        );
-    };
 
     return (
         <PageLayout>
@@ -58,12 +45,15 @@ const StockAdjustment = () => {
                 onChange={setSearchQuery}
                 placeholder="Search adjustments..."
             />
-            <HeaderActions />
-
-            {/* Mobile View Toggle (Visible only on small screens) */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>
+            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
+            <Button
+                onClick={() => navigate("/stock/adjustment/add")}
+                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
+                size="lg"
+            >
+                <Plus className="mr-2 h-5 w-5" />
+                <span className="font-medium text-base">New Adjustment</span>
+            </Button>
 
             {viewMode === 'card' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">

@@ -42,16 +42,17 @@ const SubCategories = () => {
                 onChange={setSearchQuery}
                 placeholder="Search sub-categories..."
             />
-            {mounted && document.getElementById('header-actions') && createPortal(
-                <div className="flex items-center gap-2">
-                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                    <Button onClick={() => navigate("/products/sub-categories/add")} size="sm" className="w-9 h-9 sm:w-auto sm:h-9 rounded-full sm:rounded-md px-0 sm:px-4">
-                        <Plus className="mr-2 h-4 w-4" />
-                        <span className="hidden sm:inline">Add Sub Category</span>
-                    </Button>
-                </div>,
-                document.getElementById('header-actions')!
-            )}
+
+            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
+            <Button
+                onClick={() => navigate("/products/sub-categories/add")}
+                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
+                size="lg"
+            >
+                <Plus className="mr-2 h-5 w-5" />
+                <span className="font-medium text-base">Add Sub Category</span>
+            </Button>
+
 
             <div className="p-4">
                 {viewMode === 'card' ? (
@@ -125,7 +126,7 @@ const SubCategories = () => {
                     </div>
                 )}
             </div>
-        </PageLayout>
+        </PageLayout >
     );
 };
 

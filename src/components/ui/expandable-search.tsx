@@ -40,11 +40,11 @@ export function ExpandableSearch({
     return createPortal(
         <div className={cn("flex items-center", className)}>
             {isOpen ? (
-                <div className="flex items-center bg-background border rounded-full px-3 py-1 animate-in fade-in zoom-in-95 duration-200 shadow-sm mr-2 absolute right-0 z-50">
+                <div className="flex items-center bg-background border rounded-full px-4 py-1.5 animate-in fade-in zoom-in-95 duration-200 shadow-sm mr-2 absolute right-0 z-50 h-11">
                     <Search className="w-4 h-4 text-muted-foreground mr-2 shrink-0" />
                     <input
                         autoFocus
-                        className="bg-transparent border-none focus:outline-none text-sm w-48 h-8"
+                        className="bg-transparent border-none focus:outline-none text-sm w-48 h-full"
                         placeholder={placeholder}
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
@@ -52,17 +52,17 @@ export function ExpandableSearch({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 rounded-full hover:bg-muted shrink-0"
+                        className="h-8 w-8 rounded-full hover:bg-muted shrink-0 ml-1"
                         onClick={handleClose}
                     >
-                        <X className="w-3 h-3" />
+                        <X className="w-4 h-4" />
                     </Button>
                 </div>
             ) : (
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full h-9 w-9 hover:bg-muted"
+                    className="rounded-full h-11 w-11 hover:bg-muted"
                     onClick={() => setIsOpen(true)}
                 >
                     <Search className="w-5 h-5" />

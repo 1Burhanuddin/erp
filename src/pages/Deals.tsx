@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Card } from "@/components/ui/card";
 import { PageLayout, PageHeader } from "@/components/layout";
@@ -44,11 +44,11 @@ const COLUMNS = [
 
 const Deals = () => {
   const { data: dealsData, isLoading } = useDeals();
-  const deals = dealsData || [];
+  const deals = useMemo(() => dealsData || [], [dealsData]);
   const updateDealMutation = useUpdateDeal();
   const createDealMutation = useCreateDeal();
   const { data: contactsData } = useContacts();
-  const contacts = contactsData || [];
+  const contacts = useMemo(() => contactsData || [], [contactsData]);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -172,69 +172,69 @@ const Deals = () => {
         value={searchQuery}
         onChange={setSearchQuery}
         placeholder="Search deals..."
-        className="mb-4"
       />
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
 
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Deal
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Deal</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateSubmit} className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Deal Title</Label>
-                <Input
-                  id="title"
-                  placeholder="e.g. Website Redesign"
-                  value={newDeal.title}
-                  onChange={e => setNewDeal({ ...newDeal, title: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="value">Value</Label>
-                <Input
-                  id="value"
-                  type="number"
-                  placeholder="0.00"
-                  value={newDeal.value}
-                  onChange={e => setNewDeal({ ...newDeal, value: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contact">Contact / Company</Label>
-                <Select
-                  value={newDeal.contact_id}
-                  onValueChange={val => setNewDeal({ ...newDeal, contact_id: val })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Contact" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contacts?.map((c: any) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name} {c.company ? `(${c.company})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={createDealMutation.isPending}>
-                  {createDealMutation.isPending ? "Creating..." : "Create Deal"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogTrigger asChild>
+          <Button
+            className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
+            size="lg"
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            <span className="font-medium text-base">New Deal</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Deal</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Deal Title</Label>
+              <Input
+                id="title"
+                placeholder="e.g. Website Redesign"
+                value={newDeal.title}
+                onChange={e => setNewDeal({ ...newDeal, title: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="value">Value</Label>
+              <Input
+                id="value"
+                type="number"
+                placeholder="0.00"
+                value={newDeal.value}
+                onChange={e => setNewDeal({ ...newDeal, value: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact">Contact / Company</Label>
+              <Select
+                value={newDeal.contact_id}
+                onValueChange={val => setNewDeal({ ...newDeal, contact_id: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Contact" />
+                </SelectTrigger>
+                <SelectContent>
+                  {contacts?.map((c: any) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name} {c.company ? `(${c.company})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={createDealMutation.isPending}>
+                {createDealMutation.isPending ? "Creating..." : "Create Deal"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pb-4">
@@ -317,5 +317,6 @@ const Deals = () => {
     </PageLayout>
   );
 };
+
 
 export default Deals;

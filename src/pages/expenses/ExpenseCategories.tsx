@@ -92,55 +92,7 @@ const ExpenseCategories = () => {
         cat.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-
-                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                    <DialogTrigger asChild>
-                        <Button size="sm" className="w-9 h-9 sm:w-auto sm:h-9 rounded-full sm:rounded-md px-0 sm:px-4">
-                            <Plus className="sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Add Category</span>
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add Expense Category</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleCreate} className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="e.g. Rent, Utilities"
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description (Optional)</Label>
-                                <Input
-                                    id="description"
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Additional details..."
-                                />
-                            </div>
-                            <DialogFooter>
-                                <Button type="submit" disabled={createMutation.isPending}>
-                                    {createMutation.isPending ? "Creating..." : "Create"}
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            </div>,
-            container
-        );
-    };
 
     if (isLoading) {
         return (
@@ -159,7 +111,48 @@ const ExpenseCategories = () => {
                 onChange={setSearchQuery}
                 placeholder="Search categories..."
             />
-            <HeaderActions />
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogTrigger asChild>
+                    <Button
+                        className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
+                        size="lg"
+                    >
+                        <Plus className="mr-2 h-5 w-5" />
+                        <span className="font-medium text-base">Add Category</span>
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Expense Category</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleCreate} className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Name</Label>
+                            <Input
+                                id="name"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="e.g. Rent, Utilities"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Description (Optional)</Label>
+                            <Input
+                                id="description"
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                placeholder="Additional details..."
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit" disabled={createMutation.isPending}>
+                                {createMutation.isPending ? "Creating..." : "Create"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
             <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden mt-6">
                 <Table>

@@ -55,7 +55,7 @@ export function CommandMenu({ className }: { className?: string }) {
             <Button
                 variant="outline"
                 className={cn(
-                    "relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2 rounded-full border-input text-foreground",
+                    "relative h-11 w-11 p-0 xl:h-12 xl:w-60 xl:justify-start xl:px-4 xl:py-3 rounded-full border-input text-foreground font-medium",
                     className
                 )}
                 onClick={() => setOpen(true)}

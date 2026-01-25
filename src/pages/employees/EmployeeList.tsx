@@ -67,24 +67,20 @@ const EmployeeList = () => {
     };
 
     // Portal actions to the header
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button onClick={() => navigate("/employees/add")} size="sm" className="w-9 h-9 sm:w-auto sm:h-9 rounded-full sm:rounded-md px-0 sm:px-4">
-                    <Plus className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Add Employee</span>
-                </Button>
-            </div>,
-            container
-        );
-    };
 
     return (
         <PageLayout>
-            <HeaderActions />
+
+            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
+            <Button
+                onClick={() => navigate("/employees/add")}
+                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
+                size="lg"
+            >
+                <Plus className="mr-2 h-5 w-5" />
+                <span className="font-medium text-base">Add Employee</span>
+            </Button>
             <ExpandableSearch
                 value={searchQuery}
                 onChange={setSearchQuery}

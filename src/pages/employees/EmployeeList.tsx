@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataCard, DataViewToggle } from "@/components/shared";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -165,7 +166,7 @@ const EmployeeList = () => {
                                 {filteredEmployees.map((emp) => (
                                     <DataCard
                                         key={emp.id}
-                                        className={`group relative ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+                                        className={`group relative !p-6 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
                                         onClick={() => {
                                             if (emp.role === 'admin') return;
                                             navigate(`/employees/edit/${emp.id}`);
@@ -175,27 +176,34 @@ const EmployeeList = () => {
 
 
                                         <div className="flex flex-row items-center justify-between space-y-0 pb-2 mb-2">
-                                            <div className="text-sm font-medium">
-                                                {emp.full_name}
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-12 w-12 border-2 border-primary/10">
+                                                    <AvatarFallback className="bg-primary/5 text-primary text-lg font-bold">
+                                                        {emp.full_name?.charAt(0)?.toUpperCase()}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="text-xl font-semibold text-foreground">
+                                                    {emp.full_name}
+                                                </div>
                                             </div>
-                                            <User className="h-4 w-4 text-muted-foreground" />
+                                            {/* <User className="h-5 w-5 text-muted-foreground" /> */}
                                         </div>
                                         <div>
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-1.5 pl-1">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-xs text-muted-foreground">Role</span>
-                                                    <Badge variant={emp.role === 'admin' ? 'default' : 'secondary'}>
+                                                    <span className="text-base text-muted-foreground">Role</span>
+                                                    <Badge className="text-sm px-2.5 py-0.5" variant={emp.role === 'admin' ? 'default' : 'secondary'}>
                                                         {emp.role}
                                                     </Badge>
                                                 </div>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-xs text-muted-foreground">Status</span>
-                                                    <Badge variant={emp.status === 'active' ? 'outline' : 'destructive'} className={emp.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : ''}>
+                                                    <span className="text-base text-muted-foreground">Status</span>
+                                                    <Badge className={`text-sm px-2.5 py-0.5 ${emp.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : ''}`} variant={emp.status === 'active' ? 'outline' : 'destructive'}>
                                                         {emp.status}
                                                     </Badge>
                                                 </div>
                                                 {emp.phone && (
-                                                    <div className="text-xs text-muted-foreground mt-2">
+                                                    <div className="text-lg text-muted-foreground mt-2 font-medium tracking-wide">
                                                         {emp.phone}
                                                     </div>
                                                 )}

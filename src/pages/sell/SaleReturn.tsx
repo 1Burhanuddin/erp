@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
@@ -23,7 +23,6 @@ const SaleReturn = () => {
     const { data: rawReturns, isLoading } = useSaleReturns();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
-    const [mounted, setMounted] = useState(false);
 
     const returns = rawReturns?.filter((r: any) =>
         !searchQuery.trim() ||
@@ -32,26 +31,7 @@ const SaleReturn = () => {
         r.reason?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
-
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button onClick={() => navigate("/sell/return/add")} size="sm" className="h-9">
-                    <Plus className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">New Return</span>
-                </Button>
-            </div>,
-            container
-        );
-    };
 
     return (
         <PageLayout>
@@ -60,7 +40,17 @@ const SaleReturn = () => {
                 onChange={setSearchQuery}
                 placeholder="Search returns..."
             />
-            <HeaderActions />
+
+            {/* Floating Action Button */}
+            <div className="fixed bottom-6 right-6 z-50">
+                <Button
+                    onClick={() => navigate("/sell/return/add")}
+                    size="icon"
+                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                    <Plus className="h-6 w-6" />
+                </Button>
+            </div>
 
             {/* Mobile View Toggle */}
             <div className="sm:hidden mb-4">

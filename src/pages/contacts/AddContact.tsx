@@ -1,8 +1,9 @@
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { ContactForm } from "@/components/contacts/ContactForm";
 import { useCreateContact } from "@/api/contacts";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const AddContact = () => {
     const navigate = useNavigate();
@@ -41,12 +42,16 @@ const AddContact = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title={`Add New ${role}`}
-                description={`Enter details to create a new ${role.toLowerCase()}.`}
-            />
-            <div className="p-6 bg-card rounded-lg border m-4">
-                <ContactForm onSubmit={handleSubmit} isSubmitting={createContact.isPending} defaultRole={role!} />
+            <div className="max-w-4xl mx-auto p-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Add New {role}</CardTitle>
+                        <CardDescription>Enter details to create a new {role.toLowerCase()}.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ContactForm onSubmit={handleSubmit} isSubmitting={createContact.isPending} defaultRole={role!} />
+                    </CardContent>
+                </Card>
             </div>
         </PageLayout>
     );

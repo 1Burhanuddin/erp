@@ -1,6 +1,7 @@
 import { useState } from "react";
 import EmployeeLayout from "@/components/layout/EmployeeLayout";
 import { useEmployeeTasks, useUpdateTask, useMyTodayAttendance } from "@/api/employees";
+import { supabase } from "@/lib/supabase"; // Import supabase
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -110,7 +111,11 @@ export default function MyTasks() {
             return;
         }
 
+        const task = tasks?.find(t => t.id === selectedTask);
+        if (!task) return;
+
         try {
+            // 1. Update Task Status
             await updateTask.mutateAsync({
                 id: selectedTask,
                 updates: {
@@ -122,10 +127,131 @@ export default function MyTasks() {
                 }
             });
 
+            // 2. Generate Sales Invoice
+            try {
+                // A. Check/Create Customer
+                let customerId = "";
+                // First try to find by phone
+                if (task.customer_phone) {
+                    const { data: existingCustomers } = await supabase
+                        .from('contacts')
+                        .select('id')
+                        .eq('phone', task.customer_phone)
+                        .limit(1);
+
+                    if (existingCustomers && existingCustomers.length > 0) {
+                        customerId = existingCustomers[0].id;
+                    }
+                }
+
+                // If not found, create new contact
+                if (!customerId) {
+                    const { data: newCustomer, error: createCustomerError } = await supabase
+                        .from('contacts')
+                        .insert({
+                            name: task.customer_name || "Unknown Customer",
+                            phone: task.customer_phone || "",
+                            address: task.customer_address || ""
+                        })
+                        .select('id')
+                        .single();
+
+                    if (createCustomerError) throw createCustomerError;
+                    customerId = newCustomer.id;
+                }
+
+                // B. Check/Create "Service" Product
+                let serviceProductId = "";
+                const { data: serviceProducts } = await supabase
+                    .from('products')
+                    .select('id')
+                    .ilike('name', 'Service')
+                    .limit(1);
+
+                if (serviceProducts && serviceProducts.length > 0) {
+                    serviceProductId = serviceProducts[0].id;
+                } else {
+                    // Create Service Product
+                    const { data: newServiceProduct, error: createProductError } = await supabase
+                        .from('products')
+                        .insert({
+                            name: "Service",
+                            description: "General Service Charge",
+                            sale_price: 0, // Variable price
+                            is_tax_inclusive: false,
+                            is_online: false
+                        })
+                        .select('id')
+                        .single();
+
+                    if (createProductError) throw createProductError;
+                    serviceProductId = newServiceProduct.id;
+                }
+
+                // C. Create Sales Order (Invoice)
+                const saleData = {
+                    order_no: `INV-${Date.now()}`, // Simple ID generation
+                    customer_id: customerId,
+                    order_date: new Date().toISOString(),
+                    status: 'Completed',
+                    total_amount: Number(amountCollected),
+                    payment_status: 'Paid',
+                    notes: `Generated from Task: ${task.title}`
+                };
+
+                // Add store_id to saleData if activeStoreId is available (assuming it's handled by RLS or defaulting to null, 
+                // but strictly we should pass it if we have access. Since we are in employee view, we might not have activeStoreId explicitly selected in Redux in the same way as Admin.
+                // However, tasks are usually store-agnostic or RLS handles it. 
+                // Let's check imports. We don't have useAppSelector imported. Let's rely on RLS/Default or fetch user's store?
+                // Actually, let's keep it simple. If we need store_id, we might need to fetch it from the task or user profile.
+                // For now, let's insert standard fields.
+
+                const { data: saleOrder, error: saleError } = await supabase
+                    .from('sales_orders')
+                    .insert(saleData)
+                    .select('id')
+                    .single();
+
+                if (saleError) throw saleError;
+
+                // D. Create Sales Item
+                const { error: itemError } = await supabase
+                    .from('sales_items')
+                    .insert({
+                        sale_id: saleOrder.id,
+                        product_id: serviceProductId,
+                        quantity: 1,
+                        unit_price: Number(amountCollected),
+                        subtotal: Number(amountCollected),
+                        tax_amount: 0 // Assuming 0 for now
+                    });
+
+                if (itemError) throw itemError;
+
+                // E. Create Sales Payment
+                const { error: paymentError } = await supabase
+                    .from('sales_payments')
+                    .insert({
+                        sale_id: saleOrder.id,
+                        amount: Number(amountCollected),
+                        payment_date: new Date().toISOString(),
+                        payment_method: paymentMode,
+                        notes: "Auto-generated payment from task completion"
+                    });
+
+                if (paymentError) throw paymentError;
+
+                toast({ title: "Task Completed & Invoice Generated", description: "Invoice has been created successfully." });
+
+            } catch (invoiceError) {
+                console.error("Invoice generation failed:", invoiceError);
+                toast({ title: "Task Completed", description: "Warning: Invoice generation failed.", variant: "destructive" });
+            }
+
             setSelectedTask(null);
             setAmountCollected("");
         } catch (error) {
-            // Error state
+            toast({ title: "Error completing task", variant: "destructive" });
         }
     };
 

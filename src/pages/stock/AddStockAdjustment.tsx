@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,7 @@ import { useProducts } from "@/api/products";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const AddStockAdjustment = () => {
     const navigate = useNavigate();
@@ -67,96 +67,94 @@ const AddStockAdjustment = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="New Stock Adjustment"
-                description="Create a new stock adjustment record"
-                actions={
-                    <Button variant="ghost" onClick={() => navigate("/stock/adjustment")}>
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
-                    </Button>
-                }
-            />
+            <div className="max-w-4xl mx-auto p-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>New Stock Adjustment</CardTitle>
+                        <CardDescription>Create a new stock adjustment record</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Reference No</Label>
+                                <Input value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Date</Label>
+                                <Input type="date" value={adjustmentDate} onChange={(e) => setAdjustmentDate(e.target.value)} />
+                            </div>
+                        </div>
 
-            <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Reference No</Label>
-                        <Input value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Date</Label>
-                        <Input type="date" value={adjustmentDate} onChange={(e) => setAdjustmentDate(e.target.value)} />
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <Label>Reason</Label>
-                    <Select value={reason} onValueChange={setReason}>
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Stock Take">Stock Take</SelectItem>
-                            <SelectItem value="Damaged">Damaged</SelectItem>
-                            <SelectItem value="Theft">Theft</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="p-4 border rounded-lg bg-slate-50 space-y-4">
-                    <h4 className="font-medium text-sm">Adjustment Item</h4>
-                    <div className="space-y-2">
-                        <Label>Product</Label>
-                        <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select Product" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {products?.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                        {p.name} (Cur: {p.current_stock})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Type</Label>
-                            <Select value={type} onValueChange={(v: any) => setType(v as any)}>
+                            <Label>Reason</Label>
+                            <Select value={reason} onValueChange={setReason}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Increase">Increase (+)</SelectItem>
-                                    <SelectItem value="Decrease">Decrease (-)</SelectItem>
+                                    <SelectItem value="Stock Take">Stock Take</SelectItem>
+                                    <SelectItem value="Damaged">Damaged</SelectItem>
+                                    <SelectItem value="Theft">Theft</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Quantity</Label>
-                            <Input
-                                type="number"
-                                min="1"
-                                value={quantity}
-                                onChange={(e) => setQuantity(Number(e.target.value))}
-                            />
+
+                        <div className="p-4 border rounded-lg bg-slate-50 space-y-4">
+                            <h4 className="font-medium text-sm">Adjustment Item</h4>
+                            <div className="space-y-2">
+                                <Label>Product</Label>
+                                <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Product" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {products?.map((p) => (
+                                            <SelectItem key={p.id} value={p.id}>
+                                                {p.name} (Cur: {p.current_stock})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Type</Label>
+                                    <Select value={type} onValueChange={(v: any) => setType(v as any)}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Increase">Increase (+)</SelectItem>
+                                            <SelectItem value="Decrease">Decrease (-)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Quantity</Label>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(Number(e.target.value))}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div className="space-y-2">
-                    <Label>Notes</Label>
-                    <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes..." />
-                </div>
+                        <div className="space-y-2">
+                            <Label>Notes</Label>
+                            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes..." />
+                        </div>
 
-                <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={() => navigate("/stock/adjustment")}>Cancel</Button>
-                    <Button onClick={handleCreate} disabled={createAdjustment.isPending}>
-                        {createAdjustment.isPending ? "Creating..." : "Save Adjustment"}
-                    </Button>
-                </div>
+                        <div className="flex justify-end gap-2 pt-4">
+                            <Button variant="outline" onClick={() => navigate("/stock/adjustment")}>Cancel</Button>
+                            <Button onClick={handleCreate} disabled={createAdjustment.isPending}>
+                                {createAdjustment.isPending ? "Creating..." : "Save Adjustment"}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </PageLayout>
     );

@@ -1,4 +1,4 @@
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { ContactForm } from "@/components/contacts/ContactForm";
 import { useUpdateContact, useContact, useDeleteContact } from "@/api/contacts";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 import { useState } from "react";
 import {
@@ -84,22 +85,28 @@ const EditContact = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title={`Edit ${contact?.role}`}
-                description={`Editing: ${contact?.name}`}
-                actions={
-                    <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Contact
-                    </Button>
-                }
-            />
-            <div className="p-6 bg-card rounded-lg border m-4">
-                <ContactForm
-                    initialData={contact}
-                    onSubmit={handleSubmit}
-                    isSubmitting={updateContact.isPending}
-                />
+            <div className="max-w-4xl mx-auto p-2">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
+                        <div className="space-y-1.5">
+                            <CardTitle>Edit {contact?.role}</CardTitle>
+                            <CardDescription>Editing: {contact?.name}</CardDescription>
+                        </div>
+                        <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="rounded-full w-10 h-10 p-0 hover:w-48 transition-all duration-500 ease-in-out flex items-center justify-center overflow-hidden group">
+                            <Trash2 className="w-4 h-4 shrink-0" />
+                            <span className="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 whitespace-nowrap">
+                                Delete Contact
+                            </span>
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        <ContactForm
+                            initialData={contact}
+                            onSubmit={handleSubmit}
+                            isSubmitting={updateContact.isPending}
+                        />
+                    </CardContent>
+                </Card>
             </div>
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

@@ -154,35 +154,37 @@ const ExpenseCategories = () => {
                 </DialogContent>
             </Dialog>
 
-            <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden mt-6">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Description</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredCategories.length === 0 ? (
+            <div className="p-2 md:p-6">
+                <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                                    No categories found.
-                                </TableCell>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Description</TableHead>
                             </TableRow>
-                        ) : (
-                            filteredCategories.map((category: any) => (
-                                <TableRow
-                                    key={category.id}
-                                    onClick={() => openEdit(category)}
-                                    className="cursor-pointer hover:bg-muted/50"
-                                >
-                                    <TableCell className="font-medium">{category.name}</TableCell>
-                                    <TableCell>{category.description || "-"}</TableCell>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredCategories.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                                        No categories found.
+                                    </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : (
+                                filteredCategories.map((category: any) => (
+                                    <TableRow
+                                        key={category.id}
+                                        onClick={() => openEdit(category)}
+                                        className="cursor-pointer hover:bg-muted/50"
+                                    >
+                                        <TableCell className="font-medium">{category.name}</TableCell>
+                                        <TableCell>{category.description || "-"}</TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             {/* Edit Dialog */}

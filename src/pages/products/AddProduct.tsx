@@ -1,8 +1,9 @@
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { ProductForm } from "@/components/products/ProductForm";
 import { useCreateProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -67,16 +68,20 @@ const AddProduct = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title={isService ? "Add New Service" : "Add New Product"}
-                description={isService ? "Create a new service offering" : "Create a new inventory product"}
-            />
-            <div className="bg-card rounded-lg border p-4">
-                <ProductForm
-                    onSubmit={handleSubmit}
-                    isSubmitting={createProduct.isPending}
-                    fixedType={isService ? "Service" : "Product"}
-                />
+            <div className="max-w-4xl mx-auto p-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{isService ? "Add New Service" : "Add New Product"}</CardTitle>
+                        <CardDescription>{isService ? "Create a new service offering" : "Create a new inventory product"}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ProductForm
+                            onSubmit={handleSubmit}
+                            isSubmitting={createProduct.isPending}
+                            fixedType={isService ? "Service" : "Product"}
+                        />
+                    </CardContent>
+                </Card>
             </div>
         </PageLayout>
     );

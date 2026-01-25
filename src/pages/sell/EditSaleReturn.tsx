@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useSaleReturn, useDeleteSaleReturn } from "@/api/returns";
 import { format } from "date-fns";
@@ -49,43 +49,42 @@ const EditSaleReturn = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title={`Return #${returnData.sale?.order_no} (Refund)`}
-                description="View return details"
-                actions={
-                    <div className="flex gap-2 items-center">
-                        <Button variant="ghost" onClick={() => navigate("/sell/return")}>
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
-                        </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Return
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This will delete the return record and <strong>DECREASE</strong> the stock back (reverse the return).
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-                }
-            />
-
-            <div className="space-y-6">
+            <div className="p-2 md:p-6 space-y-6">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Details</CardTitle>
+                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
+                        <div className="space-y-1.5">
+                            <CardTitle>Return #{returnData.sale?.order_no} (Refund)</CardTitle>
+                            <CardDescription>View return details</CardDescription>
+                        </div>
+                        <div className="flex gap-2 items-center">
+                            <Button variant="ghost" onClick={() => navigate("/sell/return")}>
+                                <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" className="rounded-full w-10 h-10 p-0 hover:w-48 transition-all duration-500 ease-in-out flex items-center justify-center overflow-hidden group">
+                                        <Trash2 className="w-4 h-4 shrink-0" />
+                                        <span className="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 whitespace-nowrap">
+                                            Delete Return
+                                        </span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will delete the return record and <strong>DECREASE</strong> the stock back (reverse the return).
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                            Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
                     </CardHeader>
                     <CardContent className="grid grid-cols-2 gap-4">
                         <div>

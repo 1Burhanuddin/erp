@@ -169,7 +169,7 @@ const EmployeeList = () => {
                                         className={`group relative !p-6 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
                                         onClick={() => {
                                             if (emp.role === 'admin') return;
-                                            navigate(`/employees/edit/${emp.id}`);
+                                            navigate(`/employees/details/${emp.id}`);
                                         }}
                                         hover={emp.role !== 'admin'}
                                     >

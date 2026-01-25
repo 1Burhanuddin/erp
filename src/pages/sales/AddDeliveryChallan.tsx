@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -118,153 +119,156 @@ const AddDeliveryChallan = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Create Delivery Challan"
-                description="Create a new delivery challan"
-            />
-
-            <div className="p-6 bg-card rounded-lg border">
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Header Details */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <Label>Challan No.</Label>
-                            <Input
-                                value={formData.order_no}
-                                onChange={(e) => setFormData({ ...formData, order_no: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Customer</Label>
-                            <Select
-                                value={formData.customer_id}
-                                onValueChange={(value) => setFormData({ ...formData, customer_id: value })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select Customer" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {contacts.map((contact: any) => (
-                                        <SelectItem key={contact.id} value={contact.id}>
-                                            {contact.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Date</Label>
-                            <Input
-                                type="date"
-                                value={formData.order_date}
-                                onChange={(e) => setFormData({ ...formData, order_date: e.target.value })}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* Line Items */}
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center bg-muted/50 p-2 rounded-md font-medium text-sm">
-                            <div className="flex-1 px-2">Product</div>
-                            <div className="w-24 px-2">Qty</div>
-                            <div className="w-32 px-2">Price</div>
-                            <div className="w-32 px-2">Subtotal</div>
-                            <div className="w-10"></div>
-                        </div>
-
-                        {items.map((item, index) => (
-                            <div key={item.id} className="flex gap-4 items-end">
-                                <div className="flex-1">
+            <div className="max-w-4xl mx-auto p-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Create Delivery Challan</CardTitle>
+                        <CardDescription>Create a new delivery challan</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* Header Details */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                    <Label>Challan No.</Label>
+                                    <Input
+                                        value={formData.order_no}
+                                        onChange={(e) => setFormData({ ...formData, order_no: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Customer</Label>
                                     <Select
-                                        value={item.product_id}
-                                        onValueChange={(value) => updateItem(item.id, "product_id", value)}
+                                        value={formData.customer_id}
+                                        onValueChange={(value) => setFormData({ ...formData, customer_id: value })}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select Product" />
+                                            <SelectValue placeholder="Select Customer" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {products.map((product: any) => (
-                                                <SelectItem key={product.id} value={product.id}>
-                                                    {product.name}
+                                            {contacts.map((contact: any) => (
+                                                <SelectItem key={contact.id} value={contact.id}>
+                                                    {contact.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="w-24">
+                                <div className="space-y-2">
+                                    <Label>Date</Label>
                                     <Input
-                                        type="number"
-                                        min="1"
-                                        value={item.quantity}
-                                        onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value) || 0)}
+                                        type="date"
+                                        value={formData.order_date}
+                                        onChange={(e) => setFormData({ ...formData, order_date: e.target.value })}
+                                        required
                                     />
-                                </div>
-                                <div className="w-32">
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={item.unit_price}
-                                        onChange={(e) => updateItem(item.id, "unit_price", parseFloat(e.target.value) || 0)}
-                                    />
-                                </div>
-                                <div className="w-32">
-                                    <Input
-                                        value={item.subtotal.toFixed(2)}
-                                        readOnly
-                                        className="bg-muted"
-                                    />
-                                </div>
-                                <div className="w-10 pb-1">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-destructive hover:text-destructive/90"
-                                        onClick={() => removeItem(item.id)}
-                                        disabled={items.length === 1}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
                                 </div>
                             </div>
-                        ))}
 
-                        <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                            <Plus className="mr-2 h-4 w-4" /> Add Item
-                        </Button>
-                    </div>
+                            {/* Line Items */}
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center bg-muted/50 p-2 rounded-md font-medium text-sm">
+                                    <div className="flex-1 px-2">Product</div>
+                                    <div className="w-24 px-2">Qty</div>
+                                    <div className="w-32 px-2">Price</div>
+                                    <div className="w-32 px-2">Subtotal</div>
+                                    <div className="w-10"></div>
+                                </div>
 
-                    {/* Footer */}
-                    <div className="flex flex-col md:flex-row justify-between gap-6 border-t pt-6">
-                        <div className="flex-1">
-                            <Label>Notes</Label>
-                            <Textarea
-                                value={formData.notes}
-                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                placeholder="Terms and conditions..."
-                                className="mt-2"
-                            />
-                        </div>
-                        <div className="w-full md:w-64 space-y-4">
-                            <div className="flex justify-between items-center text-lg font-bold">
-                                <span>Total</span>
-                                <span>₹{calculateTotal().toFixed(2)}</span>
-                            </div>
-                            <div className="flex gap-4">
-                                <Button type="button" variant="outline" className="w-full" onClick={() => navigate("/sales/challans")}>
-                                    Cancel
+                                {items.map((item, index) => (
+                                    <div key={item.id} className="flex gap-4 items-end">
+                                        <div className="flex-1">
+                                            <Select
+                                                value={item.product_id}
+                                                onValueChange={(value) => updateItem(item.id, "product_id", value)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select Product" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {products.map((product: any) => (
+                                                        <SelectItem key={product.id} value={product.id}>
+                                                            {product.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="w-24">
+                                            <Input
+                                                type="number"
+                                                min="1"
+                                                value={item.quantity}
+                                                onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value) || 0)}
+                                            />
+                                        </div>
+                                        <div className="w-32">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={item.unit_price}
+                                                onChange={(e) => updateItem(item.id, "unit_price", parseFloat(e.target.value) || 0)}
+                                            />
+                                        </div>
+                                        <div className="w-32">
+                                            <Input
+                                                value={item.subtotal.toFixed(2)}
+                                                readOnly
+                                                className="bg-muted"
+                                            />
+                                        </div>
+                                        <div className="w-10 pb-1">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive hover:text-destructive/90"
+                                                onClick={() => removeItem(item.id)}
+                                                disabled={items.length === 1}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <Button type="button" variant="outline" size="sm" onClick={addItem}>
+                                    <Plus className="mr-2 h-4 w-4" /> Add Item
                                 </Button>
-                                <Button type="submit" className="w-full" disabled={createChallan.isPending}>
-                                    {createChallan.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Create Challan
-                                </Button>
                             </div>
-                        </div>
-                    </div>
-                </form>
+
+                            {/* Footer */}
+                            <div className="flex flex-col md:flex-row justify-between gap-6 border-t pt-6">
+                                <div className="flex-1">
+                                    <Label>Notes</Label>
+                                    <Textarea
+                                        value={formData.notes}
+                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                        placeholder="Terms and conditions..."
+                                        className="mt-2"
+                                    />
+                                </div>
+                                <div className="w-full md:w-64 space-y-4">
+                                    <div className="flex justify-between items-center text-lg font-bold">
+                                        <span>Total</span>
+                                        <span>₹{calculateTotal().toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <Button type="button" variant="outline" className="w-full" onClick={() => navigate("/sales/challans")}>
+                                            Cancel
+                                        </Button>
+                                        <Button type="submit" className="w-full" disabled={createChallan.isPending}>
+                                            {createChallan.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                            Create Challan
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
             </div>
         </PageLayout>
     );

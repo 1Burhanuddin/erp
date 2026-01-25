@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { useCreateEmployee } from "@/api/employees";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
@@ -71,113 +71,115 @@ const AddEmployee = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Add New Employee"
-                description="Create a new staff profile"
-            />
-            <Card>
-                <CardContent className="pt-6">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="full_name"
-                                    required
-                                    value={formData.full_name}
-                                    onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                                    placeholder="John Doe"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    placeholder="john@example.com"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="phone">Phone <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="phone"
-                                    required
-                                    value={formData.phone}
-                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    placeholder="+91..."
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="role">Role</Label>
-                                <Select
-                                    value={formData.role}
-                                    onValueChange={(v: EmployeeRole) => setFormData({ ...formData, role: v })}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="employee">Employee</SelectItem>
-                                        <SelectItem value="admin">Admin</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="shift_start">Shift Start Time</Label>
-                                <Input
-                                    id="shift_start"
-                                    type="time"
-                                    value={formData.shift_start}
-                                    onChange={e => setFormData({ ...formData, shift_start: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Input
-                                    id="address"
-                                    value={formData.address}
-                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                    placeholder="123 Main St"
-                                />
-                            </div>
-
-                            {/* Store Selector - Visible if user has access to multiple stores (Admin) */}
-                            {availableStores.length > 1 && (
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="store">Assign to Store</Label>
+            <div className="max-w-4xl mx-auto p-2">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
+                        <CardTitle>Add New Employee</CardTitle>
+                        <CardDescription>Create a new staff profile</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
+                                    <Input
+                                        id="full_name"
+                                        required
+                                        value={formData.full_name}
+                                        onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                                        placeholder="John Doe"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        placeholder="john@example.com"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone">Phone <span className="text-destructive">*</span></Label>
+                                    <Input
+                                        id="phone"
+                                        required
+                                        value={formData.phone}
+                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                        placeholder="+91..."
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="role">Role</Label>
                                     <Select
-                                        value={formData.store_id}
-                                        onValueChange={(v) => setFormData({ ...formData, store_id: v })}
+                                        value={formData.role}
+                                        onValueChange={(v: EmployeeRole) => setFormData({ ...formData, role: v })}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select Store" />
+                                            <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {availableStores.map(store => (
-                                                <SelectItem key={store.id} value={store.id}>
-                                                    {store.name}
-                                                </SelectItem>
-                                            ))}
+                                            <SelectItem value="employee">Employee</SelectItem>
+                                            <SelectItem value="admin">Admin</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                            )}
-                        </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="shift_start">Shift Start Time</Label>
+                                    <Input
+                                        id="shift_start"
+                                        type="time"
+                                        value={formData.shift_start}
+                                        onChange={e => setFormData({ ...formData, shift_start: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="address">Address</Label>
+                                    <Input
+                                        id="address"
+                                        value={formData.address}
+                                        onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                        placeholder="123 Main St"
+                                    />
+                                </div>
 
-                        <div className="flex justify-end gap-4 pt-4">
-                            <Button type="button" variant="outline" onClick={() => navigate("/employees/list")}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={createEmployee.isPending}>
-                                {createEmployee.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Create Employee
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                                {/* Store Selector - Visible if user has access to multiple stores (Admin) */}
+                                {availableStores.length > 1 && (
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label htmlFor="store">Assign to Store</Label>
+                                        <Select
+                                            value={formData.store_id}
+                                            onValueChange={(v) => setFormData({ ...formData, store_id: v })}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Store" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {availableStores.map(store => (
+                                                    <SelectItem key={store.id} value={store.id}>
+                                                        {store.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end gap-4 pt-4">
+                                <Button type="button" variant="outline" onClick={() => navigate("/employees/list")}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={createEmployee.isPending}>
+                                    {createEmployee.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Create Employee
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
         </PageLayout>
     );
 }

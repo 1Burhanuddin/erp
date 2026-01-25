@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
+
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
@@ -23,12 +23,7 @@ const SalesInvoice = () => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
 
     // Invoices are essentially Completed Sales Orders in this simplified ERP
     const filteredOrders = salesOrders?.filter(order =>
@@ -45,16 +40,17 @@ const SalesInvoice = () => {
                 onChange={setSearchQuery}
                 placeholder="Search invoices..."
             />
-            {mounted && document.getElementById('header-actions') && createPortal(
-                <div className="flex items-center gap-2">
-                    <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                    <Button onClick={() => navigate("/sell/add")} size="sm" className="h-9">
-                        <Plus className="mr-2 h-4 w-4" />
-                        <span className="hidden sm:inline">Create Invoice</span>
-                    </Button>
-                </div>,
-                document.getElementById('header-actions')
-            )}
+
+            {/* Floating Action Button */}
+            <div className="fixed bottom-6 right-6 z-50">
+                <Button
+                    onClick={() => navigate("/sell/add")}
+                    size="icon"
+                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                    <Plus className="h-6 w-6" />
+                </Button>
+            </div>
 
             {/* Mobile View Toggle */}
             <div className="sm:hidden mb-4">

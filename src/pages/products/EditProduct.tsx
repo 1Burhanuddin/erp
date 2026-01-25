@@ -1,4 +1,4 @@
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { ProductForm } from "@/components/products/ProductForm";
 import { useCreateProduct, useProducts, useDeleteProduct } from "@/api/products";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -139,22 +140,28 @@ const EditProduct = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title={isService ? "Edit Service" : "Edit Product"}
-                description={`Editing: ${product?.name}`}
-                actions={
-                    <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete {isService ? "Service" : "Product"}
-                    </Button>
-                }
-            />
-            <div className="p-6 bg-card rounded-lg border m-4">
-                <ProductForm
-                    initialData={product}
-                    onSubmit={handleSubmit}
-                    fixedType={isService ? "Service" : "Product"}
-                />
+            <div className="max-w-4xl mx-auto p-2">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
+                        <div className="space-y-1.5">
+                            <CardTitle>{isService ? "Edit Service" : "Edit Product"}</CardTitle>
+                            <CardDescription>Editing: {product?.name}</CardDescription>
+                        </div>
+                        <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="rounded-full w-10 h-10 p-0 hover:w-48 transition-all duration-500 ease-in-out flex items-center justify-center overflow-hidden group">
+                            <Trash2 className="w-4 h-4 shrink-0" />
+                            <span className="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 whitespace-nowrap">
+                                Delete {isService ? "Service" : "Product"}
+                            </span>
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        <ProductForm
+                            initialData={product}
+                            onSubmit={handleSubmit}
+                            fixedType={isService ? "Service" : "Product"}
+                        />
+                    </CardContent>
+                </Card>
             </div>
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

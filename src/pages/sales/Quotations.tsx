@@ -1,6 +1,4 @@
-
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { PageLayout } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
@@ -37,21 +35,7 @@ const Quotations = () => {
         return () => setMounted(false);
     }, []);
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button onClick={() => navigate("/sales/quotations/add")} size="sm" className="h-9">
-                    <Plus className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Create Quotation</span>
-                </Button>
-            </div>,
-            container
-        );
-    };
 
     return (
         <PageLayout>
@@ -60,7 +44,17 @@ const Quotations = () => {
                 onChange={setSearchQuery}
                 placeholder="Search quotations..."
             />
-            <HeaderActions />
+
+            {/* Floating Action Button */}
+            <div className="fixed bottom-6 right-6 z-50">
+                <Button
+                    onClick={() => navigate("/sales/quotations/add")}
+                    size="icon"
+                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                    <Plus className="h-6 w-6" />
+                </Button>
+            </div>
 
 
 

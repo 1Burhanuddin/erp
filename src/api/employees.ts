@@ -85,6 +85,24 @@ export const useEmployees = (opts?: { allStores?: boolean }) => {
     });
 };
 
+export const useEmployee = (id?: string) => {
+    return useQuery({
+        queryKey: ["employee", id],
+        queryFn: async () => {
+            if (!id) return null;
+            const { data, error } = await supabase
+                .from("employees")
+                .select("*, store:stores(name, address)")
+                .eq("id", id)
+                .single();
+
+            if (error) throw error;
+            return data as Employee;
+        },
+        enabled: !!id
+    });
+};
+
 export const useCurrentEmployee = () => {
     return useQuery({
         queryKey: ["current_employee"],

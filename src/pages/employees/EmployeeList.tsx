@@ -134,7 +134,7 @@ const EmployeeList = () => {
                                                 className={`hover:bg-muted/50 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                     if (emp.role === 'admin') return;
-                                                    navigate(`/employees/edit/${emp.id}`);
+                                                    navigate(`/employees/details/${emp.id}`);
                                                 }}
                                                 title={emp.role === 'admin' ? "Admin profiles cannot be edited here" : "Click to edit"}
                                             >

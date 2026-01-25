@@ -1,12 +1,29 @@
 import { useState, useEffect } from "react";
 import EmployeeLayout from "@/components/layout/EmployeeLayout";
-import { useAttendance, useCheckIn, useCheckOut, useEmployeeTasks } from "@/api/employees";
+import { useAttendance, useCheckIn, useCheckOut, useEmployeeTasks, useMyStoreConfig } from "@/api/employees";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+
+// Haversine Formula to calculate distance between two points in meters
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const R = 6371e3; // Earth radius in meters
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distance in meters
+}
 
 import {
     AlertDialog,
@@ -24,6 +41,7 @@ export default function EmployeeDashboard() {
     const { user } = useAuth();
     const { data: attendanceLogs, isLoading: isLoadingAttendance } = useAttendance(new Date());
     const { data: tasks, isLoading: isLoadingTasks } = useEmployeeTasks(user?.id);
+    const { data: storeConfig } = useMyStoreConfig();
 
     const checkIn = useCheckIn();
     const checkOut = useCheckOut();
@@ -34,23 +52,65 @@ export default function EmployeeDashboard() {
     const isCheckedIn = !!todaySession?.check_in && !todaySession?.check_out;
     const hasCompletedShift = !!todaySession?.check_in && !!todaySession?.check_out;
 
-    const handleCheckIn = () => {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                checkIn.mutate({
-                    location: {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    }
-                });
-            }, (error) => {
-                console.error("Geolocation error:", error);
-                // Fallback without location
-                checkIn.mutate({});
-            });
-        } else {
-            checkIn.mutate({});
+    const handleCheckIn = async () => {
+        if (!("geolocation" in navigator)) {
+            toast.error("Geolocation is not supported by your browser.");
+            return;
         }
+
+        try {
+            // Check permission status explicitly
+            const permission = await navigator.permissions.query({ name: 'geolocation' });
+
+            if (permission.state === 'denied') {
+                toast.error("Location access is blocked.", {
+                    description: "Please enable Location in your browser settings (near the URL bar) to check in.",
+                    duration: 5000,
+                });
+                return;
+            }
+        } catch (e) {
+            // Permissions API might not be supported on all browsers, ignore and try requesting
+        }
+
+        navigator.geolocation.getCurrentPosition((position) => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+
+            // Geo-Fencing Check
+            if (storeConfig?.latitude && storeConfig?.longitude) {
+                const distance = calculateDistance(userLat, userLng, storeConfig.latitude, storeConfig.longitude);
+                const maxRadius = storeConfig.geofence_radius || 10; // Default 10 meters
+
+                if (distance > maxRadius) {
+                    toast.error("You are too far from the store location!", {
+                        description: `Distance: ${Math.round(distance)}m. Allowed: ${maxRadius}m.`
+                    });
+                    return; // Block check-in
+                }
+            }
+
+            checkIn.mutate({
+                location: {
+                    lat: userLat,
+                    lng: userLng
+                }
+            });
+        }, (error) => {
+            console.error("Geolocation error:", error);
+            if (error.code === error.PERMISSION_DENIED) {
+                toast.error("Location permission denied.", {
+                    description: "Please allow location access to check in."
+                });
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                toast.error("Location unavailable.", { description: "Try moving to a better signal area." });
+            } else {
+                toast.error("We could not verify your location.");
+            }
+        }, {
+            enableHighAccuracy: true,
+            timeout: 10000
+        });
     };
 
     const handleCheckOut = () => {

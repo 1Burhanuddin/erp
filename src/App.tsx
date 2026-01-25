@@ -96,6 +96,7 @@ import ChangeEmail from "./pages/settings/ChangeEmail";
 import BusinessDetails from "./pages/settings/BusinessDetails";
 import StoresSettings from "./pages/settings/StoresSettings";
 import AddStore from "./pages/settings/AddStore";
+import EditStore from "./pages/settings/EditStore";
 import TaxAndBank from "./pages/settings/TaxAndBank";
 import OwnerDetails from "./pages/settings/OwnerDetails";
 import AppSettings from "./pages/settings/AppSettings";
@@ -200,6 +201,7 @@ const App = () => {
                   <Route path="/settings/business" element={<BusinessDetails />} />
                   <Route path="/settings/stores" element={<StoresSettings />} />
                   <Route path="/settings/stores/add" element={<AddStore />} />
+                  <Route path="/settings/stores/edit/:id" element={<EditStore />} />
                   <Route path="/settings/tax-bank" element={<TaxAndBank />} />
                   <Route path="/settings/owner" element={<OwnerDetails />} />
                   <Route path="/settings/app" element={<AppSettings />} />

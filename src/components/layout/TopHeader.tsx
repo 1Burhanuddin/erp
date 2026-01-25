@@ -44,7 +44,7 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
         </div>
 
         {/* Global Search & Notifications - Visible everywhere now */}
-        <div className="flex items-center gap-3 ml-4 mr-2">
+        <div className="flex items-center gap-1 sm:gap-3 ml-auto mr-1 sm:mr-2">
           <StoreSwitcher />
           <CommandMenu />
           <NotificationsDropdown />

@@ -4,52 +4,102 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Globe, Loader2, ArrowLeft, Store } from "lucide-react";
-import { useState } from "react";
-import { useCreateStore } from "@/api/stores";
+import { Globe, Loader2, Store, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useStore, useUpdateStore, useDeleteStore } from "@/api/stores";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { LocationPicker } from "@/components/shared/LocationPicker";
 
-export default function AddStore() {
+export default function EditStore() {
     const navigate = useNavigate();
-    const createStore = useCreateStore();
+    const { id } = useParams<{ id: string }>();
+    const { data: store, isLoading } = useStore(id || "");
+    const deleteStore = useDeleteStore();
+    const updateStore = useUpdateStore();
+
+    // ... (existing code)
+
+    const handleDelete = async () => {
+        if (!id || !store) return;
+        if (confirm(`Are you sure you want to delete ${store.name}? This action cannot be undone.`)) {
+            try {
+                await deleteStore.mutateAsync(id);
+                toast.success("Store deleted successfully");
+                navigate("/settings/stores");
+            } catch (error) {
+                toast.error("Failed to delete store");
+            }
+        }
+    };
+
+    // ... (existing render)
+
+
 
     const [formData, setFormData] = useState({
         name: "",
         domain: "",
         description: "",
         latitude: null as number | null,
-        longitude: null as number | null
+        longitude: null as number | null,
+        geofence_radius: 10
     });
 
-    const handleCreate = async () => {
+    useEffect(() => {
+        if (store) {
+            setFormData({
+                name: store.name || "",
+                domain: store.domain || "",
+                description: store.description || "",
+                latitude: store.latitude || null,
+                longitude: store.longitude || null,
+                geofence_radius: store.geofence_radius || 10
+            });
+        }
+    }, [store]);
+
+    const handleUpdate = async () => {
+        if (!id) return;
         if (!formData.name) {
             toast.error("Store name is required");
             return;
         }
 
         try {
-            await createStore.mutateAsync(formData);
-            toast.success("Store created successfully");
+            await updateStore.mutateAsync({
+                id,
+                ...formData
+            });
+            toast.success("Store updated successfully");
             navigate("/settings/stores");
         } catch (error) {
-            toast.error("Failed to create store");
+            toast.error("Failed to update store");
         }
     };
+
+    if (isLoading) {
+        return (
+            <PageLayout>
+                <div className="flex h-[50vh] items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            </PageLayout>
+        );
+    }
 
     return (
         <PageLayout>
             <div className="space-y-6 max-w-4xl mx-auto mt-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Add New Store</h1>
-                    <p className="text-muted-foreground">Create a new channel to sell your products and manage inventory.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">Edit Store</h1>
+                    <p className="text-muted-foreground">Update your store details and location.</p>
                 </div>
 
                 <Card>
                     <CardHeader>
                         <CardTitle>Store Details</CardTitle>
-                        <CardDescription>Enter the basic information for your new store.</CardDescription>
+                        <CardDescription>Update the basic information for your store.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-4">
@@ -109,12 +159,18 @@ export default function AddStore() {
                             </div>
                         </div>
 
-                        <div className="flex justify-end pt-4 border-t">
-                            <Button variant="outline" className="mr-2" onClick={() => navigate("/settings/stores")}>Cancel</Button>
-                            <Button onClick={handleCreate} disabled={createStore.isPending}>
-                                {createStore.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Create Store
+                        <div className="flex justify-between pt-4 border-t">
+                            <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleDelete}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Store
                             </Button>
+                            <div className="flex gap-2">
+                                <Button variant="outline" onClick={() => navigate("/settings/stores")}>Cancel</Button>
+                                <Button onClick={handleUpdate} disabled={updateStore.isPending}>
+                                    {updateStore.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Update Store
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

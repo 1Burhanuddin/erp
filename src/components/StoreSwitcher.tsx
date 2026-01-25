@@ -93,17 +93,22 @@ export function StoreSwitcher() {
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-[200px] justify-between h-9 ml-2"
+                    className={cn(
+                        "h-9 justify-between ml-2 transition-all duration-300",
+                        activeStore ? "w-10 px-0 md:w-[200px] md:px-3" : "w-[200px]"
+                    )}
                 >
                     {activeStore ? (
-                        <div className="flex items-center gap-2 truncate">
+                        <div className="flex items-center gap-2 truncate justify-center md:justify-start w-full">
                             <StoreIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                            <span className="truncate">{activeStore.name}</span>
+                            <span className="truncate hidden md:inline tracking-tight text-sm font-medium">
+                                {activeStore.name}
+                            </span>
                         </div>
                     ) : (
-                        <span className="text-muted-foreground">Select Store...</span>
+                        <span className="text-muted-foreground text-xs md:text-sm">Select Store...</span>
                     )}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 hidden md:inline" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">

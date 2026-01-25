@@ -314,6 +314,35 @@ export const useMyTodayAttendance = () => {
 };
 
 
+export const useMyStoreConfig = () => {
+    return useQuery({
+        queryKey: ["my_store_config"],
+        queryFn: async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            // Get employee's store_id
+            const { data: emp } = await supabase
+                .from("employees")
+                .select("store_id")
+                .eq("user_id", user.id)
+                .maybeSingle();
+
+            if (!emp?.store_id) return null;
+
+            // Get store config
+            const { data: store, error } = await supabase
+                .from("stores")
+                .select("id, name, latitude, longitude, geofence_radius, address")
+                .eq("id", emp.store_id)
+                .single();
+
+            if (error) throw error;
+            return store;
+        },
+    });
+};
+
 export const useCheckIn = () => {
     const queryClient = useQueryClient();
     return useMutation({

@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Plus, Trash2, Loader2, Link as LinkIcon, Copy } from "lucide-react";
+import { Globe, Plus, Trash2, Loader2, Link as LinkIcon, Copy, Pencil } from "lucide-react";
 import { useStores, useUpdateStore, useDeleteStore } from "@/api/stores";
 import { toast } from "sonner";
 
@@ -60,12 +60,15 @@ export function StoresTab() {
                                 <TableHead>Store ID</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Created</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {stores?.map((store: any) => (
-                                <TableRow key={store.id}>
+                                <TableRow
+                                    key={store.id}
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() => navigate(`/settings/stores/edit/${store.id}`)}
+                                >
                                     <TableCell>
                                         <div className="font-medium flex items-center gap-2">
                                             <Globe className="h-4 w-4 text-muted-foreground" />
@@ -74,7 +77,7 @@ export function StoresTab() {
                                         {store.domain && <div className="text-xs text-muted-foreground ml-6">{store.domain}</div>}
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                             <code className="bg-muted px-1.5 py-0.5 rounded text-xs">{store.id.slice(0, 8)}...</code>
                                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyId(store.id)} title="Copy Full ID">
                                                 <Copy className="h-3 w-3" />
@@ -82,7 +85,7 @@ export function StoresTab() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                             <Switch
                                                 checked={store.is_active}
                                                 onCheckedChange={() => handleToggleActive(store.id, store.is_active)}
@@ -92,14 +95,8 @@ export function StoresTab() {
                                             </Badge>
                                         </div>
                                     </TableCell>
-                                    {/* Format date properly */}
                                     <TableCell className="text-muted-foreground text-sm">
                                         {new Date(store.created_at).toLocaleDateString()}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(store.id, store.name)}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

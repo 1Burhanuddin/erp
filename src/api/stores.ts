@@ -17,11 +17,28 @@ export const useStores = () => {
     });
 };
 
+export const useStore = (id: string) => {
+    return useQuery({
+        queryKey: ["stores", id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from("stores")
+                .select("*")
+                .eq("id", id)
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!id,
+    });
+};
+
 export const useCreateStore = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (store: { name: string; domain?: string; description?: string }) => {
+        mutationFn: async (store: { name: string; domain?: string; description?: string; latitude?: number; longitude?: number; address?: string; geofence_radius?: number }) => {
             // 1. Get current user
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("Not authenticated");
@@ -29,7 +46,10 @@ export const useCreateStore = () => {
             // 2. Create Store
             const { data: storeData, error: storeError } = await supabase
                 .from("stores")
-                .insert(store)
+                .insert({
+                    ...store,
+                    owner_id: user.id
+                })
                 .select()
                 .single();
 
@@ -94,6 +114,9 @@ export const useUpdateStore = () => {
             gstin?: string;
             currency?: string;
             onboarding_completed?: boolean;
+            latitude?: number;
+            longitude?: number;
+            geofence_radius?: number;
         }) => {
             const { data, error } = await supabase
                 .from("stores")

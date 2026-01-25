@@ -1,26 +1,33 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
+import { useAppSelector } from "@/store/hooks";
 
 type PurchaseOrder = Database["public"]["Tables"]["purchase_orders"]["Row"];
 type PurchaseOrderInsert = Database["public"]["Tables"]["purchase_orders"]["Insert"];
 type PurchaseItemInsert = Database["public"]["Tables"]["purchase_items"]["Insert"];
 
 export const usePurchaseOrders = () => {
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useQuery({
-        queryKey: ["purchase_orders"],
+        queryKey: ["purchase_orders", activeStoreId],
         queryFn: async () => {
+            if (!activeStoreId) return [];
+
             const { data, error } = await supabase
                 .from("purchase_orders")
                 .select(`
           *,
           supplier:contacts(name)
         `)
+                .eq("store_id", activeStoreId)
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
             return data;
         },
+        enabled: !!activeStoreId,
         staleTime: 1000 * 60 * 5,
     });
 };
@@ -56,12 +63,16 @@ type CreateOrderParams = {
 
 export const useCreateDirectPurchase = () => {
     const queryClient = useQueryClient();
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useMutation({
         mutationFn: async ({ order, items }: CreateOrderParams) => {
+            if (!activeStoreId) throw new Error("No active store selected");
+
             // 1. Create Order (Direct Purchase = Received + Stock Update)
             const { data: orderData, error: orderError } = await supabase
                 .from("purchase_orders")
-                .insert({ ...order, status: 'Received' })
+                .insert({ ...order, status: 'Received', store_id: activeStoreId })
                 .select()
                 .single();
 
@@ -110,12 +121,16 @@ export const useCreateDirectPurchase = () => {
 
 export const useCreatePurchaseOrder = () => {
     const queryClient = useQueryClient();
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useMutation({
         mutationFn: async ({ order, items }: CreateOrderParams) => {
+            if (!activeStoreId) throw new Error("No active store selected");
+
             // 1. Create Order (Status: Pending) - NO STOCK UPDATE
             const { data: orderData, error: orderError } = await supabase
                 .from("purchase_orders")
-                .insert({ ...order, status: 'Pending' })
+                .insert({ ...order, status: 'Pending', store_id: activeStoreId })
                 .select()
                 .single();
 

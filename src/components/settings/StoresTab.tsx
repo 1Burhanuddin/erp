@@ -51,18 +51,6 @@ export function StoresTab() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h3 className="text-lg font-medium">Store Management</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Manage your connected e-commerce stores and channels.
-                    </p>
-                </div>
-                <Button onClick={() => navigate("/settings/stores/add")}>
-                    <Plus className="mr-2 h-4 w-4" /> Add New Store
-                </Button>
-            </div>
-
             <Card>
                 <CardContent className="p-0">
                     <Table>

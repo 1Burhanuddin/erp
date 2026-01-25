@@ -16,18 +16,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useAppSelector } from "@/store/hooks";
 
-export default function AddEmployee() {
+
+const AddEmployee = () => {
     const navigate = useNavigate();
     const createEmployee = useCreateEmployee();
+    const { availableStores, activeStoreId } = useAppSelector(state => state.store);
+
     const [formData, setFormData] = useState({
         full_name: "",
-        email: "", // Used for auth invitiation (mocked for now)
+        email: "",
         phone: "",
         address: "",
         role: "employee" as EmployeeRole,
         shift_start: "09:00",
-        status: "active" as const
+        status: "active" as const,
+        store_id: activeStoreId || ""
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -137,6 +142,28 @@ export default function AddEmployee() {
                                     placeholder="123 Main St"
                                 />
                             </div>
+
+                            {/* Store Selector - Visible if user has access to multiple stores (Admin) */}
+                            {availableStores.length > 1 && (
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="store">Assign to Store</Label>
+                                    <Select
+                                        value={formData.store_id}
+                                        onValueChange={(v) => setFormData({ ...formData, store_id: v })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Store" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableStores.map(store => (
+                                                <SelectItem key={store.id} value={store.id}>
+                                                    {store.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex justify-end gap-4 pt-4">
@@ -154,3 +181,5 @@ export default function AddEmployee() {
         </PageLayout>
     );
 }
+
+export default AddEmployee;

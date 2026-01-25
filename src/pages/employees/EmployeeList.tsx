@@ -37,14 +37,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const EmployeeList = () => {
     const navigate = useNavigate();
-    const { data: employees, isLoading } = useEmployees();
     const deleteEmployeeMutation = useDeleteEmployee();
     const [searchQuery, setSearchQuery] = useState("");
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [employeeToDelete, setEmployeeToDelete] = useState<string | null>(null);
+    const [showAllStores, setShowAllStores] = useState(false);
+    const { data: employees, isLoading } = useEmployees({ allStores: showAllStores });
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -91,7 +93,18 @@ const EmployeeList = () => {
 
 
 
-            <div>
+
+            <div className="space-y-4">
+                {/* View Tabs */}
+                <div className="mb-6">
+                    <Tabs value={showAllStores ? "all" : "current"} onValueChange={(v) => setShowAllStores(v === "all")} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="current">Current Store</TabsTrigger>
+                            <TabsTrigger value="all">All Stores</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+
                 {isLoading ? (
                     <div className="space-y-4">
                         <Skeleton className="h-12 w-full" />
@@ -111,6 +124,7 @@ const EmployeeList = () => {
                                         <TableRow>
                                             <TableHead>Name</TableHead>
                                             <TableHead>Role</TableHead>
+                                            {showAllStores && <TableHead>Store</TableHead>}
                                             <TableHead>Phone</TableHead>
                                             <TableHead>Status</TableHead>
 
@@ -133,6 +147,11 @@ const EmployeeList = () => {
                                                         {emp.role}
                                                     </Badge>
                                                 </TableCell>
+                                                {showAllStores && (
+                                                    <TableCell className="text-muted-foreground">
+                                                        {emp.store?.name || '-'}
+                                                    </TableCell>
+                                                )}
                                                 <TableCell>{emp.phone || '-'}</TableCell>
                                                 <TableCell>
                                                     <Badge variant={emp.status === 'active' ? 'outline' : 'destructive'} className={emp.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : ''}>

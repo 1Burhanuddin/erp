@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { CommandMenu } from "@/components/CommandMenu";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { StoreSwitcher } from "@/components/StoreSwitcher";
 import { useLocation } from "react-router-dom";
 
 interface TopHeaderProps {
@@ -42,13 +43,12 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
           )}
         </div>
 
-        {/* Global Search & Notifications - Only on Dashboard */}
-        {isDashboard && (
-          <div className="flex items-center gap-3 ml-4 mr-2">
-            <CommandMenu />
-            <NotificationsDropdown />
-          </div>
-        )}
+        {/* Global Search & Notifications - Visible everywhere now */}
+        <div className="flex items-center gap-3 ml-4 mr-2">
+          <StoreSwitcher />
+          <CommandMenu />
+          <NotificationsDropdown />
+        </div>
 
         {/* Header Actions Portal Target (Right) */}
         <div className="flex items-center gap-2" id="header-actions" />

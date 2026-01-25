@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
 import { toast } from "sonner";
+import { useAppSelector } from "@/store/hooks";
 
 type SalesOrder = Database["public"]["Tables"]["sales_orders"]["Row"] & { channel?: string };
 type SalesOrderInsert = Database["public"]["Tables"]["sales_orders"]["Insert"] & { channel?: string };
@@ -11,9 +12,13 @@ type SalesPaymentInsert = Database["public"]["Tables"]["sales_payments"]["Insert
 // --- Quotations Hooks ---
 
 export const useQuotations = () => {
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useQuery({
-        queryKey: ["quotations"],
+        queryKey: ["quotations", activeStoreId],
         queryFn: async () => {
+            if (!activeStoreId) return [];
+
             const { data, error } = await supabase
                 .from("sales_orders")
                 .select(`
@@ -22,11 +27,13 @@ export const useQuotations = () => {
                     items:sales_items(*)
                 `)
                 .eq("status", "Quotation")
+                .eq("store_id", activeStoreId)
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
             return data;
         },
+        enabled: !!activeStoreId
     });
 };
 
@@ -56,12 +63,16 @@ export const useQuotation = (id: string) => {
 
 export const useCreateQuotation = () => {
     const queryClient = useQueryClient();
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useMutation({
         mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
+            if (!activeStoreId) throw new Error("No active store selected");
+
             // 1. Create Order
             const { data: orderData, error: orderError } = await supabase
                 .from("sales_orders")
-                .insert({ ...data.order, status: "Quotation" })
+                .insert({ ...data.order, status: "Quotation", store_id: activeStoreId })
                 .select()
                 .single();
 
@@ -215,9 +226,13 @@ export const useConvertQuotation = () => {
 // --- Delivery Challan Hooks ---
 
 export const useDeliveryChallans = () => {
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useQuery({
-        queryKey: ["delivery_challans"],
+        queryKey: ["delivery_challans", activeStoreId],
         queryFn: async () => {
+            if (!activeStoreId) return [];
+
             const { data, error } = await supabase
                 .from("sales_orders")
                 .select(`
@@ -226,21 +241,27 @@ export const useDeliveryChallans = () => {
                     items:sales_items(*)
                 `)
                 .eq("status", "Delivery Challan")
+                .eq("store_id", activeStoreId)
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
             return data;
         },
+        enabled: !!activeStoreId
     });
 };
 
 export const useCreateDeliveryChallan = () => {
     const queryClient = useQueryClient();
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useMutation({
         mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
+            if (!activeStoreId) throw new Error("No active store selected");
+
             const { data: orderData, error: orderError } = await supabase
                 .from("sales_orders")
-                .insert({ ...data.order, status: "Delivery Challan" })
+                .insert({ ...data.order, status: "Delivery Challan", store_id: activeStoreId })
                 .select()
                 .single();
 
@@ -322,9 +343,13 @@ export const useDeleteDeliveryChallan = () => {
 // --- General Sales Hooks (Invoices/Orders) ---
 
 export const useSalesOrders = () => {
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useQuery({
-        queryKey: ["sales_orders"],
+        queryKey: ["sales_orders", activeStoreId],
         queryFn: async () => {
+            if (!activeStoreId) return [];
+
             const { data, error } = await supabase
                 .from("sales_orders")
                 // Fetch everything that is NOT a quotation, assuming 'Quotation' is specific.
@@ -338,11 +363,13 @@ export const useSalesOrders = () => {
                 `)
                 .neq("status", "Quotation")
                 .neq("status", "Delivery Challan")
+                .eq("store_id", activeStoreId)
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
             return data;
         },
+        enabled: !!activeStoreId
     });
 };
 
@@ -373,12 +400,16 @@ export const useSalesOrder = (id: string) => {
 
 export const useCreateSalesOrder = () => {
     const queryClient = useQueryClient();
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useMutation({
         mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
+            if (!activeStoreId) throw new Error("No active store selected");
+
             // 1. Create Order (Status: Pending) - DO NOT DEDUCT STOCK YET
             const { data: orderData, error: orderError } = await supabase
                 .from("sales_orders")
-                .insert({ ...data.order, status: "Pending", channel: "Direct" })
+                .insert({ ...data.order, status: "Pending", channel: "Direct", store_id: activeStoreId })
                 .select()
                 .single();
 
@@ -408,12 +439,16 @@ export const useCreateSalesOrder = () => {
 
 export const useCreateSale = () => {
     const queryClient = useQueryClient();
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useMutation({
         mutationFn: async (data: { order: SalesOrderInsert, items: SalesItemInsert[] }) => {
+            if (!activeStoreId) throw new Error("No active store selected");
+
             // 1. Create Order
             const { data: orderData, error: orderError } = await supabase
                 .from("sales_orders")
-                .insert(data.order)
+                .insert({ ...data.order, store_id: activeStoreId })
                 .select()
                 .single();
 

@@ -2,39 +2,86 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Employee, EmployeeTask, Attendance } from "@/types/employee";
 import { toast } from "@/components/ui/use-toast";
+import { useAppSelector } from "@/store/hooks";
 
 // --- Employees Hooks ---
 
-export const useEmployees = () => {
+export const useEmployees = (opts?: { allStores?: boolean }) => {
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+    const availableStores = useAppSelector((state) => state.store.availableStores);
+
+    // If showing all stores, we don't need activeStoreId
+    const enabled = opts?.allStores ? true : !!activeStoreId;
+
     return useQuery({
-        queryKey: ["employees"],
+        queryKey: ["employees", activeStoreId],
         queryFn: async () => {
-            // 1. Get current user's store_id
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error("Not authenticated");
+            if (!activeStoreId) return [];
 
-            const { data: currentUserData, error: userError } = await supabase
+            // Fetch employees. If allStores is true, fetch all (Admin). Else filter by store.
+            let query = supabase
                 .from("employees")
-                .select("store_id")
-                .eq("user_id", user.id) // Updated column
-                .maybeSingle();
-
-            if (userError) throw userError;
-            if (!currentUserData) return []; // User has no store, so no employees to show
-
-            // 2. Fetch employees for this store
-            const { data, error } = await supabase
-                .from("employees")
-                .select("*")
-                .eq("store_id", currentUserData.store_id)
+                .select("*, store:stores(name)")
                 .order("created_at", { ascending: false });
+
+            if (!opts?.allStores && activeStoreId) {
+                query = query.eq("store_id", activeStoreId);
+            }
+
+            const { data, error } = await query;
 
             if (error) {
                 toast({ title: "Error fetching employees", description: error.message, variant: "destructive" });
                 throw error;
             }
-            return data as Employee[];
+            const employees = data as Employee[];
+
+            // 2. Virtual Admin Injection
+            // If the Store Owner is not in the list (because their primary 'employee' record is in another store),
+            // we inject them as a virtual admin so they appear in the UI.
+            if (!opts?.allStores && activeStoreId) {
+                const currentStore = availableStores.find(s => s.id === activeStoreId);
+
+                // Fetch store owner for active store
+                const { data: storeDetails } = await supabase
+                    .from("stores")
+                    .select("owner_id")
+                    .eq("id", activeStoreId)
+                    .single();
+
+                if (storeDetails?.owner_id) {
+                    const isOwnerInList = employees.some(e => e.id === storeDetails.owner_id);
+
+                    if (!isOwnerInList) {
+                        try {
+                            // Fetch Owner's profile from their "Main" record
+                            const { data: ownerProfile } = await supabase
+                                .from("employees")
+                                .select("*, store:stores(name)")
+                                .eq("id", storeDetails.owner_id)
+                                .maybeSingle();
+
+                            if (ownerProfile) {
+                                // Create a Virtual Clone for this store
+                                const virtualAdmin: Employee = {
+                                    ...ownerProfile,
+                                    store_id: activeStoreId, // Pretend they are in this store
+                                    role: 'admin', // Always Admin
+                                    store: { name: currentStore?.name || "Current Store" }
+                                };
+                                // Prepend owner
+                                employees.unshift(virtualAdmin);
+                            }
+                        } catch (err) {
+                            console.warn("Failed to inject virtual owner", err);
+                        }
+                    }
+                }
+            }
+
+            return employees;
         },
+        enabled
     });
 };
 
@@ -66,23 +113,18 @@ export const useCurrentEmployee = () => {
 
 export const useCreateEmployee = () => {
     const queryClient = useQueryClient();
+    const activeStoreId = useAppSelector((state) => state.store.activeStoreId);
+
     return useMutation({
         mutationFn: async (employee: Partial<Employee>) => {
-            // Get current admin's store_id
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error("Not authenticated");
+            if (!activeStoreId) throw new Error("No active store selected");
 
-            const { data: adminData } = await supabase
-                .from("employees")
-                .select("store_id")
-                .eq("user_id", user.id)
-                .maybeSingle();
-
-            if (!adminData?.store_id) throw new Error("Admin not assigned to a store");
+            // Allow overriding store_id if passed (e.g. from dropdown), otherwise use active
+            const targetStoreId = employee.store_id || activeStoreId;
 
             const { data, error } = await supabase.from("employees").insert({
                 ...employee,
-                store_id: adminData.store_id
+                store_id: targetStoreId
             }).select().single();
 
             if (error) throw error;

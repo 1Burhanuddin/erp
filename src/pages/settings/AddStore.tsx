@@ -53,10 +53,10 @@ export default function AddStore() {
                             <div className="space-y-2">
                                 <Label htmlFor="name">Store Name <span className="text-destructive">*</span></Label>
                                 <div className="relative">
-                                    <Store className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Store className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="name"
-                                        className="pl-9"
+                                        className="pl-10"
                                         placeholder="e.g. My AC Store"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -67,10 +67,10 @@ export default function AddStore() {
                             <div className="space-y-2">
                                 <Label htmlFor="domain">Domain / URL</Label>
                                 <div className="relative">
-                                    <Globe className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="domain"
-                                        className="pl-9"
+                                        className="pl-10"
                                         placeholder="https://example.com"
                                         value={formData.domain}
                                         onChange={(e) => setFormData({ ...formData, domain: e.target.value })}

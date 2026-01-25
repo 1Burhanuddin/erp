@@ -22,17 +22,56 @@ export const useCreateStore = () => {
 
     return useMutation({
         mutationFn: async (store: { name: string; domain?: string; description?: string }) => {
-            const { data, error } = await supabase
+            // 1. Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            // 2. Create Store
+            const { data: storeData, error: storeError } = await supabase
                 .from("stores")
                 .insert(store)
                 .select()
                 .single();
 
-            if (error) throw error;
-            return data;
+            if (storeError) throw storeError;
+
+            // 3. Link User as Employee (Admin)
+            // Check if employee record already exists
+            const { data: existingEmp } = await supabase
+                .from("employees")
+                .select("id")
+                .eq("user_id", user.id)
+                .maybeSingle();
+
+            if (existingEmp) {
+                // Update existing employee to point to this new store (or maybe keep old? 
+                // For now, assuming single-store or "switch focus" model, let's update it so they can use it immediately)
+                await supabase
+                    .from("employees")
+                    .update({ store_id: storeData.id, role: 'admin' }) // Ensure they are admin
+                    .eq("id", existingEmp.id);
+            } else {
+                // Create new employee record
+                await supabase
+                    .from("employees")
+                    .insert({
+                        user_id: user.id,
+                        store_id: storeData.id,
+                        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "Admin",
+                        email: user.email,
+                        role: 'admin',
+                        joining_date: new Date().toISOString(),
+                        salary: 0, // Default for owner/admin
+                        status: 'active'
+                    });
+            }
+
+            return storeData;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["stores"] });
+            queryClient.invalidateQueries({ queryKey: ["employees"] }); // Invalidate employees too
+            queryClient.invalidateQueries({ queryKey: ["current_employee"] });
         },
     });
 };

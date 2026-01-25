@@ -142,14 +142,7 @@ export default function EmployeeDashboard() {
                                 Shift Completed
                             </Button>
                         ) : (
-                            <Button
-                                size="lg"
-                                className="w-full h-14 rounded-2xl text-lg font-bold bg-white text-primary hover:bg-white/90 shadow-lg"
-                                onClick={handleCheckIn}
-                                disabled={checkIn.isPending}
-                            >
-                                Swipe to Check In
-                            </Button>
+                            <SwipeSlider onComplete={handleCheckIn} isLoading={checkIn.isPending} />
                         )}
                     </div>
                 </div>
@@ -175,5 +168,67 @@ export default function EmployeeDashboard() {
 
             </div>
         </EmployeeLayout>
+    );
+}
+
+// Inline Swipe Slider Component (Customized for Dashboard Theme)
+function SwipeSlider({ onComplete, isLoading }: { onComplete: () => void, isLoading: boolean }) {
+    const [sliderValue, setSliderValue] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSliderValue(parseInt(e.target.value));
+    };
+
+    const handleEnd = () => {
+        setIsDragging(false);
+        if (sliderValue >= 95) {
+            setSliderValue(100);
+            onComplete();
+        } else {
+            setSliderValue(0);
+        }
+    };
+
+    return (
+        <div className="relative w-full h-14 bg-white rounded-full overflow-hidden shadow-lg select-none touch-none">
+            {/* Success Fill */}
+            <div
+                className="absolute left-0 top-0 bottom-0 bg-primary/20 transition-all duration-75 ease-linear"
+                style={{ width: `${sliderValue}%` }}
+            />
+
+            {/* Text with Shimmer Effect */}
+            <div className={`absolute inset-0 flex items-center justify-center font-bold tracking-wide text-lg uppercase pointer-events-none transition-opacity duration-300 ${sliderValue > 50 ? 'opacity-0' : 'opacity-100'}`}>
+                <span className="bg-gradient-to-r from-primary/40 via-primary to-primary/40 bg-[length:200%_auto] animate-shine bg-clip-text text-transparent">
+                    {isLoading ? "Checking In..." : "Swipe to Check In"}
+                </span>
+            </div>
+
+            {/* Thumb Visual */}
+            <div
+                className="absolute top-1 bottom-1 w-12 bg-primary rounded-full flex items-center justify-center shadow-md pointer-events-none transition-all duration-75 ease-linear"
+                style={{ left: `calc(${sliderValue}% - ${sliderValue * 0.48}px + 4px)` }}
+            >
+                <div className="text-primary-foreground">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                </div>
+            </div>
+
+            {/* Input Range Overlay */}
+            <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliderValue}
+                onChange={handleInput}
+                onTouchStart={() => setIsDragging(true)}
+                onTouchEnd={handleEnd}
+                onMouseDown={() => setIsDragging(true)}
+                onMouseUp={handleEnd}
+                disabled={isLoading}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            />
+        </div>
     );
 }

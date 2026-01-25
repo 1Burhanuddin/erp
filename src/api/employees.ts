@@ -94,7 +94,7 @@ export const useCurrentEmployee = () => {
 
             const { data, error } = await supabase
                 .from("employees")
-                .select("*")
+                .select("*, store:stores(name, address)")
                 .eq("user_id", user.id)
                 .maybeSingle();
 

@@ -17,7 +17,7 @@ export interface Employee {
     store_id: string | null;
     created_at: string;
     updated_at: string;
-    store?: { name: string };
+    store?: { name: string; address?: string };
 }
 
 export interface EmployeeTask {

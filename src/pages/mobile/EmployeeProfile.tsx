@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Phone, MapPin, Calendar, Clock, Loader2, Save, Mail, Edit, X, LogOut } from "lucide-react";
+import { User, Phone, MapPin, Calendar, Clock, Loader2, Save, Mail, Edit, X, LogOut, Store } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -93,7 +93,7 @@ export default function EmployeeProfile() {
     return (
         <EmployeeLayout>
             <div className="space-y-6 max-w-2xl mx-auto">
-                <Card>
+                <Card className="rounded-3xl shadow-sm border-0">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -116,6 +116,19 @@ export default function EmployeeProfile() {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-6">
+                        {/* Store Info */}
+                        {employee.store && (
+                            <div className="bg-muted/50 p-4 rounded-2xl space-y-1">
+                                <Label className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider mb-2">
+                                    <Store className="h-3.5 w-3.5" /> Store Information
+                                </Label>
+                                <div>
+                                    <p className="font-medium text-lg leading-tight">{employee.store.name}</p>
+                                    {employee.store.address && <p className="text-sm text-muted-foreground mt-1">{employee.store.address}</p>}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Read-Only Fields */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">

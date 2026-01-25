@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (session?.user) {
           // Verify role before finishing loading
+          setIsLoading(true);
           checkAdminRole(session.user.id);
         } else {
           setIsAdmin(false);

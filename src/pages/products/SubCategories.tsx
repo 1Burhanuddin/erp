@@ -45,7 +45,7 @@ const SubCategories = () => {
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                    <Button onClick={() => navigate("/products/sub-categories/add")} size="sm" className="h-9">
+                    <Button onClick={() => navigate("/products/sub-categories/add")} size="sm" className="w-9 h-9 sm:w-auto sm:h-9 rounded-full sm:rounded-md px-0 sm:px-4">
                         <Plus className="mr-2 h-4 w-4" />
                         <span className="hidden sm:inline">Add Sub Category</span>
                     </Button>

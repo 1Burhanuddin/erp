@@ -101,8 +101,8 @@ const ExpenseCategories = () => {
 
                 <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                     <DialogTrigger asChild>
-                        <Button size="sm" className="h-9">
-                            <Plus className="mr-2 h-4 w-4" /> <span className="hidden sm:inline">Add Category</span><span className="sm:hidden">Add</span>
+                        <Button size="sm" className="w-9 h-9 sm:w-auto sm:h-9 rounded-full sm:rounded-md px-0 sm:px-4">
+                            <Plus className="sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Add Category</span>
                         </Button>
                     </DialogTrigger>
                     <DialogContent>

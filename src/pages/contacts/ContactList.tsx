@@ -111,9 +111,9 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                         <Upload className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">Import</span>
                     </Button>
-                    <Button size="sm" className="h-9 px-2 sm:px-4" onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        <span>Add {role}</span>
+                    <Button size="sm" className="w-9 h-9 sm:w-auto sm:h-9 rounded-full sm:rounded-md px-0 sm:px-4" onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}>
+                        <Plus className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Add {role}</span>
                     </Button>
                 </div>,
                 document.getElementById('header-actions')!

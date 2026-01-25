@@ -51,8 +51,8 @@ const ServicesList = () => {
             {mounted && document.getElementById('header-actions') && createPortal(
                 <div className="flex items-center gap-2">
                     <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                    <Button size="sm" className="h-9 px-2 sm:px-4" onClick={() => navigate("/services/add")}>
-                        <Plus className="h-4 w-4 mr-2" />
+                    <Button size="sm" className="w-9 h-9 sm:w-auto sm:h-9 rounded-full sm:rounded-md px-0 sm:px-4" onClick={() => navigate("/services/add")}>
+                        <Plus className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">Add Service</span>
                     </Button>
                 </div>,

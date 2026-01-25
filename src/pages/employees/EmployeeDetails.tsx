@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { useEmployee, useEmployeeTasks } from "@/api/employees";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -98,30 +98,31 @@ export default function EmployeeDetails() {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Employee Details"
-                description={`Viewing profile for ${employee.full_name}`}
-                actions={
-                    <Button onClick={() => navigate(`/employees/edit/${id}`)} variant="outline" className="gap-2">
-                        <Edit className="h-4 w-4" /> Edit Profile
-                    </Button>
-                }
-            />
-
             <div className="p-4 md:p-6 space-y-6">
                 {/* Header Profile Card */}
-                <Card className="rounded-3xl border-0 shadow-sm overflow-hidden">
-                    <div className="h-32 bg-gradient-to-r from-primary/10 to-primary/5"></div>
-                    <CardContent className="relative pt-0 pb-8 px-8">
+                <Card className="rounded-3xl border-0 shadow-sm overflow-hidden bg-card">
+                    <div className="h-32 bg-gradient-to-r from-primary/10 to-primary/5 relative">
+                        <div className="absolute top-4 right-4">
+                            <Button
+                                onClick={() => navigate(`/employees/edit/${id}`)}
+                                variant="secondary"
+                                size="sm"
+                                className="bg-background/50 hover:bg-background/80 backdrop-blur-sm shadow-sm gap-2"
+                            >
+                                <Edit className="h-4 w-4" /> <span className="hidden sm:inline">Edit Profile</span>
+                            </Button>
+                        </div>
+                    </div>
+                    <CardContent className="relative pt-0 pb-8 px-6 md:px-8">
                         <div className="flex flex-col md:flex-row items-start md:items-end -mt-12 mb-6 gap-6">
-                            <Avatar className="h-24 w-24 border-4 border-card shadow-lg">
+                            <Avatar className="h-24 w-24 border-4 border-card shadow-lg shrink-0">
                                 <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
                                     {employee.full_name?.charAt(0)?.toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1 space-y-1 mb-2">
-                                <div className="flex items-center gap-3">
-                                    <h1 className="text-2xl font-bold">{employee.full_name}</h1>
+                            <div className="flex-1 space-y-1 mb-2 w-full">
+                                <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                                    <h1 className="text-2xl font-bold truncate max-w-[200px] md:max-w-none">{employee.full_name}</h1>
                                     <Badge variant={employee.role === 'admin' ? 'default' : 'secondary'}>
                                         {employee.role}
                                     </Badge>
@@ -130,11 +131,12 @@ export default function EmployeeDetails() {
                                         {employee.status}
                                     </Badge>
                                 </div>
-                                <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-muted-foreground text-sm">
                                     <div className="flex items-center gap-1">
                                         <Briefcase className="h-3.5 w-3.5" />
                                         {employee.store?.name || "Unknown Store"}
                                     </div>
+                                    <div className="hidden sm:block h-3 w-px bg-border"></div>
                                     <div className="flex items-center gap-1">
                                         <CalendarIcon className="h-3.5 w-3.5" />
                                         Joined {format(new Date(employee.created_at), "MMM yyyy")}
@@ -144,11 +146,13 @@ export default function EmployeeDetails() {
                         </div>
 
                         <Tabs defaultValue="overview" className="w-full">
-                            <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-flex h-11">
-                                <TabsTrigger value="overview">Overview</TabsTrigger>
-                                <TabsTrigger value="performance">Performance</TabsTrigger>
-                                <TabsTrigger value="tasks">Tasks & Activity</TabsTrigger>
-                            </TabsList>
+                            <div className="overflow-x-auto pb-2 -mx-2 px-2 md:pb-0 md:px-0">
+                                <TabsList className="w-full justify-start md:w-auto md:inline-flex h-11 bg-muted/50 p-1">
+                                    <TabsTrigger value="overview" className="flex-1 md:flex-none">Overview</TabsTrigger>
+                                    <TabsTrigger value="performance" className="flex-1 md:flex-none">Performance</TabsTrigger>
+                                    <TabsTrigger value="tasks" className="flex-1 md:flex-none">Tasks & Activity</TabsTrigger>
+                                </TabsList>
+                            </div>
 
                             {/* OVERVIEW TAB */}
                             <TabsContent value="overview" className="mt-6 space-y-6">
@@ -159,25 +163,25 @@ export default function EmployeeDetails() {
                                         </CardHeader>
                                         <CardContent className="space-y-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center text-muted-foreground">
+                                                <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center text-muted-foreground shrink-0">
                                                     <Phone className="h-4 w-4" />
                                                 </div>
-                                                <div>
+                                                <div className="overflow-hidden">
                                                     <p className="text-sm font-medium">Phone Number</p>
-                                                    <p className="text-sm text-muted-foreground">{employee.phone || "Not provided"}</p>
+                                                    <p className="text-sm text-muted-foreground truncate">{employee.phone || "Not provided"}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center text-muted-foreground">
+                                                <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center text-muted-foreground shrink-0">
                                                     <MapPin className="h-4 w-4" />
                                                 </div>
-                                                <div>
+                                                <div className="overflow-hidden">
                                                     <p className="text-sm font-medium">Address</p>
-                                                    <p className="text-sm text-muted-foreground">{employee.address || "Not provided"}</p>
+                                                    <p className="text-sm text-muted-foreground truncate">{employee.address || "Not provided"}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center text-muted-foreground">
+                                                <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center text-muted-foreground shrink-0">
                                                     <Clock className="h-4 w-4" />
                                                 </div>
                                                 <div>
@@ -297,7 +301,7 @@ export default function EmployeeDetails() {
                                                 ))}
                                                 {!tasks?.length && (
                                                     <TableRow>
-                                                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                                        <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                                                             No tasks found.
                                                         </TableCell>
                                                     </TableRow>

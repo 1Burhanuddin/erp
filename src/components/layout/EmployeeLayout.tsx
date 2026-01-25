@@ -207,7 +207,8 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
             </div>
 
             {/* Bottom Navigation for Mobile */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t flex justify-around items-center h-16 md:hidden z-50">
+            {/* Floating Bottom Navigation for Mobile */}
+            <nav className="fixed bottom-6 left-6 right-6 h-16 bg-background/80 backdrop-blur-xl border border-border/50 rounded-full shadow-2xl flex justify-evenly items-center md:hidden z-50">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.href;
                     return (
@@ -215,12 +216,14 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                             key={item.href}
                             to={item.href}
                             className={cn(
-                                "flex flex-col items-center justify-center w-full h-full space-y-1 rounded-full px-1",
-                                isActive ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                                "flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300",
+                                isActive
+                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-110"
+                                    : "text-muted-foreground hover:bg-muted"
                             )}
                         >
-                            <item.icon className={cn("h-5 w-5", isActive && "fill-current")} />
-                            <span className="text-xs font-medium">{item.label}</span>
+                            <item.icon className="h-5 w-5" />
+                            <span className="sr-only">{item.label}</span>
                         </Link>
                     );
                 })}

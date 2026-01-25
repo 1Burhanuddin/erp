@@ -4,10 +4,21 @@ import { useAttendance, useCheckIn, useCheckOut, useEmployeeTasks, useMyStoreCon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { MapPin, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Haversine Formula to calculate distance between two points in meters
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -25,18 +36,6 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     return R * c; // Distance in meters
 }
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
 export default function EmployeeDashboard() {
     const { user } = useAuth();
     const { data: attendanceLogs, isLoading: isLoadingAttendance } = useAttendance(new Date());
@@ -46,70 +45,69 @@ export default function EmployeeDashboard() {
     const checkIn = useCheckIn();
     const checkOut = useCheckOut();
 
+    // Location State
+    const [locationStatus, setLocationStatus] = useState<'verifying' | 'valid' | 'invalid' | 'error' | 'unavailable'>('verifying');
+    const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
+    const [statusMessage, setStatusMessage] = useState("Verifying location...");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [distance, setDistance] = useState<number | null>(null);
+
+    // Watch Position
+    useEffect(() => {
+        if (!storeConfig?.latitude || !storeConfig?.longitude) return;
+
+        if (!("geolocation" in navigator)) {
+            setLocationStatus('error');
+            setStatusMessage("Geolocation not supported.");
+            return;
+        }
+
+        const watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                setUserLocation({ lat, lng });
+
+                const dist = calculateDistance(lat, lng, storeConfig.latitude, storeConfig.longitude);
+                setDistance(dist);
+
+                const maxRadius = storeConfig.geofence_radius || 10;
+
+                if (dist <= maxRadius) {
+                    setLocationStatus('valid');
+                    setStatusMessage(`You are present at the store (${Math.round(dist)}m)`);
+                } else {
+                    setLocationStatus('invalid');
+                    setStatusMessage(`Too far: ${Math.round(dist)}m (Allowed: ${maxRadius}m)`);
+                }
+            },
+            (error) => {
+                setLocationStatus('error');
+                if (error.code === error.PERMISSION_DENIED) {
+                    setStatusMessage("Location access denied. Please enable it.");
+                } else {
+                    setStatusMessage("Unable to retrieve location.");
+                }
+            },
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+        );
+
+        return () => navigator.geolocation.clearWatch(watchId);
+    }, [storeConfig]);
+
     // RLS ensures we only receive our own attendance records.
     // Unique constraint ensures only one record per day.
     const todaySession = attendanceLogs?.[0];
     const isCheckedIn = !!todaySession?.check_in && !todaySession?.check_out;
     const hasCompletedShift = !!todaySession?.check_in && !!todaySession?.check_out;
 
-    const handleCheckIn = async () => {
-        if (!("geolocation" in navigator)) {
-            toast.error("Geolocation is not supported by your browser.");
+    const handleCheckIn = () => {
+        if (!userLocation) {
+            toast.error("Location not verified yet.");
             return;
         }
-
-        try {
-            // Check permission status explicitly
-            const permission = await navigator.permissions.query({ name: 'geolocation' });
-
-            if (permission.state === 'denied') {
-                toast.error("Location access is blocked.", {
-                    description: "Please enable Location in your browser settings (near the URL bar) to check in.",
-                    duration: 5000,
-                });
-                return;
-            }
-        } catch (e) {
-            // Permissions API might not be supported on all browsers, ignore and try requesting
-        }
-
-        navigator.geolocation.getCurrentPosition((position) => {
-            const userLat = position.coords.latitude;
-            const userLng = position.coords.longitude;
-
-            // Geo-Fencing Check
-            if (storeConfig?.latitude && storeConfig?.longitude) {
-                const distance = calculateDistance(userLat, userLng, storeConfig.latitude, storeConfig.longitude);
-                const maxRadius = storeConfig.geofence_radius || 10; // Default 10 meters
-
-                if (distance > maxRadius) {
-                    toast.error("You are too far from the store location!", {
-                        description: `Distance: ${Math.round(distance)}m. Allowed: ${maxRadius}m.`
-                    });
-                    return; // Block check-in
-                }
-            }
-
-            checkIn.mutate({
-                location: {
-                    lat: userLat,
-                    lng: userLng
-                }
-            });
-        }, (error) => {
-            console.error("Geolocation error:", error);
-            if (error.code === error.PERMISSION_DENIED) {
-                toast.error("Location permission denied.", {
-                    description: "Please allow location access to check in."
-                });
-            } else if (error.code === error.POSITION_UNAVAILABLE) {
-                toast.error("Location unavailable.", { description: "Try moving to a better signal area." });
-            } else {
-                toast.error("We could not verify your location.");
-            }
-        }, {
-            enableHighAccuracy: true,
-            timeout: 10000
+        checkIn.mutate({
+            location: userLocation
         });
     };
 
@@ -202,7 +200,22 @@ export default function EmployeeDashboard() {
                                 Shift Completed
                             </Button>
                         ) : (
-                            <SwipeSlider onComplete={handleCheckIn} isLoading={checkIn.isPending} />
+                            <div className="space-y-3 w-full">
+                                {/* Status Message Bubble */}
+                                <div className={`px-4 py-2 rounded-xl text-sm font-medium text-center backdrop-blur-md transition-colors duration-300
+                                    ${locationStatus === 'valid' ? 'bg-green-500/20 text-white' :
+                                        locationStatus === 'verifying' ? 'bg-white/20 text-white animate-pulse' :
+                                            'bg-red-500/20 text-white'}`}>
+                                    {locationStatus === 'verifying' && <Loader2 className="w-3 h-3 inline-block animate-spin mr-2" />}
+                                    {statusMessage}
+                                </div>
+
+                                <SwipeSlider
+                                    onComplete={handleCheckIn}
+                                    isLoading={checkIn.isPending}
+                                    disabled={locationStatus !== 'valid'}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>
@@ -231,8 +244,8 @@ export default function EmployeeDashboard() {
     );
 }
 
-// Inline Swipe Slider Component (Customized for Dashboard Theme)
-function SwipeSlider({ onComplete, isLoading }: { onComplete: () => void, isLoading: boolean }) {
+// Updated Swipe Slider to accept disabled prop
+function SwipeSlider({ onComplete, isLoading, disabled }: { onComplete: () => void, isLoading: boolean, disabled: boolean }) {
     const [sliderValue, setSliderValue] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -251,23 +264,23 @@ function SwipeSlider({ onComplete, isLoading }: { onComplete: () => void, isLoad
     };
 
     return (
-        <div className="relative w-full h-14 bg-white rounded-full overflow-hidden shadow-lg select-none touch-none">
+        <div className={`relative w-full h-14 bg-white rounded-full overflow-hidden shadow-lg select-none touch-none transition-opacity ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
             {/* Success Fill */}
             <div
                 className="absolute left-0 top-0 bottom-0 bg-primary/20 transition-all duration-75 ease-linear"
                 style={{ width: `${sliderValue}%` }}
             />
 
-            {/* Text with Shimmer Effect */}
+            {/* Text */}
             <div className={`absolute inset-0 flex items-center justify-center font-bold tracking-wide text-lg uppercase pointer-events-none transition-opacity duration-300 ${sliderValue > 50 ? 'opacity-0' : 'opacity-100'}`}>
-                <span className="bg-gradient-to-r from-primary/40 via-primary to-primary/40 bg-[length:200%_auto] animate-shine bg-clip-text text-transparent">
-                    {isLoading ? "Checking In..." : "Swipe to Check In"}
+                <span className={`bg-gradient-to-r from-primary/40 via-primary to-primary/40 bg-[length:200%_auto] bg-clip-text text-transparent ${isLoading ? 'animate-shine' : ''}`}>
+                    {isLoading ? "Checking In..." : disabled ? "Swipe Disabled" : "Swipe to Check In"}
                 </span>
             </div>
 
             {/* Thumb Visual */}
             <div
-                className="absolute top-1 bottom-1 w-12 bg-primary rounded-full flex items-center justify-center shadow-md pointer-events-none transition-all duration-75 ease-linear"
+                className={`absolute top-1 bottom-1 w-12 bg-primary rounded-full flex items-center justify-center shadow-md pointer-events-none transition-all duration-75 ease-linear ${disabled ? 'bg-gray-400' : 'bg-primary'}`}
                 style={{ left: `calc(${sliderValue}% - ${sliderValue * 0.48}px + 4px)` }}
             >
                 <div className="text-primary-foreground">
@@ -282,11 +295,11 @@ function SwipeSlider({ onComplete, isLoading }: { onComplete: () => void, isLoad
                 max="100"
                 value={sliderValue}
                 onChange={handleInput}
-                onTouchStart={() => setIsDragging(true)}
+                onTouchStart={() => !disabled && setIsDragging(true)}
                 onTouchEnd={handleEnd}
-                onMouseDown={() => setIsDragging(true)}
+                onMouseDown={() => !disabled && setIsDragging(true)}
                 onMouseUp={handleEnd}
-                disabled={isLoading}
+                disabled={isLoading || disabled}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
         </div>

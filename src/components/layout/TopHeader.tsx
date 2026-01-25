@@ -46,7 +46,7 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
         {/* Global Search & Notifications - Visible everywhere now */}
         <div className="flex items-center gap-1 sm:gap-3 ml-auto mr-1 sm:mr-2">
           <StoreSwitcher />
-          <CommandMenu />
+          {!location.pathname.startsWith('/mobile') && <CommandMenu />}
           <NotificationsDropdown />
         </div>
 

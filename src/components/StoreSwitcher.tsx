@@ -95,7 +95,7 @@ export function StoreSwitcher() {
                     aria-expanded={open}
                     className={cn(
                         "h-9 justify-between ml-2 transition-all duration-300",
-                        activeStore ? "w-10 px-0 md:w-[200px] md:px-3" : "w-[200px]"
+                        "w-10 px-0 md:w-[200px] md:px-3" // Always compact on mobile
                     )}
                 >
                     {activeStore ? (
@@ -106,7 +106,10 @@ export function StoreSwitcher() {
                             </span>
                         </div>
                     ) : (
-                        <span className="text-muted-foreground text-xs md:text-sm">Select Store...</span>
+                        <div className="flex items-center justify-center w-full">
+                            <StoreIcon className="h-4 w-4 shrink-0 text-muted-foreground md:mr-2" />
+                            <span className="text-muted-foreground text-xs md:text-sm hidden md:inline text-nowrap">Select Store...</span>
+                        </div>
                     )}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 hidden md:inline" />
                 </Button>

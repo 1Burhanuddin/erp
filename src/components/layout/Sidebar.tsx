@@ -293,11 +293,8 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
 
 export const SidebarMobileContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
   return (
-    <div className="flex flex-col h-full bg-sidebar">
-      <div className="flex items-center h-16 px-6 border-b border-sidebar-foreground/10">
-        <h1 className="text-xl font-bold text-sidebar-foreground">ERP System</h1>
-      </div>
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto no-scrollbar pb-6">
+    <div className="flex flex-col flex-1 min-h-0 bg-sidebar">
+      <nav className="flex-1 px-4 pt-0 space-y-1 overflow-y-auto no-scrollbar pb-6">
         {navItems.map((item) => (
           <SidebarItem key={item.path} item={item as NavItem} isCollapsed={false} onMobileClick={onLinkClick} />
         ))}
@@ -323,7 +320,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         )}>
           {!isCollapsed && (
             <h1 className="text-xl font-bold text-sidebar-foreground">
-              ERP System
+
             </h1>
           )}
           <Button

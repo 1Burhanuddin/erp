@@ -171,7 +171,7 @@ export default function EmployeeDashboard() {
                                     <Button
                                         variant="secondary"
                                         size="lg"
-                                        className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg bg-white/90 text-destructive hover:bg-white"
+                                        className="w-full h-14 rounded-full text-lg font-bold shadow-lg bg-white/90 text-destructive hover:bg-white"
                                         disabled={checkOut.isPending}
                                     >
                                         Check Out
@@ -194,7 +194,7 @@ export default function EmployeeDashboard() {
                             <Button
                                 variant="secondary"
                                 size="lg"
-                                className="w-full h-14 rounded-2xl text-lg font-bold bg-white/20 backdrop-blur text-primary-foreground/50 hover:bg-white/30 border-0"
+                                className="w-full h-14 rounded-full text-lg font-bold bg-white/20 backdrop-blur text-primary-foreground/50 hover:bg-white/30 border-0"
                                 disabled
                             >
                                 Shift Completed
@@ -204,7 +204,7 @@ export default function EmployeeDashboard() {
                                 {/* Status Message Bubble */}
                                 <div className={`px-4 py-2 rounded-xl text-sm font-medium text-center backdrop-blur-md transition-colors duration-300
                                     ${locationStatus === 'valid' ? 'bg-green-500/20 text-white' :
-                                        locationStatus === 'verifying' ? 'bg-white/20 text-white animate-pulse' :
+                                        locationStatus === 'verifying' ? 'bg-white/20 text-white' :
                                             'bg-red-500/20 text-white'}`}>
                                     {locationStatus === 'verifying' && <Loader2 className="w-3 h-3 inline-block animate-spin mr-2" />}
                                     {statusMessage}

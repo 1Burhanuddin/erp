@@ -27,7 +27,7 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
 
   return (
     <header className="sticky top-0 z-40 bg-background border-b border-border">
-      <div className="flex items-center gap-4 h-16 px-4 md:px-6">
+      <div className="flex items-center gap-2 md:gap-4 h-16 px-4 md:px-6">
         {/* Mobile Back Button (Left) - Hidden on Desktop */}
         <div className="lg:hidden">
           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => window.history.back()}>
@@ -44,10 +44,16 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
         </div>
 
         {/* Global Search & Notifications - Visible everywhere now */}
-        <div className="flex items-center gap-1 sm:gap-3 ml-auto mr-1 sm:mr-2">
+        {/* Global Search & Notifications - Visible on Desktop, moving to Sidebar on Mobile */}
+        <div className="hidden md:flex items-center gap-1 sm:gap-3 ml-auto mr-1 sm:mr-2">
           <StoreSwitcher />
-          {!location.pathname.startsWith('/mobile') && <CommandMenu />}
+          <CommandMenu />
           <NotificationsDropdown />
+        </div>
+
+        {/* Mobile Store Switcher - Always visible */}
+        <div className="md:hidden flex items-center ml-auto">
+          <StoreSwitcher />
         </div>
 
         {/* Header Actions Portal Target (Right) */}
@@ -57,15 +63,25 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
           {sidebarContent && (
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Button variant="ghost" size="icon" className="h-9 w-9 ml-2">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="p-0 w-72 bg-sidebar border-r border-sidebar-foreground/10"
+                className="w-72 bg-sidebar border-r border-sidebar-foreground/10 flex flex-col p-0"
                 floatingClose
               >
+                {/* Mobile Header Utils embedded in Sidebar */}
+                <div className="px-4 pt-4 pb-2 border-b">
+                  <div className="flex items-center gap-2 w-full">
+                    <div className="flex-1">
+                      <CommandMenu className="w-full !h-10 justify-start px-3 !w-full bg-background" />
+                    </div>
+                    <NotificationsDropdown />
+                  </div>
+                </div>
+
                 {contentWithProps}
               </SheetContent>
             </Sheet>

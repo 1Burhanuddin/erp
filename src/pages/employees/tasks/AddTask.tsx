@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { useCreateTask, useEmployees } from "@/api/employees";
 import { useProducts } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
@@ -73,6 +73,12 @@ export default function AddTask() {
         navigate(`/services/add?returnUrl=${returnUrl}`);
     };
 
+    const handleQuickAddCustomer = () => {
+        localStorage.setItem(draftKey, JSON.stringify(formData));
+        const returnUrl = encodeURIComponent(location.pathname);
+        navigate(`/contacts/customers/add?returnUrl=${returnUrl}`);
+    };
+
     useEffect(() => {
         const draft = localStorage.getItem(draftKey);
         if (draft) {
@@ -103,7 +109,25 @@ export default function AddTask() {
                 }, { replace: true });
             }
         }
-    }, [services, searchParams, setSearchParams]);
+
+        const newContactId = searchParams.get("newContact");
+        if (newContactId && allContacts && allContacts.length > 0) {
+            const contact = allContacts.find(c => c.id === newContactId);
+            if (contact) {
+                setFormData(prev => ({
+                    ...prev,
+                    customer_name: contact.name,
+                    customer_phone: contact.phone || "",
+                    customer_address: contact.address || ""
+                }));
+                // Clear param
+                setSearchParams(params => {
+                    params.delete("newContact");
+                    return params;
+                }, { replace: true });
+            }
+        }
+    }, [services, allContacts, searchParams, setSearchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,13 +147,13 @@ export default function AddTask() {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Create New Task"
-                description="Assign a job to an employee"
-            />
-            <div className="max-w-3xl mx-auto p-2">
+            <div className="max-w-4xl mx-auto p-2">
                 <Card>
-                    <CardContent className="pt-4 px-4 overflow-hidden">
+                    <CardHeader>
+                        <CardTitle>Create New Task</CardTitle>
+                        <CardDescription>Assign a job to an employee</CardDescription>
+                    </CardHeader>
+                    <CardContent className="px-4 overflow-hidden">
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2 md:col-span-2">
@@ -271,7 +295,7 @@ export default function AddTask() {
                                             type="button"
                                             variant="outline"
                                             size="icon"
-                                            onClick={() => navigate("/contacts/customers/add")}
+                                            onClick={handleQuickAddCustomer}
                                             title="Add New Customer"
                                         >
                                             <Plus className="h-4 w-4" />

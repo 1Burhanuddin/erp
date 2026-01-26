@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useCreateSubCategory, useCategories } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,58 +67,62 @@ const AddSubCategory = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Add Sub Category"
-                description="Create a new product sub-category"
-            />
-            <div className="p-6 bg-card rounded-lg border m-4 max-w-2xl">
-                <div className="grid gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="category">Parent Category <span className="text-destructive">*</span></Label>
-                        <Select
-                            value={formData.category_id}
-                            onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select parent category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {categories?.map((category) => (
-                                    <SelectItem key={category.id} value={category.id}>
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                        <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="e.g., Laptops"
-                        />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                            id="description"
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            placeholder="Sub-category description..."
-                        />
-                    </div>
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" onClick={() => handleNavigateBack()}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handleSubmit} disabled={createSubCategory.isPending}>
-                            {createSubCategory.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Create Sub Category
-                        </Button>
-                    </div>
-                </div>
+            <div className="max-w-2xl mx-auto p-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Add Sub Category</CardTitle>
+                        <CardDescription>Create a new product sub-category</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="category">Parent Category <span className="text-destructive">*</span></Label>
+                                <Select
+                                    value={formData.category_id}
+                                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select parent category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories?.map((category) => (
+                                            <SelectItem key={category.id} value={category.id}>
+                                                {category.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
+                                <Input
+                                    id="name"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    placeholder="e.g., Laptops"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea
+                                    id="description"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    placeholder="Sub-category description..."
+                                />
+                            </div>
+                            <div className="flex justify-end gap-2 mt-4">
+                                <Button variant="outline" onClick={() => handleNavigateBack()}>
+                                    Cancel
+                                </Button>
+                                <Button onClick={handleSubmit} disabled={createSubCategory.isPending}>
+                                    {createSubCategory.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Create Sub Category
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </PageLayout>
     );

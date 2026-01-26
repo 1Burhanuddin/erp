@@ -24,16 +24,24 @@ const AddContact = () => {
 
     const handleSubmit = async (data: any) => {
         try {
-            await createContact.mutateAsync({
+            const newContact = await createContact.mutateAsync({
                 ...data,
                 role: role,
             });
             toast.success(`${role} created successfully`);
-            // Navigate back to the correct list
-            if (role === 'Supplier') {
-                navigate("/contacts/suppliers");
+
+            const returnUrl = searchParams.get("returnUrl");
+
+            if (returnUrl) {
+                const separator = returnUrl.includes("?") ? "&" : "?";
+                navigate(`${returnUrl}${separator}newContact=${newContact.id}`);
             } else {
-                navigate("/contacts/customers");
+                // Navigate back to the correct list
+                if (role === 'Supplier') {
+                    navigate("/contacts/suppliers");
+                } else {
+                    navigate("/contacts/customers");
+                }
             }
         } catch (error) {
             toast.error("Failed to create contact");

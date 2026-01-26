@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useBrands, useUpdateBrand, useDeleteBrand } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,56 +86,60 @@ const EditBrand = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Edit Brand"
-                description={`Edit Brand: ${brand.name}`}
-            />
-            <div className="p-6 bg-card rounded-lg border m-4 max-w-2xl">
-                <div className="grid gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                        <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        />
-                    </div>
+            <div className="max-w-2xl mx-auto p-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Edit Brand</CardTitle>
+                        <CardDescription>Edit Brand: {brand.name}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
+                                <Input
+                                    id="name"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
 
-                    <div className="flex justify-between items-center mt-6 pt-4 border-t">
-                        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" type="button">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the brand.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                            <div className="flex justify-between items-center mt-6 pt-4 border-t">
+                                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" type="button">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the brand.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                                                Delete
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
 
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => navigate("/products/brands")}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleSubmit} disabled={updateBrand.isPending}>
-                                {updateBrand.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Update
-                            </Button>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={() => navigate("/products/brands")}>
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={handleSubmit} disabled={updateBrand.isPending}>
+                                        {updateBrand.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Update
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </PageLayout>
     );

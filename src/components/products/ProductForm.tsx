@@ -11,7 +11,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Loader2, Upload, X } from "lucide-react";
+import { Plus, Loader2, Upload, X, RefreshCw } from "lucide-react";
 
 import {
     useCategories,
@@ -130,6 +130,55 @@ export const ProductForm = ({
         }
     };
 
+    const getNextSequence = (lastSuffix: string) => {
+        if (!lastSuffix) return 'A';
+
+        const match = lastSuffix.match(/^([A-Z])(\d*)$/);
+        if (!match) return 'A';
+
+        const letter = match[1];
+        const numberStr = match[2];
+        const number = numberStr ? parseInt(numberStr) : 0;
+
+        if (letter < 'Z') {
+            const nextLetter = String.fromCharCode(letter.charCodeAt(0) + 1);
+            return `${nextLetter}${numberStr}`;
+        } else {
+            const nextNumber = number + 1;
+            return `A${nextNumber}`;
+        }
+    };
+
+    const generateNextSKU = async (type: string) => {
+        const prefix = type === "Service" ? "SVC" : "PRD";
+        const pattern = `${prefix}-%`;
+
+        const { data } = await supabase
+            .from('products')
+            .select('sku')
+            .ilike('sku', pattern)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        let nextSuffix = 'A';
+        if (data && data.length > 0 && data[0].sku) {
+            const lastSku = data[0].sku;
+            const parts = lastSku.split('-');
+            const lastPart = parts[parts.length - 1];
+
+            if (/^[A-Z]\d*$/.test(lastPart)) {
+                nextSuffix = getNextSequence(lastPart);
+            }
+        }
+
+        return `${prefix}-${nextSuffix}`;
+    };
+
+    const handleAutoSKU = async (type: string) => {
+        const newSKU = await generateNextSKU(type);
+        setFormData(prev => ({ ...prev, sku: newSKU }));
+    };
+
     useEffect(() => {
         const newCategory = searchParams.get("newCategory");
         const newSubCategory = searchParams.get("newSubCategory");
@@ -138,52 +187,62 @@ export const ProductForm = ({
 
         const draft = localStorage.getItem(draftKey);
 
-        if (draft) {
-            try {
-                const parsedDraft = JSON.parse(draft);
-                setFormData(prev => {
-                    const updated = { ...prev, ...parsedDraft };
-                    // Apply new IDs if present
-                    if (newCategory) {
-                        updated.category_id = newCategory;
-                        updated.sub_category_id = ""; // Reset sub
-                    }
-                    if (newSubCategory) updated.sub_category_id = newSubCategory;
-                    if (newBrand) updated.brand_id = newBrand;
-                    if (newUnit) updated.unit_id = newUnit;
-                    return updated;
+        const initForm = async () => {
+            if (draft) {
+                try {
+                    const parsedDraft = JSON.parse(draft);
+                    setFormData(prev => {
+                        const updated = { ...prev, ...parsedDraft };
+                        if (newCategory) {
+                            updated.category_id = newCategory;
+                            updated.sub_category_id = "";
+                        }
+                        if (newSubCategory) updated.sub_category_id = newSubCategory;
+                        if (newBrand) updated.brand_id = newBrand;
+                        if (newUnit) updated.unit_id = newUnit;
+                        return updated;
+                    });
+                } catch (e) { console.error(e); }
+            } else if (initialData) {
+                let sku = initialData.sku;
+                if (!sku) {
+                    sku = await generateNextSKU(initialData.type || fixedType || "Product");
+                }
+                setFormData({
+                    name: initialData.name || "",
+                    sku: sku,
+                    hsn_code: initialData.hsn_code || "",
+                    is_tax_inclusive: initialData.is_tax_inclusive || false,
+                    type: fixedType || initialData.type || "Product",
+                    category_id: initialData.category_id || "",
+                    sub_category_id: initialData.sub_category_id || "",
+                    brand_id: initialData.brand_id || "",
+                    unit_id: initialData.unit_id || "",
+                    purchase_price: initialData.purchase_price?.toString() || "",
+                    sale_price: initialData.sale_price?.toString() || "",
+                    alert_quantity: initialData.alert_quantity?.toString() || "5",
+                    description: initialData.description || "",
+                    is_online: initialData.is_online || false,
+                    online_price: initialData.online_price?.toString() || "",
+                    condition: initialData.condition || "New",
+                    features: Array.isArray(initialData.features) ? initialData.features.join("\n") : "",
+                    image_url: initialData.image_url || (Array.isArray(initialData.images) && initialData.images[0]) || "",
+                    store_ids: initialData.store_ids || [],
                 });
-            } catch (e) {
-                console.error("Failed to parse draft", e);
+            } else {
+                // Generate SKU for new product if not already set (or if we want to ensure freshness)
+                const currentType = fixedType || "Product";
+                const generated = await generateNextSKU(currentType);
+                setFormData(prev => ({
+                    ...prev,
+                    type: currentType,
+                    sku: generated
+                }));
             }
-        } else if (initialData) {
-            setFormData({
-                name: initialData.name || "",
-                sku: initialData.sku || "",
-                hsn_code: initialData.hsn_code || "",
-                is_tax_inclusive: initialData.is_tax_inclusive || false,
-                type: fixedType || initialData.type || "Product",
-                category_id: initialData.category_id || "",
-                sub_category_id: initialData.sub_category_id || "",
-                brand_id: initialData.brand_id || "",
-                unit_id: initialData.unit_id || "",
-                purchase_price: initialData.purchase_price?.toString() || "",
-                sale_price: initialData.sale_price?.toString() || "",
-                alert_quantity: initialData.alert_quantity?.toString() || "5",
-                description: initialData.description || "",
-                // Ecommerce
-                is_online: initialData.is_online || false,
-                online_price: initialData.online_price?.toString() || "",
-                condition: initialData.condition || "New",
-                features: Array.isArray(initialData.features) ? initialData.features.join("\n") : "",
-                image_url: initialData.image_url || (Array.isArray(initialData.images) && initialData.images[0]) || "",
-                store_ids: initialData.store_ids || [],
-            });
-        } else if (fixedType) {
-            setFormData(prev => ({ ...prev, type: fixedType }));
-        }
+        };
 
-        // Clean up params if they exist
+        initForm();
+
         if (newCategory || newSubCategory || newBrand || newUnit) {
             setSearchParams(params => {
                 params.delete("newCategory");
@@ -312,6 +371,7 @@ export const ProductForm = ({
                         id="name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onBlur={() => !initialData && handleAutoSKU(formData.type)} // Only auto-gen on blur for new items
                         required
                         placeholder={formData.type === "Service" ? "e.g. Repair" : "e.g. Wireless Mouse"}
                     />
@@ -320,13 +380,24 @@ export const ProductForm = ({
                     <Label htmlFor="sku">
                         {formData.type === "Service" ? "Service Code" : "SKU (Stock Keeping Unit)"} <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                        id="sku"
-                        value={formData.sku}
-                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                        required
-                        placeholder={formData.type === "Service" ? "e.g. SVC-001" : "e.g. WM-001"}
-                    />
+                    <div className="flex gap-2">
+                        <Input
+                            id="sku"
+                            value={formData.sku}
+                            onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                            required
+                            placeholder={formData.type === "Service" ? "e.g. SVC-001" : "e.g. WM-001"}
+                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleAutoSKU(formData.type)}
+                            title="Regenerate Code based on Name"
+                        >
+                            <RefreshCw className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
 

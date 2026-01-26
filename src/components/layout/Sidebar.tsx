@@ -163,6 +163,11 @@ export const getPageTitle = (pathname: string): { title: string; description?: s
   if (pathname.startsWith('/purchase/order/add')) return { title: 'Add Purchase Order', description: 'Create a new purchase order' };
   if (pathname.startsWith('/sell/invoice/add')) return { title: 'Add Sales Invoice', description: 'Create a new sales invoice' };
   if (pathname.startsWith('/sell/invoice/')) return { title: 'Invoice Details', description: 'View invoice details' };
+
+  if (pathname.startsWith('/employees/add')) return { title: 'Add New Employee', description: 'Create a new staff profile' };
+  if (pathname.startsWith('/employees/edit')) return { title: 'Edit Employee', description: 'Update employee details' };
+  if (pathname.startsWith('/employees/tasks/add')) return { title: 'Create New Task', description: 'Assign a job to an employee' };
+  if (pathname.startsWith('/employees/tasks/edit')) return { title: 'Edit Task', description: 'Update task details' };
   if (pathname.startsWith('/sales/quotations/add')) return { title: 'Add Quotation', description: 'Create a new quotation' };
   if (pathname.startsWith('/sales/quotations/edit')) return { title: 'Edit Quotation', description: 'Update quotation' };
   if (pathname.startsWith('/sales/challans/add')) return { title: 'Add Delivery Challan', description: 'Create a delivery challan' };

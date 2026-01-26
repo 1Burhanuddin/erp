@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { useEmployees, useUpdateTask } from "@/api/employees"; // Need update/delete hooks
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2, Trash2 } from "lucide-react";
@@ -130,18 +130,21 @@ export default function EditTask() {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Edit Task"
-                description="Update assignment details"
-                actions={
-                    <Button variant="destructive" size="sm" onClick={handleDeleteClick} className="gap-2">
-                        <Trash2 className="w-4 h-4" /> Delete Task
-                    </Button>
-                }
-            />
-            <div className="max-w-3xl mx-auto p-6">
+            <div className="max-w-4xl mx-auto p-2">
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
+                        <div className="space-y-1.5">
+                            <CardTitle>Edit Task</CardTitle>
+                            <CardDescription>Update assignment details</CardDescription>
+                        </div>
+                        <Button variant="destructive" onClick={handleDeleteClick} className="rounded-full w-10 h-10 p-0 hover:w-48 transition-all duration-500 ease-in-out flex items-center justify-center overflow-hidden group">
+                            <Trash2 className="w-4 h-4 shrink-0" />
+                            <span className="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 whitespace-nowrap">
+                                Delete Task
+                            </span>
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2 md:col-span-2">

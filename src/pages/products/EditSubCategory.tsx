@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useSubCategories, useUpdateSubCategory, useDeleteSubCategory, useCategories } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,82 +101,86 @@ const EditSubCategory = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Edit Sub Category"
-                description={`Edit: ${subCategory.name}`}
-            />
-            <div className="p-6 bg-card rounded-lg border m-4 max-w-2xl">
-                <div className="grid gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="category">Parent Category <span className="text-destructive">*</span></Label>
-                        <Select
-                            value={formData.category_id}
-                            onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select parent category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {categories?.map((category) => (
-                                    <SelectItem key={category.id} value={category.id}>
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                        <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                            id="description"
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        />
-                    </div>
+            <div className="max-w-2xl mx-auto p-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Edit Sub Category</CardTitle>
+                        <CardDescription>Edit: {subCategory.name}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="category">Parent Category <span className="text-destructive">*</span></Label>
+                                <Select
+                                    value={formData.category_id}
+                                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select parent category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories?.map((category) => (
+                                            <SelectItem key={category.id} value={category.id}>
+                                                {category.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
+                                <Input
+                                    id="name"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea
+                                    id="description"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                />
+                            </div>
 
-                    <div className="flex justify-between items-center mt-6 pt-4 border-t">
-                        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" type="button">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the sub category.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                            <div className="flex justify-between items-center mt-6 pt-4 border-t">
+                                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" type="button">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the sub category.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                                                Delete
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
 
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => navigate("/products/sub-categories")}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleSubmit} disabled={updateSubCategory.isPending}>
-                                {updateSubCategory.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Update
-                            </Button>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={() => navigate("/products/sub-categories")}>
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={handleSubmit} disabled={updateSubCategory.isPending}>
+                                        {updateSubCategory.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Update
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </PageLayout>
     );

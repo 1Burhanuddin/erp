@@ -173,13 +173,13 @@ const DirectPurchase = () => {
         <PageLayout>
 
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-2 md:p-4">
                 {/* Left: Input Panel */}
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="bg-card border rounded-md p-4 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-card border rounded-xl shadow-sm p-3 md:p-6 space-y-4 md:space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Supplier</Label>
+                                <Label>Supplier <span className="text-destructive">*</span></Label>
                                 <div className="flex gap-2">
                                     <Select value={supplierId} onValueChange={setSupplierId}>
                                         <SelectTrigger className="flex-1">
@@ -202,11 +202,11 @@ const DirectPurchase = () => {
                             </div>
                         </div>
 
-                        <div className="border p-4 rounded-md bg-muted/20">
-                            <h3 className="font-semibold mb-3">Add Items</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                                <div className="md:col-span-5 space-y-2">
-                                    <Label>Product</Label>
+                        <div className="border rounded-xl p-3 md:p-4 bg-muted/20">
+                            <h3 className="font-semibold mb-3 text-base md:text-lg">Add Items</h3>
+                            <div className="grid grid-cols-1 gap-3">
+                                <div className="space-y-2">
+                                    <Label>Product <span className="text-destructive">*</span></Label>
                                     <div className="flex gap-2">
                                         <Select value={currentItem.productId} onValueChange={handleProductChange}>
                                             <SelectTrigger className="flex-1"><SelectValue placeholder="Product" /></SelectTrigger>
@@ -219,62 +219,75 @@ const DirectPurchase = () => {
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="md:col-span-2 space-y-2">
-                                    <Label>Qty</Label>
-                                    <Input type="number" min="1" value={currentItem.quantity} onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })} />
-                                </div>
-                                <div className="md:col-span-2 space-y-2">
-                                    <Label>Cost</Label>
-                                    <Input type="number" value={currentItem.unitPrice} onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })} />
-                                </div>
-                                <div className="md:col-span-3 space-y-2">
-                                    <Button className="w-full mt-auto" onClick={addItem}>Add</Button>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
+                                    <div className="space-y-2">
+                                        <Label>Qty</Label>
+                                        <Input type="number" min="1" value={currentItem.quantity} onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Cost</Label>
+                                        <Input type="number" value={currentItem.unitPrice} onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })} />
+                                    </div>
+                                    <div className="space-y-2 col-span-2 md:col-span-1">
+                                        <Button className="w-full" onClick={addItem}>Add</Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Items List */}
-                    <div className="border rounded-md bg-card">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Product</TableHead>
-                                    <TableHead>Qty</TableHead>
-                                    <TableHead>Cost</TableHead>
-                                    <TableHead>Total</TableHead>
-                                    <TableHead></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {items.map((item, idx) => (
-                                    <TableRow key={idx}>
-                                        <TableCell>{item.productName}</TableCell>
-                                        <TableCell>{item.quantity}</TableCell>
-                                        <TableCell>{item.unitPrice}</TableCell>
-                                        <TableCell>{item.subtotal.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <Trash2 className="w-4 h-4 cursor-pointer text-destructive" onClick={() => {
-                                                const n = [...items]; n.splice(idx, 1); setItems(n);
-                                            }} />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
+                    {items.length > 0 && (
+                        <div className="border rounded-xl shadow-sm bg-card overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="font-semibold">Product</TableHead>
+                                            <TableHead className="font-semibold text-center">Qty</TableHead>
+                                            <TableHead className="font-semibold text-right">Cost</TableHead>
+                                            <TableHead className="font-semibold text-right">Total</TableHead>
+                                            <TableHead className="w-12"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {items.map((item, idx) => (
+                                            <TableRow key={idx} className="hover:bg-muted/30">
+                                                <TableCell className="font-medium">{item.productName}</TableCell>
+                                                <TableCell className="text-center">{item.quantity}</TableCell>
+                                                <TableCell className="text-right">₹{item.unitPrice.toFixed(2)}</TableCell>
+                                                <TableCell className="text-right font-semibold">₹{item.subtotal.toFixed(2)}</TableCell>
+                                                <TableCell className="text-center">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                        onClick={() => {
+                                                            const n = [...items]; n.splice(idx, 1); setItems(n);
+                                                        }}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right: Summary Panel */}
                 <div className="lg:col-span-1">
-                    <div className="bg-card border rounded-md p-6 space-y-6 sticky top-4">
-                        <h3 className="text-xl font-bold border-b pb-2">Purchase Summary</h3>
-                        <div className="space-y-2 text-lg">
+                    <div className="bg-card border rounded-xl shadow-sm p-4 md:p-6 space-y-4 md:space-y-6 lg:sticky lg:top-4">
+                        <h3 className="text-lg md:text-xl font-bold border-b pb-2">Purchase Summary</h3>
+                        <div className="space-y-3 text-base md:text-lg">
                             <div className="flex justify-between">
-                                <span>Total items:</span>
-                                <span>{items.length}</span>
+                                <span className="text-muted-foreground">Total items:</span>
+                                <span className="font-semibold">{items.length}</span>
                             </div>
-                            <div className="flex justify-between font-bold text-2xl text-primary">
+                            <div className="flex justify-between font-bold text-xl md:text-2xl text-primary pt-2 border-t">
                                 <span>Total:</span>
                                 <span>₹{totalAmount.toFixed(2)}</span>
                             </div>

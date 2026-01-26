@@ -70,13 +70,7 @@ export default function EmployeeTasks() {
     return (
         <PageLayout>
             <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
-                <ExpandableSearch
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                    placeholder="Search tasks..."
-                    className="w-full"
-                />
-                <div className="w-full md:w-48">
+                <div className="w-full md:w-48 md:order-2">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="h-11 rounded-full bg-background shadow-sm border-muted">
                             <SelectValue placeholder="Status" />
@@ -90,6 +84,12 @@ export default function EmployeeTasks() {
                         </SelectContent>
                     </Select>
                 </div>
+                <ExpandableSearch
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    placeholder="Search tasks..."
+                    className="w-full md:order-1"
+                />
             </div>
 
             <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
@@ -102,7 +102,7 @@ export default function EmployeeTasks() {
                 <span className="font-medium text-base">Create Task</span>
             </Button>
 
-            <div className="p-4 md:p-6">
+            <div>
                 {isLoading ? (
                     <div className="space-y-4">
                         <Skeleton className="h-12 w-full" />
@@ -116,15 +116,15 @@ export default function EmployeeTasks() {
                 ) : (
                     <>
                         {viewMode === 'table' ? (
-                            <div className="bg-card rounded-md border">
+                            <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Title</TableHead>
                                             <TableHead>Status</TableHead>
                                             <TableHead>Customer</TableHead>
-                                            <TableHead>Amount</TableHead>
-                                            <TableHead>Created</TableHead>
+                                            <TableHead className="text-right">Amount</TableHead>
+                                            <TableHead className="text-right">Created</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -141,10 +141,10 @@ export default function EmployeeTasks() {
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>{task.customer_name || '-'}</TableCell>
-                                                <TableCell>
+                                                <TableCell className="text-right">
                                                     {task.payment_amount ? `₹${task.payment_amount}` : '-'}
                                                 </TableCell>
-                                                <TableCell className="text-muted-foreground text-sm">
+                                                <TableCell className="text-right text-muted-foreground text-sm">
                                                     {task.created_at ? format(new Date(task.created_at), "MMM d") : '-'}
                                                 </TableCell>
                                             </TableRow>

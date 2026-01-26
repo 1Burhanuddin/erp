@@ -47,7 +47,7 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
         {/* Global Search & Notifications - Visible on Desktop, moving to Sidebar on Mobile */}
         <div className="hidden md:flex items-center gap-1 sm:gap-3 ml-auto mr-1 sm:mr-2">
           <StoreSwitcher />
-          <CommandMenu />
+          {isDashboard && <CommandMenu />}
           <NotificationsDropdown />
         </div>
 
@@ -76,7 +76,7 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
                 <div className="px-4 pt-4 pb-2 border-b">
                   <div className="flex items-center gap-2 w-full">
                     <div className="flex-1">
-                      <CommandMenu className="w-full !h-10 justify-start px-3 !w-full bg-background" />
+                      {isDashboard && <CommandMenu className="w-full !h-10 justify-start px-3 !w-full bg-background" />}
                     </div>
                     <NotificationsDropdown />
                   </div>

@@ -75,6 +75,7 @@ export const ProductForm = ({
     const { data: categories } = useCategories();
     const { data: brands } = useBrands();
     const { data: units } = useUnits();
+    const { data: stores } = useStores();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -88,6 +89,7 @@ export const ProductForm = ({
         unit_id: "",
         purchase_price: "",
         sale_price: "",
+        current_stock: "",
         alert_quantity: "5",
         description: "",
         // Ecommerce
@@ -220,6 +222,7 @@ export const ProductForm = ({
                     unit_id: initialData.unit_id || "",
                     purchase_price: initialData.purchase_price?.toString() || "",
                     sale_price: initialData.sale_price?.toString() || "",
+                    current_stock: initialData.current_stock?.toString() || "0",
                     alert_quantity: initialData.alert_quantity?.toString() || "5",
                     description: initialData.description || "",
                     is_online: initialData.is_online || false,
@@ -253,7 +256,24 @@ export const ProductForm = ({
             }, { replace: true });
         }
 
+        if (newCategory || newSubCategory || newBrand || newUnit) {
+            setSearchParams(params => {
+                params.delete("newCategory");
+                params.delete("newSubCategory");
+                params.delete("newBrand");
+                params.delete("newUnit");
+                return params;
+            }, { replace: true });
+        }
+
     }, [initialData, fixedType, searchParams, draftKey]);
+
+    // Auto-select store if only one exists
+    useEffect(() => {
+        if (stores && stores.length === 1 && formData.store_ids.length === 0) {
+            setFormData(prev => ({ ...prev, store_ids: [stores[0].id] }));
+        }
+    }, [stores, formData.store_ids.length]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -317,6 +337,7 @@ export const ProductForm = ({
             ...formData,
             purchase_price: Number(formData.purchase_price),
             sale_price: Number(formData.sale_price),
+            current_stock: formData.current_stock ? Number(formData.current_stock) : 0,
             alert_quantity: Number(formData.alert_quantity),
             online_price: formData.online_price ? Number(formData.online_price) : null,
             features: featuresArray, // Send as array
@@ -608,10 +629,6 @@ export const ProductForm = ({
                     <Switch
                         checked={formData.is_online}
                         onCheckedChange={(checked) => {
-                            if (checked && formData.type === 'Product' && (!initialData?.current_stock || initialData.current_stock <= 0)) {
-                                toast.error("Cannot enable online store for product with no stock. Please make a purchase first.");
-                                return;
-                            }
                             setFormData({ ...formData, is_online: checked });
                         }}
                     />

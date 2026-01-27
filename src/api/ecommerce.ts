@@ -17,6 +17,7 @@ export const useStoreProducts = (categoryId?: string) => {
                     brand:product_brands(name)
                 `)
                 .eq("is_online", true)
+                .gt("current_stock", 0)
                 .order("created_at", { ascending: false });
 
             if (categoryId) {

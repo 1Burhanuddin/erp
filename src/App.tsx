@@ -106,6 +106,11 @@ import SetupWizard from "./pages/onboarding/SetupWizard";
 import DemoDashboard from "./pages/DemoDashboard";
 import DemoCards from "./pages/DemoCards";
 
+import ShopLayout from "./pages/demo-shop/ShopLayout";
+import LandingPage from "./pages/demo-shop/LandingPage";
+import ProductPage from "./pages/demo-shop/ProductPage";
+import CheckoutPage from "./pages/demo-shop/CheckoutPage";
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -118,6 +123,13 @@ const App = () => {
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+
+              {/* Shop Demo Routes - Public */}
+              <Route path="/shop-preview" element={<ShopLayout />}>
+                <Route index element={<LandingPage />} />
+                <Route path="product/:id" element={<ProductPage />} />
+                <Route path="checkout" element={<CheckoutPage />} />
+              </Route>
 
               {/* Admin Routes - Protected & Restricted to 'admin' role */}
               <Route element={<AdminRoute />}>

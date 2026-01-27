@@ -19,6 +19,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 const PurchaseOrder = () => {
+    const navigate = useNavigate();
+    const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [mounted, setMounted] = useState(false);
+
     const { data: rawOrders, isLoading } = usePurchaseOrders();
     // Basic filter
     const orders = rawOrders?.filter(o =>
@@ -26,11 +31,6 @@ const PurchaseOrder = () => {
         o.order_no?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         o.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    const navigate = useNavigate();
-    const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);

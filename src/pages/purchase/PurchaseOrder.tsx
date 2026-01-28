@@ -32,26 +32,6 @@ const PurchaseOrder = () => {
         o.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
-
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
-
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button onClick={() => navigate("/purchase/add")} size="sm" className="h-9">
-                    <Plus className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Create Order</span>
-                </Button>
-            </div>,
-            container
-        );
-    };
 
     return (
         <PageLayout>
@@ -60,7 +40,17 @@ const PurchaseOrder = () => {
                 onChange={setSearchQuery}
                 placeholder="Search orders..."
             />
-            <HeaderActions />
+
+            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
+
+            <Button
+                onClick={() => navigate("/purchase/add")}
+                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
+                size="lg"
+            >
+                <Plus className="mr-2 h-5 w-5" />
+                <span className="font-medium text-base">Create Order</span>
+            </Button>
 
             <div>
                 {viewMode === 'card' ? (

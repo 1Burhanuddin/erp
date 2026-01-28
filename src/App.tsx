@@ -10,6 +10,7 @@ import Deals from "./pages/Deals";
 import Inventory from "./pages/Inventory";
 import Invoices from "./pages/Invoices";
 import Reports from "./pages/Reports";
+import ProfitLoss from "./pages/reports/ProfitLoss";
 import AuditLogs from "./pages/AuditLogs";
 import AuditLogDetails from "./pages/AuditLogDetails";
 import Settings from "./pages/Settings";
@@ -204,7 +205,9 @@ const App = () => {
 
                   <Route path="/deals" element={<Deals />} />
                   <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/inventory" element={<Inventory />} />
                   <Route path="/reports" element={<Reports />} />
+                  <Route path="/reports/profit-loss" element={<ProfitLoss />} />
                   <Route path="/audit-logs" element={<AuditLogs />} />
                   <Route path="/audit-logs/:id" element={<AuditLogDetails />} />
                   <Route path="/settings" element={<Settings />} />

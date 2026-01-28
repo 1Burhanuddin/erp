@@ -129,7 +129,15 @@ const navItems = [
 
   { path: "/inventory", label: "Inventory", icon: ClipboardList, description: "Manage inventory stock" },
   { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
-  { path: "/reports", label: "Reports", icon: BarChart3, description: "View reports and analytics" },
+  {
+    path: "/reports",
+    label: "Reports",
+    icon: BarChart3,
+    children: [
+      { path: "/reports/profit-loss", label: "Profit & Loss", description: "Financial health summary" },
+      { path: "/reports", label: "General Reports", description: "Analytics and insights" },
+    ]
+  },
   { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },
   { path: "/settings/profile", label: "Profile", icon: User, description: "Manage your profile" },
   { path: "/settings", label: "Settings", icon: Settings, description: "App configuration" },

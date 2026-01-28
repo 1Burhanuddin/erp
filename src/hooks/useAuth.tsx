@@ -22,25 +22,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAdminRole = async (userId: string) => {
     try {
-      const { data, error } = await supabase.rpc('is_admin');
+      // Direct table query is the ultimate source of truth
+      const { data: empData, error: empError } = await supabase
+        .from('employees')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (error) {
-        console.error("checkAdminRole RPC Error:", error);
-        // Fallback to table query if RPC fails (though RPC should exist)
-        const { data: empData, error: empError } = await supabase
-          .from('employees')
-          .select('role')
-          .eq('user_id', userId)
-          .single();
+      if (empError) {
+        console.error("Error fetching employee role:", empError);
+        setIsAdmin(false);
+        return;
+      }
 
-        if (!empError && empData && empData.role === 'admin') {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+      if (empData) {
+        setIsAdmin(empData.role === 'admin');
       } else {
-        console.log("is_admin RPC result:", data);
-        setIsAdmin(!!data);
+        // If no employee record exists yet, we assume it's a new admin 
+        // who just signed up (the trigger might still be running or just finished)
+        // We default to true to allow them to reach the dashboard/onboarding
+        // instead of kicking them to the mobile app.
+        setIsAdmin(true);
       }
     } catch (error) {
       console.error("Error checking admin role:", error);

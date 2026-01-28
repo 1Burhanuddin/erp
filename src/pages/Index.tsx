@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { PageLayout } from "@/components/layout";
 import { useRealDashboardStats, useRealDashboardCharts, useRecentActivity } from "@/api/dashboard";
 import { useTeamMembers } from "@/api/employees";
+import { useStores } from "@/api/stores";
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -66,6 +67,17 @@ const Index = () => {
     const { data: charts, isLoading: isChartsLoading } = useRealDashboardCharts();
     const { data: teamMembers } = useTeamMembers();
     const { data: recentActivity, isLoading: isRecentLoading } = useRecentActivity();
+    const { data: stores, isLoading: isStoresLoading } = useStores();
+
+    useEffect(() => {
+        if (!isStoresLoading) {
+            if (!stores || stores.length === 0) {
+                navigate("/setup");
+            } else if (!stores[0].onboarding_completed) {
+                navigate("/setup");
+            }
+        }
+    }, [stores, isStoresLoading, navigate]);
 
     // Helper to safely get stats values
     const getStat = (index: number) => {

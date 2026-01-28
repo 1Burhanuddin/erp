@@ -18,7 +18,8 @@ export const AdminRoute = () => {
     }
 
     if (!isAdmin) {
-        // If user is logged in but NOT admin, send them to Employee App
+        // Only redirect to mobile dashboard if the user is EXPLICITLY not an admin.
+        // New users will have isAdmin=true by default in useAuth to allow onboarding.
         return <Navigate to="/mobile/dashboard" replace />;
     }
 

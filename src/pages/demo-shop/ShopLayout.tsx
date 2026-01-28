@@ -30,8 +30,8 @@ const ShopLayout = () => {
 
 
                     {/* Logo */}
-                    <Link to="/shop-preview" className="text-xl md:text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity">
-                        AURA<span className="text-orange-500">.</span>
+                    <Link to="/shop-preview" className="text-xl md:text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity uppercase">
+                        {store?.name ? store.name.split(' ').slice(0, 2).join(' ') : "AURA"}<span className="text-orange-500">.</span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -75,7 +75,9 @@ const ShopLayout = () => {
                     <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12">
                         <div className="space-y-6">
                             <div className="space-y-4">
-                                <h4 className="text-white text-2xl font-bold tracking-tighter">{store?.name || "AURA."}</h4>
+                                <h4 className="text-white text-2xl font-bold tracking-tighter">
+                                    {store?.name ? store.name.split(' ').slice(0, 2).join(' ') : "AURA"}<span className="text-orange-500">.</span>
+                                </h4>
                                 <p className="text-sm leading-relaxed max-w-xs">
                                     Elevating everyday essentials with sustainable materials and timeless design.
                                 </p>

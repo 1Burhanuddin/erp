@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -186,159 +187,164 @@ const EditPurchaseOrder = () => {
 
     return (
         <PageLayout>
-            <PageHeader
-                title="Edit Purchase Order"
-                description={`Edit Order #${orderNo}`}
-            />
+            <div className="max-w-4xl mx-auto p-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Edit Purchase Order</CardTitle>
+                        <CardDescription>
+                            Edit Order #{orderNo}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                        {/* Header Section */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <Label>Supplier *</Label>
+                                <Select value={supplierId} onValueChange={setSupplierId}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Supplier" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {supplierList.map(s => (
+                                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Order Date</Label>
+                                <Input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Order No.</Label>
+                                <Input value={orderNo} onChange={e => setOrderNo(e.target.value)} />
+                            </div>
+                        </div>
 
-            <div className="p-6 bg-card rounded-lg border m-4 space-y-6">
-                {/* Header Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                        <Label>Supplier *</Label>
-                        <Select value={supplierId} onValueChange={setSupplierId}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select Supplier" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {supplierList.map(s => (
-                                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Order Date</Label>
-                        <Input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Order No.</Label>
-                        <Input value={orderNo} onChange={e => setOrderNo(e.target.value)} />
-                    </div>
-                </div>
+                        {/* Add Item Section */}
+                        <div className="border p-4 rounded-md bg-muted/20">
+                            <h3 className="font-semibold mb-3">Add Product items</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                                <div className="md:col-span-5 space-y-2">
+                                    <Label>Product</Label>
+                                    <Select value={currentItem.productId} onValueChange={handleProductChange}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Product" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {products?.map(p => (
+                                                <SelectItem key={p.id} value={p.id}>{p.name} (Stock: {p.current_stock})</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <Label>Quantity</Label>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        value={currentItem.quantity}
+                                        onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <Label>Unit Cost</Label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={currentItem.unitPrice}
+                                        onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="md:col-span-3 space-y-2">
+                                    <Label>Tax</Label>
+                                    <Select
+                                        value={currentItem.taxRateId}
+                                        onValueChange={(val) => setCurrentItem({ ...currentItem, taxRateId: val })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Tax" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {taxRates?.map(rate => (
+                                                <SelectItem key={rate.id} value={rate.id}>
+                                                    {rate.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Button className="w-full" onClick={addItem}>Add Item</Button>
+                                </div>
+                            </div>
+                        </div>
 
-                {/* Add Item Section */}
-                <div className="border p-4 rounded-md bg-muted/20">
-                    <h3 className="font-semibold mb-3">Add Product items</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                        <div className="md:col-span-5 space-y-2">
-                            <Label>Product</Label>
-                            <Select value={currentItem.productId} onValueChange={handleProductChange}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select Product" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {products?.map(p => (
-                                        <SelectItem key={p.id} value={p.id}>{p.name} (Stock: {p.current_stock})</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <Label>Quantity</Label>
-                            <Input
-                                type="number"
-                                min="1"
-                                value={currentItem.quantity}
-                                onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
-                            />
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <Label>Unit Cost</Label>
-                            <Input
-                                type="number"
-                                min="0"
-                                value={currentItem.unitPrice}
-                                onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
-                            />
-                        </div>
-                        <div className="md:col-span-3 space-y-2">
-                            <Label>Tax</Label>
-                            <Select
-                                value={currentItem.taxRateId}
-                                onValueChange={(val) => setCurrentItem({ ...currentItem, taxRateId: val })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Tax" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {taxRates?.map(rate => (
-                                        <SelectItem key={rate.id} value={rate.id}>
-                                            {rate.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="md:col-span-2">
-                            <Button className="w-full" onClick={addItem}>Add Item</Button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Items Table */}
-                <div className="border rounded-md">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Product</TableHead>
-                                <TableHead className="text-right">Quantity</TableHead>
-                                <TableHead className="text-right">Unit Price</TableHead>
-                                <TableHead className="text-right">Tax</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {items.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
-                                        No items added yet.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                items.map((item, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>{item.productName}</TableCell>
-                                        <TableCell className="text-right">{item.quantity}</TableCell>
-                                        <TableCell className="text-right">₹{item.unitPrice.toFixed(2)}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="text-xs text-muted-foreground">
-                                                {item.taxPercentage > 0 ? `${item.taxPercentage}%` : '0%'}
-                                            </div>
-                                            ₹{item.taxAmount.toFixed(2)}
-                                        </TableCell>
-                                        <TableCell className="text-right font-medium">₹{item.subtotal.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <Button variant="ghost" size="icon" onClick={() => removeItem(index)}>
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </TableCell>
+                        {/* Items Table */}
+                        <div className="border rounded-md">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Product</TableHead>
+                                        <TableHead className="text-right">Quantity</TableHead>
+                                        <TableHead className="text-right">Unit Price</TableHead>
+                                        <TableHead className="text-right">Tax</TableHead>
+                                        <TableHead className="text-right">Total</TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                                </TableHeader>
+                                <TableBody>
+                                    {items.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                                                No items added yet.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        items.map((item, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{item.productName}</TableCell>
+                                                <TableCell className="text-right">{item.quantity}</TableCell>
+                                                <TableCell className="text-right">₹{item.unitPrice.toFixed(2)}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {item.taxPercentage > 0 ? `${item.taxPercentage}%` : '0%'}
+                                                    </div>
+                                                    ₹{item.taxAmount.toFixed(2)}
+                                                </TableCell>
+                                                <TableCell className="text-right font-medium">₹{item.subtotal.toFixed(2)}</TableCell>
+                                                <TableCell>
+                                                    <Button variant="ghost" size="icon" onClick={() => removeItem(index)}>
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
 
-                {/* Footer / Total */}
-                <div className="flex justify-between items-center bg-muted/50 p-4 rounded-md">
-                    <div className="w-1/2">
-                        <Label>Notes</Label>
-                        <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any additional notes..." rows={2} />
-                    </div>
-                    <div className="text-right">
-                        <div className="text-2xl font-bold">Total: ₹{calculateTotal().toFixed(2)}</div>
-                    </div>
-                </div>
+                        {/* Footer / Total */}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-muted/50 p-4 rounded-md gap-4">
+                            <div className="w-full md:w-1/2">
+                                <Label>Notes</Label>
+                                <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any additional notes..." rows={2} />
+                            </div>
+                            <div className="w-full md:text-right">
+                                <div className="text-2xl font-bold text-primary">Total: ₹{calculateTotal().toFixed(2)}</div>
+                            </div>
+                        </div>
 
-                <div className="flex justify-end gap-4">
-                    <Button variant="outline" onClick={() => navigate("/purchase/order")}>Cancel</Button>
-                    <Button size="lg" onClick={handleSubmit} disabled={updateOrder.isPending}>
-                        {updateOrder.isPending ? "Updating..." : "Update Order"}
-                    </Button>
-                </div>
+                        <div className="flex justify-end gap-4">
+                            <Button variant="outline" onClick={() => navigate("/purchase/order")}>Cancel</Button>
+                            <Button size="lg" onClick={handleSubmit} disabled={updateOrder.isPending}>
+                                {updateOrder.isPending ? "Updating..." : "Update Order"}
+                            </Button>
+                        </div>
 
+                    </CardContent>
+                </Card>
             </div>
         </PageLayout>
     );

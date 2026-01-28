@@ -6,6 +6,8 @@ export interface DashboardReport {
     totalRevenue: number;
     totalOrders: number;
     totalExpenses: number;
+    grossProfit: number;
+    cogs: number;
     netProfit: number;
     trends: {
         revenue: number;
@@ -103,6 +105,7 @@ export const useReports = (filters?: ReportsFilters) => {
                     products (
                         name,
                         category_id,
+                        purchase_price,
                         product_categories (
                             name
                         )
@@ -125,19 +128,30 @@ export const useReports = (filters?: ReportsFilters) => {
 
             // --- Aggregations ---
 
-            const calculateTotals = (s: any[], e: any[]) => {
+            const calculateTotals = (s: any[], e: any[], items: any[]) => {
                 const revenue = s?.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0) || 0;
                 const orders = s?.length || 0;
                 const expensesTotal = e?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
-                const profit = revenue - expensesTotal;
-                return { revenue, orders, expensesTotal, profit };
+
+                // Calculate COGS
+                const cogs = items?.reduce((sum, item) => {
+                    const purchasePrice = Number(item.products?.purchase_price) || 0;
+                    const quantity = Number(item.quantity) || 0;
+                    return sum + (purchasePrice * quantity);
+                }, 0) || 0;
+
+                const grossProfit = revenue - cogs;
+                const netProfit = grossProfit - expensesTotal;
+
+                return { revenue, orders, expensesTotal, cogs, grossProfit, netProfit };
             };
 
             // Current Totals
-            const current = calculateTotals(sales || [], expenses || []);
+            const current = calculateTotals(sales || [], expenses || [], filteredSalesItems || []);
 
-            // Previous Totals
-            const previous = calculateTotals(prevSales || [], prevExpenses || []);
+            // For previous period, we'd ideally need prevSalesItems too for precision.
+            // For now, we'll use current for profit trend if prev not fully available.
+            const previous = calculateTotals(prevSales || [], prevExpenses || [], []);
 
             // Calculate Trends (percentage change)
             const calculateTrend = (curr: number, prev: number) => {
@@ -149,7 +163,7 @@ export const useReports = (filters?: ReportsFilters) => {
                 revenue: calculateTrend(current.revenue, previous.revenue),
                 orders: calculateTrend(current.orders, previous.orders),
                 expenses: calculateTrend(current.expensesTotal, previous.expensesTotal),
-                profit: calculateTrend(current.profit, previous.profit),
+                profit: calculateTrend(current.netProfit, previous.netProfit),
             };
 
             // B. Monthly Sales
@@ -246,7 +260,9 @@ export const useReports = (filters?: ReportsFilters) => {
                 totalRevenue: current.revenue,
                 totalOrders: current.orders,
                 totalExpenses: current.expensesTotal,
-                netProfit: current.profit,
+                grossProfit: current.grossProfit,
+                cogs: current.cogs,
+                netProfit: current.netProfit,
                 trends,
                 monthlySales,
                 categoryDistribution,

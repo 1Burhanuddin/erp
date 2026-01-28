@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Truck, ShieldCheck, Heart, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useState } from "react";
-import { useEcommerceProduct } from "@/api/ecommerce";
+import { useEcommerceProduct, useStoreProducts } from "@/api/ecommerce";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart, updateQuantity, removeFromCart } from "@/store/slices/cartSlice";
 import { toast } from "sonner";
@@ -20,6 +20,12 @@ const ProductPage = () => {
 
     const [quantity, setQuantity] = useState(1);
     const [selectedColor, setSelectedColor] = useState("Default");
+
+    // Fetch similar products from the same category
+    const { data: similarProducts, isLoading: isSimilarLoading } = useStoreProducts(product?.category_id || undefined);
+
+    // Filter out current product and limit to 10
+    const filteredSimilar = similarProducts?.filter(p => p.id !== id).slice(0, 10) || [];
 
     if (isLoading) {
         return (
@@ -174,44 +180,53 @@ const ProductPage = () => {
                 </div>
             </div>
 
-            {/* Mobile Sticky Bottom Bar */}
-            <div className="fixed bottom-4 inset-x-4 md:hidden z-40">
-                {isInCart && (
-                    <div className="flex items-center justify-between gap-3 h-16 rounded-full bg-stone-900 text-white pl-2 pr-2 shadow-2xl animate-in slide-in-from-bottom-5 duration-500">
-                        {/* Item Info */}
-                        <div className="flex items-center gap-3 overflow-hidden" onClick={handleBuyNow}>
-                            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shrink-0">
-                                <img src={cartItem?.image || images[0]} alt="Product" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex flex-col min-w-0 pr-2">
-                                <span className="text-sm font-bold truncate leading-tight max-w-[100px]">{cartItem?.name || product.name}</span>
-                                <span className="text-[10px] text-stone-400 font-medium">₹{cartItem?.price || price}</span>
-                            </div>
-                        </div>
-
-                        {/* Controls */}
-                        <div className="flex items-center gap-1 bg-stone-800 rounded-full p-1 ml-auto shrink-0">
-                            <Button
-                                onClick={(e) => { e.stopPropagation(); handleUpdateQuantity((cartItem?.quantity || 0) - 1); }}
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 rounded-full text-white hover:bg-stone-700 hover:text-white"
-                            >
-                                <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="font-bold text-sm w-6 text-center">{cartItem?.quantity}</span>
-                            <Button
-                                onClick={(e) => { e.stopPropagation(); handleUpdateQuantity((cartItem?.quantity || 0) + 1); }}
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 rounded-full text-white hover:bg-stone-700 hover:text-white"
-                            >
-                                <Plus className="h-4 w-4" />
-                            </Button>
+            {/* Similar Products Section */}
+            {(isSimilarLoading || filteredSimilar.length > 0) && (
+                <section className="mt-20 border-t border-stone-100 pt-16">
+                    <div className="flex items-end justify-between mb-8 px-2">
+                        <div className="space-y-1">
+                            <h2 className="text-2xl md:text-3xl font-bold tracking-tighter text-stone-900">Similar Products</h2>
+                            <p className="text-stone-500 text-sm">You might also like these items from {(product as any).category?.name || 'this category'}.</p>
                         </div>
                     </div>
-                )}
-            </div>
+
+                    <div className="flex overflow-x-auto gap-4 pb-8 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth snap-x">
+                        {isSimilarLoading ? (
+                            [1, 2, 3, 4].map(i => (
+                                <div key={i} className="flex-shrink-0 w-[200px] snap-start bg-white p-2 rounded-2xl shadow-sm animate-pulse">
+                                    <div className="aspect-[4/5] rounded-xl bg-stone-100 mb-3" />
+                                    <div className="space-y-2 px-1">
+                                        <div className="h-2 w-1/2 bg-stone-100 rounded-full" />
+                                        <div className="h-4 w-3/4 bg-stone-100 rounded-full" />
+                                    </div>
+                                </div>
+                            ))
+                        ) : filteredSimilar.map((item) => (
+                            <div
+                                key={item.id}
+                                onClick={() => navigate(`/shop-preview/product/${item.id}`)}
+                                className="flex-shrink-0 w-[200px] md:w-[240px] snap-start group cursor-pointer"
+                            >
+                                <div className="bg-white p-2 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300 h-full border border-stone-50">
+                                    <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-stone-100 mb-3">
+                                        <img
+                                            src={item.image_url || "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?q=80&w=800"}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    </div>
+                                    <div className="space-y-1 px-1">
+                                        <h3 className="font-bold text-sm text-stone-900 line-clamp-1">{item.name}</h3>
+                                        <div className="font-serif text-base text-stone-900">
+                                            ₹{item.online_price || item.sale_price || 0}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     );
 };

@@ -5,30 +5,41 @@ import { Database } from "@/types/database";
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 export type Category = Database["public"]["Tables"]["product_categories"]["Row"];
 
-export const useStoreProducts = (categoryId?: string) => {
+export const useStoreProducts = (storeId?: string, categoryId?: string) => {
     return useQuery({
-        queryKey: ["ecommerce_products", categoryId],
+        queryKey: ["ecommerce_products", storeId, categoryId],
         queryFn: async () => {
-            let query = supabase
-                .from("products")
+            if (!storeId) return [];
+
+            const { data, error } = await supabase
+                .from("store_products")
                 .select(`
-                    *,
-                    category:product_categories(name),
-                    brand:product_brands(name)
+                    is_active,
+                    product:products(
+                        *,
+                        category:product_categories(name),
+                        brand:product_brands(name)
+                    )
                 `)
-                .eq("is_online", true)
-                .gt("current_stock", 0)
-                .order("created_at", { ascending: false });
+                .eq("store_id", storeId)
+                .eq("is_active", true)
+                .eq("product.is_online", true);
+
+            if (error) throw error;
+
+            // Reformat data to match Product type
+            let formattedData = (data as any[])
+                .map(item => item.product)
+                .filter(p => !!p);
 
             if (categoryId) {
-                query = query.eq("category_id", categoryId);
+                formattedData = formattedData.filter(p => p.category_id === categoryId);
             }
 
-            const { data, error } = await query;
-            if (error) throw error;
-            return data;
+            return formattedData;
         },
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        enabled: !!storeId,
+        staleTime: 1000 * 60 * 5,
     });
 };
 
@@ -88,11 +99,12 @@ type CreateEcommerceOrderParams = {
         subtotal: number;
     }[];
     total_amount: number;
+    store_id?: string;
 };
 
 export const useCreateEcommerceOrder = () => {
     return useMutation({
-        mutationFn: async ({ customer, items, total_amount }: CreateEcommerceOrderParams) => {
+        mutationFn: async ({ customer, items, total_amount, store_id }: CreateEcommerceOrderParams) => {
             // 1. Create or Find Contact (Guest)
             // Ideally we check if email exists. For simplicity, we create a new contact or just use generic one.
             // Let's search by email first.
@@ -124,18 +136,18 @@ export const useCreateEcommerceOrder = () => {
             }
 
             // 2. Create Order
-            // Note: We need a store_id. If multiple stores, we need logic. 
-            // For now, we pick the first available store or assume single tenant default.
-            // If the user is ANON, they don't have a store context in Redux.
-            // We'll fetch the first store ID from the database for the demo.
-            const { data: stores } = await supabase.from("stores").select("id").limit(1);
-            const storeId = stores?.[0]?.id;
+            // Use provided store_id or fall back to the first one found
+            let finalStoreId = store_id;
+            if (!finalStoreId) {
+                const { data: stores } = await supabase.from("stores").select("id").limit(1);
+                finalStoreId = stores?.[0]?.id;
+            }
 
             const { data: orderData, error: orderError } = await supabase
                 .from("sales_orders")
                 .insert({
                     customer_id: customerId,
-                    store_id: storeId,
+                    store_id: finalStoreId,
                     order_date: new Date().toISOString(),
                     total_amount: total_amount,
                     status: "Pending",
@@ -166,15 +178,25 @@ export const useCreateEcommerceOrder = () => {
     });
 };
 
-export const useStoreDetails = () => {
+export const useStoreDetails = (slug?: string) => {
     return useQuery({
-        queryKey: ["ecommerce_store_details"],
+        queryKey: ["ecommerce_store_details", slug],
         queryFn: async () => {
-            const { data, error } = await supabase
+            const hostname = window.location.hostname;
+            let query = supabase
                 .from("stores")
-                .select("name, address, phone, email")
-                .limit(1)
-                .single();
+                .select("id, name, address, phone, email, domain");
+
+            if (slug) {
+                query = query.eq("domain", slug);
+            } else if (hostname !== 'localhost' && !hostname.includes('erpsoft.vercel.app')) {
+                // If on a custom domain, resolve by hostname
+                query = query.eq("domain", hostname);
+            } else {
+                query = query.limit(1);
+            }
+
+            const { data, error } = await query.single();
 
             if (error) throw error;
             return data;

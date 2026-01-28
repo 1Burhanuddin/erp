@@ -40,6 +40,9 @@ BEGIN
         SELECT id INTO v_store_id FROM public.stores LIMIT 1;
     END IF;
 
+    -- Set a professional slug for the store
+    UPDATE public.stores SET domain = 'tajglass.vercel.app' WHERE id = v_store_id;
+
     SELECT id INTO v_unit_pcs_id FROM public.product_units WHERE name ILIKE 'pcs' AND (owner_id = v_owner_id OR owner_id IS NULL) LIMIT 1;
     SELECT id INTO v_unit_sqft_id FROM public.product_units WHERE name ILIKE 'sq.ft' AND (owner_id = v_owner_id OR owner_id IS NULL) LIMIT 1;
 

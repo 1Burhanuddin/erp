@@ -1,13 +1,14 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { ShoppingBag, Search, Menu, User, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
 import { useLayoutEffect } from "react";
 import { useStoreDetails } from "@/api/ecommerce";
 
 const ShopLayout = () => {
-    const { data: store } = useStoreDetails();
+    const { slug } = useParams();
+    const { data: store } = useStoreDetails(slug);
     const cartItems = useAppSelector(state => state.cart.items);
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
     const { pathname } = useLocation();
@@ -15,6 +16,12 @@ const ShopLayout = () => {
 
     const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const showGlobalCart = cartItems.length > 0 && !pathname.includes('/checkout') && !pathname.includes('/product');
+
+    // Helper for domain-aware links
+    const getLink = (path: string) => {
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        return slug ? `/s/${slug}${cleanPath}` : cleanPath;
+    };
 
     useLayoutEffect(() => {
         window.scrollTo(0, 0);
@@ -30,16 +37,16 @@ const ShopLayout = () => {
 
 
                     {/* Logo */}
-                    <Link to="/shop-preview" className="text-xl md:text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity uppercase">
+                    <Link to={getLink('/')} className="text-xl md:text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity uppercase">
                         {store?.name ? store.name.split(' ').slice(0, 2).join(' ') : "AURA"}<span className="text-orange-500">.</span>
                     </Link>
 
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
-                        <Link to="/shop-preview" className="hover:text-orange-600 transition-colors">NEW ARRIVALS</Link>
-                        <Link to="/shop-preview" className="hover:text-orange-600 transition-colors">COLLECTIONS</Link>
-                        <Link to="/shop-preview" className="hover:text-orange-600 transition-colors">ACCESSORIES</Link>
-                        <Link to="/shop-preview" className="hover:text-orange-600 transition-colors">SALE</Link>
+                        <Link to={getLink('/')} className="hover:text-orange-600 transition-colors">NEW ARRIVALS</Link>
+                        <Link to={getLink('/')} className="hover:text-orange-600 transition-colors">COLLECTIONS</Link>
+                        <Link to={getLink('/')} className="hover:text-orange-600 transition-colors">ACCESSORIES</Link>
+                        <Link to={getLink('/')} className="hover:text-orange-600 transition-colors">SALE</Link>
                     </nav>
 
                     {/* Actions */}
@@ -50,7 +57,7 @@ const ShopLayout = () => {
                         <Button variant="ghost" size="icon" className="rounded-full hover:bg-stone-100 hidden md:flex">
                             <User className="w-5 h-5" />
                         </Button>
-                        <Link to="/shop-preview/checkout">
+                        <Link to={getLink('/checkout')}>
                             <Button
                                 size="icon"
                                 className="rounded-full bg-stone-900 text-white hover:bg-stone-800 relative w-10 h-10 md:w-auto md:h-10 md:px-4 flex gap-2 items-center group transition-all"
@@ -103,7 +110,7 @@ const ShopLayout = () => {
             {showGlobalCart && (
                 <div className="fixed bottom-4 inset-x-4 md:hidden z-50 animate-in slide-in-from-bottom-5 duration-500">
                     <div
-                        onClick={() => navigate('/shop-preview/checkout')}
+                        onClick={() => navigate(`/s/${slug}/checkout`)}
                         className="flex items-center justify-between gap-3 h-16 rounded-full bg-stone-900 text-white px-6 shadow-2xl cursor-pointer"
                     >
                         <div className="flex flex-col">

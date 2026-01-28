@@ -2,16 +2,23 @@ import { Button } from "@/components/ui/button";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Truck, ShieldCheck, Heart, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useState } from "react";
-import { useEcommerceProduct, useStoreProducts } from "@/api/ecommerce";
+import { useEcommerceProduct, useStoreProducts, useStoreDetails } from "@/api/ecommerce";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart, updateQuantity, removeFromCart } from "@/store/slices/cartSlice";
 import { toast } from "sonner";
 
 const ProductPage = () => {
-    const { id } = useParams();
+    const { slug, id } = useParams();
+    const { data: store } = useStoreDetails(slug);
     const { data: product, isLoading } = useEcommerceProduct(id || "");
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+
+    // Helper for domain-aware links
+    const getLink = (path: string) => {
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        return slug ? `/s/${slug}${cleanPath}` : cleanPath;
+    };
     const cartItems = useAppSelector(state => state.cart.items);
 
     // Check if product is already in cart (simple check by ID)
@@ -22,7 +29,7 @@ const ProductPage = () => {
     const [selectedColor, setSelectedColor] = useState("Default");
 
     // Fetch similar products from the same category
-    const { data: similarProducts, isLoading: isSimilarLoading } = useStoreProducts(product?.category_id || undefined);
+    const { data: similarProducts, isLoading: isSimilarLoading } = useStoreProducts(store?.id, product?.category_id || undefined);
 
     // Filter out current product and limit to 10
     const filteredSimilar = similarProducts?.filter(p => p.id !== id).slice(0, 10) || [];
@@ -79,7 +86,7 @@ const ProductPage = () => {
     };
 
     const handleBuyNow = () => {
-        navigate("/shop-preview/checkout");
+        navigate(getLink('/checkout'));
     };
 
     const onMainAction = () => {
@@ -204,7 +211,7 @@ const ProductPage = () => {
                         ) : filteredSimilar.map((item) => (
                             <div
                                 key={item.id}
-                                onClick={() => navigate(`/shop-preview/product/${item.id}`)}
+                                onClick={() => navigate(getLink(`/product/${item.id}`))}
                                 className="flex-shrink-0 w-[200px] md:w-[240px] snap-start group cursor-pointer"
                             >
                                 <div className="bg-white p-2 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300 h-full border border-stone-50">

@@ -2,18 +2,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Check, CreditCard, ShoppingBag, Loader2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { clearCart } from "@/store/slices/cartSlice";
-import { useCreateEcommerceOrder } from "@/api/ecommerce";
+import { useCreateEcommerceOrder, useStoreDetails } from "@/api/ecommerce";
 import { useState } from "react";
 import { toast } from "sonner";
 
 const CheckoutPage = () => {
+    const { slug } = useParams();
+    const { data: store } = useStoreDetails(slug);
     const cartItems = useAppSelector(state => state.cart.items);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const createOrder = useCreateEcommerceOrder();
+
+    // Helper for domain-aware links
+    const getLink = (path: string) => {
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        return slug ? `/s/${slug}${cleanPath}` : cleanPath;
+    };
 
     // Form State
     const [formData, setFormData] = useState({
@@ -54,14 +62,15 @@ const CheckoutPage = () => {
                     unit_price: item.price,
                     subtotal: item.price * item.quantity
                 })),
-                total_amount: total
+                total_amount: total,
+                store_id: store?.id
             });
 
             toast.success("Order placed successfully!", {
                 description: "Check your email for confirmation."
             });
             dispatch(clearCart());
-            navigate("/shop-preview");
+            navigate(getLink('/'));
         } catch (error) {
             toast.error("Failed to place order. Please try again.");
             console.error(error);
@@ -72,7 +81,7 @@ const CheckoutPage = () => {
         return (
             <div className="container mx-auto px-4 py-20 text-center space-y-4">
                 <h1 className="text-3xl font-bold mb-4">Your cart is empty!</h1>
-                <Link to="/shop-preview">
+                <Link to={getLink('/')}>
                     <Button className="rounded-full bg-black">Continue Shopping...</Button>
                 </Link>
             </div>

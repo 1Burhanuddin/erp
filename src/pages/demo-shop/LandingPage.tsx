@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useStoreProducts, useStoreCategories, useStoreDetails } from "@/api/ecommerce";
 import { useAppDispatch } from "@/store/hooks";
 import { useState, useMemo } from "react";
@@ -31,12 +31,19 @@ const HERO_COPY = [
 ];
 
 const LandingPage = () => {
-    const { data: store } = useStoreDetails();
+    const { slug } = useParams();
+    const { data: store } = useStoreDetails(slug);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const { data: products, isLoading } = useStoreProducts(selectedCategory || undefined);
+    const { data: products, isLoading } = useStoreProducts(store?.id, selectedCategory || undefined);
     const { data: categories, isLoading: isCatLoading } = useStoreCategories();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+
+    // Helper for domain-aware links
+    const getLink = (path: string) => {
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        return slug ? `/s/${slug}${cleanPath}` : cleanPath;
+    };
 
     // Select hero theme based on store name hash
     const themeIndex = useMemo(() => {
@@ -73,7 +80,7 @@ const LandingPage = () => {
                                 {heroCopy.desc}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                                <Link to={`/shop-preview/product/${products?.[0]?.id || ''}`}>
+                                <Link to={getLink(`/product/${products?.[0]?.id || ''}`)}>
                                     <Button size="lg" className="rounded-full bg-white text-stone-900 hover:bg-stone-100 h-14 px-8 text-base shadow-xl shadow-white/10 w-full sm:w-auto">
                                         Shop Latest
                                     </Button>
@@ -113,7 +120,7 @@ const LandingPage = () => {
                             {featuredProducts.map((product) => (
                                 <CarouselItem key={product.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
                                     <div
-                                        onClick={() => navigate(`/shop-preview/product/${product.id}`)}
+                                        onClick={() => navigate(getLink(`/product/${product.id}`))}
                                         className="relative aspect-[16/10] rounded-[2rem] overflow-hidden cursor-pointer group/item"
                                     >
                                         <img
@@ -185,7 +192,7 @@ const LandingPage = () => {
                             </div>
                         ))
                     ) : products && products.length > 0 ? products.map((product) => (
-                        <div onClick={() => navigate(`/shop-preview/product/${product.id}`)} key={product.id} className="group block h-full cursor-pointer">
+                        <div onClick={() => navigate(getLink(`/product/${product.id}`))} key={product.id} className="group block h-full cursor-pointer">
                             <div className="bg-white p-2 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300 h-full border border-stone-50 flex flex-col">
                                 <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-stone-100 shrink-0">
                                     <img

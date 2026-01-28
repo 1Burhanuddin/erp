@@ -115,6 +115,9 @@ import CheckoutPage from "./pages/demo-shop/CheckoutPage";
 const queryClient = new QueryClient();
 
 const App = () => {
+  const hostname = window.location.hostname;
+  const isERP = hostname === 'localhost' || hostname.includes('erpsoft.vercel.app');
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -123,10 +126,19 @@ const App = () => {
         <BrowserRouter>
           <AuthProvider>
             <Routes>
+              {/* If on a shop domain, the root is the shop */}
+              {!isERP && (
+                <Route path="/" element={<ShopLayout />}>
+                  <Route index element={<LandingPage />} />
+                  <Route path="product/:id" element={<ProductPage />} />
+                  <Route path="checkout" element={<CheckoutPage />} />
+                </Route>
+              )}
+
               <Route path="/auth" element={<Auth />} />
 
-              {/* Shop Demo Routes - Public */}
-              <Route path="/shop-preview" element={<ShopLayout />}>
+              {/* Shop Demo Routes - Preview on ERP domain */}
+              <Route path="/s/:slug" element={<ShopLayout />}>
                 <Route index element={<LandingPage />} />
                 <Route path="product/:id" element={<ProductPage />} />
                 <Route path="checkout" element={<CheckoutPage />} />

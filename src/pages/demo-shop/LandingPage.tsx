@@ -35,7 +35,7 @@ const LandingPage = () => {
     const { data: store } = useStoreDetails(slug);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const { data: products, isLoading } = useStoreProducts(store?.id, selectedCategory || undefined);
-    const { data: categories, isLoading: isCatLoading } = useStoreCategories();
+    const { data: categories, isLoading: isCatLoading } = useStoreCategories(store?.id);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
@@ -43,6 +43,13 @@ const LandingPage = () => {
     const getLink = (path: string) => {
         const cleanPath = path.startsWith('/') ? path : `/${path}`;
         return slug ? `/s/${slug}${cleanPath}` : cleanPath;
+    };
+
+    const scrollToProducts = () => {
+        const element = document.getElementById("collection-section");
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
     };
 
     // Select hero theme based on store name hash
@@ -80,12 +87,12 @@ const LandingPage = () => {
                                 {heroCopy.desc}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                                <Link to={getLink(`/product/${products?.[0]?.id || ''}`)}>
-                                    <Button size="lg" className="rounded-full bg-white text-stone-900 hover:bg-stone-100 h-14 px-8 text-base shadow-xl shadow-white/10 w-full sm:w-auto">
-                                        Shop Latest
-                                    </Button>
-                                </Link>
-                                <Button size="lg" variant="outline" className="rounded-full border-white text-white hover:bg-white/10 h-14 px-8 text-base backdrop-blur-sm w-full sm:w-auto bg-transparent">
+                                <Button
+                                    size="lg"
+                                    onClick={scrollToProducts}
+                                    variant="outline"
+                                    className="rounded-full border-white text-white hover:bg-white/10 h-14 px-8 text-base backdrop-blur-sm w-full sm:w-auto bg-transparent"
+                                >
                                     View Lookbook
                                 </Button>
                             </div>
@@ -173,7 +180,7 @@ const LandingPage = () => {
             </section>
 
             {/* Trending Products */}
-            <section className="container mx-auto px-4">
+            <section id="collection-section" className="container mx-auto px-4 scroll-mt-24">
                 <div className="flex flex-col items-center text-center mb-10 space-y-2">
                     <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">Our Collection</h2>
                     <p className="text-stone-500 max-w-md mx-auto">Explore our full range of curated online products.</p>

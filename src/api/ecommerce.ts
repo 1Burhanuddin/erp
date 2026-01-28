@@ -43,19 +43,42 @@ export const useStoreProducts = (storeId?: string, categoryId?: string) => {
     });
 };
 
-export const useStoreCategories = () => {
+export const useStoreCategories = (storeId?: string) => {
     return useQuery({
-        queryKey: ["ecommerce_categories"],
+        queryKey: ["ecommerce_categories", storeId],
         queryFn: async () => {
+            if (!storeId) return [];
+
+            // Get distinct categories from products available in this store
             const { data, error } = await supabase
-                .from("product_categories")
-                .select("*")
-                .order("name");
+                .from("store_products")
+                .select(`
+                    product:products(
+                        category:product_categories(*)
+                    )
+                `)
+                .eq("store_id", storeId)
+                .eq("is_active", true);
 
             if (error) throw error;
 
-            return data as Category[];
+            const categoriesMap = new Map<string, Category>();
+            (data as any[]).forEach(item => {
+                if (item.product?.category) {
+                    const cat = item.product.category;
+                    // Deduplicate by name to handle potential duplicate DB entries
+                    const key = cat.name?.toLowerCase().trim() || cat.id;
+                    if (!categoriesMap.has(key)) {
+                        categoriesMap.set(key, cat);
+                    }
+                }
+            });
+
+            return Array.from(categoriesMap.values()).sort((a, b) =>
+                (a.name || "").localeCompare(b.name || "")
+            );
         },
+        enabled: !!storeId,
         staleTime: 1000 * 60 * 60,
     });
 };

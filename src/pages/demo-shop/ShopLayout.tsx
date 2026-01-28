@@ -37,8 +37,14 @@ const ShopLayout = () => {
 
 
                     {/* Logo */}
-                    <Link to={getLink('/')} className="text-xl md:text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity uppercase">
-                        {store?.name ? store.name.split(' ').slice(0, 2).join(' ') : "AURA"}<span className="text-orange-500">.</span>
+                    <Link to={getLink('/')} className="text-xl md:text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity uppercase min-w-[80px]">
+                        {store?.name ? (
+                            <>
+                                {store.name.split(' ').slice(0, 2).join(' ')}<span className="text-orange-500">.</span>
+                            </>
+                        ) : (
+                            <div className="h-6 w-24 bg-stone-200 animate-pulse rounded-full inline-block" />
+                        )}
                     </Link>
 
                     {/* Desktop Nav */}
@@ -83,7 +89,13 @@ const ShopLayout = () => {
                         <div className="space-y-6">
                             <div className="space-y-4">
                                 <h4 className="text-white text-2xl font-bold tracking-tighter">
-                                    {store?.name ? store.name.split(' ').slice(0, 2).join(' ') : "AURA"}<span className="text-orange-500">.</span>
+                                    {store?.name ? (
+                                        <>
+                                            {store.name.split(' ').slice(0, 2).join(' ')}<span className="text-orange-500">.</span>
+                                        </>
+                                    ) : (
+                                        <div className="h-8 w-32 bg-stone-800 animate-pulse rounded-full" />
+                                    )}
                                 </h4>
                                 <p className="text-sm leading-relaxed max-w-xs">
                                     Elevating everyday essentials with sustainable materials and timeless design.

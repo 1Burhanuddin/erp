@@ -32,7 +32,8 @@ const HERO_COPY = [
 
 const LandingPage = () => {
     const { slug } = useParams();
-    const { data: store } = useStoreDetails(slug);
+    const { data: store, isLoading: storeLoading } = useStoreDetails(slug);
+
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const { data: products, isLoading } = useStoreProducts(store?.id, selectedCategory || undefined);
     const { data: categories, isLoading: isCatLoading } = useStoreCategories(store?.id);
@@ -61,6 +62,25 @@ const LandingPage = () => {
 
     const heroImage = HERO_IMAGES[themeIndex];
     const heroCopy = HERO_COPY[themeIndex];
+
+    const uniqueCategories = useMemo(() => {
+        if (!categories) return [];
+        const seen = new Set();
+        return categories.filter(cat => {
+            const key = cat.name?.toLowerCase().trim();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }, [categories]);
+
+    if (storeLoading) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-white">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-stone-200 border-r-stone-900" />
+            </div>
+        );
+    }
 
     // Featured products for Carousel (limit to 5)
     const featuredProducts = products?.slice(0, 5) || [];
@@ -165,7 +185,7 @@ const LandingPage = () => {
                             >
                                 All
                             </button>
-                            {categories?.map((cat) => (
+                            {uniqueCategories.map((cat) => (
                                 <button
                                     key={cat.id}
                                     onClick={() => setSelectedCategory(cat.id)}

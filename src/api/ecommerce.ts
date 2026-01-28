@@ -182,7 +182,7 @@ export const useStoreDetails = (slug?: string) => {
     return useQuery({
         queryKey: ["ecommerce_store_details", slug],
         queryFn: async () => {
-            const hostname = window.location.hostname;
+            const hostname = window.location.hostname.replace('www.', '');
             let query = supabase
                 .from("stores")
                 .select("id, name, address, phone, email, domain");
@@ -197,6 +197,19 @@ export const useStoreDetails = (slug?: string) => {
             }
 
             const { data, error } = await query.single();
+
+            // Fallback: If hostname resolution fails on a custom domain, 
+            // try to fetch the first store instead of failing completely.
+            // This handles cases where the 'domain' column isn't set up yet.
+            if (error && !slug && hostname !== 'localhost' && !hostname.includes('erpsoft.vercel.app')) {
+                const { data: fallbackData, error: fallbackError } = await supabase
+                    .from("stores")
+                    .select("id, name, address, phone, email, domain")
+                    .limit(1)
+                    .maybeSingle();
+
+                if (fallbackData) return fallbackData;
+            }
 
             if (error) throw error;
             return data;

@@ -234,6 +234,45 @@ const ProductPage = () => {
                     </div>
                 </section>
             )}
+            {/* Floating Quantity Pill (When in Cart) */}
+            {isInCart && (
+                <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-4 animate-in slide-in-from-bottom-10 fade-in duration-500">
+                    <div className="bg-stone-900/95 backdrop-blur-md text-white p-3 pl-5 rounded-full shadow-2xl flex items-center gap-4 max-w-sm w-full mx-auto border border-white/10">
+                        {/* Product Info */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="h-12 w-12 rounded-full bg-white/10 shrink-0 overflow-hidden">
+                                <img src={images[0]} alt="Product" className="h-full w-full object-cover" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-sm font-bold truncate leading-none mb-0.5 pr-2">{product.name}</p>
+                                <p className="text-[10px] text-stone-400 font-medium">Added to Bag</p>
+                            </div>
+                        </div>
+
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-1 bg-white/10 rounded-full p-1 h-12">
+                            <button
+                                onClick={() => handleUpdateQuantity((cartItem?.quantity || 1) - 1)}
+                                className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-95 transition-all text-white"
+                            >
+                                <Minus className="h-4 w-4" />
+                            </button>
+                            <span className="w-8 text-center font-bold text-sm tabular-nums">
+                                {cartItem?.quantity || 1}
+                            </span>
+                            <button
+                                onClick={() => handleUpdateQuantity((cartItem?.quantity || 1) + 1)}
+                                className="h-10 w-10 flex items-center justify-center rounded-full bg-white text-stone-900 hover:bg-stone-200 active:scale-95 transition-all shadow-sm"
+                            >
+                                <Plus className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+
         </div>
     );
 };

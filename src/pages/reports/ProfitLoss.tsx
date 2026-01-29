@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, DollarSign, Wallet, ArrowUpRight, ArrowDownRight, Briefcase } from "lucide-react";
+import { TrendingUp, DollarSign, Wallet, ArrowUpRight, ArrowDownRight, Briefcase, Calendar, Package } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { useReports } from "@/api/reports";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -69,7 +69,7 @@ const ProfitLoss = () => {
         {
             label: "Cost of Goods (COGS)",
             value: report?.cogs || 0,
-            trend: 0, // Trend for COGS not separately calculated yet
+            trend: 0,
             icon: Package,
             color: "bg-orange-500",
         },
@@ -222,7 +222,7 @@ const ProfitLoss = () => {
                             />
                             <Area
                                 type="monotone"
-                                dataKey="sales" // Reusing sales as profit for the chart label if needed, or we specifically add a netProfit field to monthly sales
+                                dataKey="sales"
                                 stroke="hsl(var(--primary))"
                                 strokeWidth={4}
                                 fillOpacity={1}
@@ -284,9 +284,5 @@ const ProfitLoss = () => {
         </PageLayout>
     );
 };
-
-// Mock dependencies since I can't check all icons and minor UI components
-const Package = ({ className }: { className?: string }) => <Briefcase className={className} />;
-const Calendar = ({ className }: { className?: string }) => <div className={className} />;
 
 export default ProfitLoss;

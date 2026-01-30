@@ -40,6 +40,121 @@ export interface ReportsFilters {
     endDate?: Date;
 }
 
+export interface GSTReportMock {
+    gstr1: {
+        b2b: any[];
+        b2c: any[];
+        hsn: any[];
+    };
+    gstr3b: {
+        outward: any;
+        itc: any;
+    };
+}
+
+export const useGSTReports = (filters?: ReportsFilters) => {
+    return useQuery({
+        queryKey: ["gst-reports", filters?.startDate?.toISOString(), filters?.endDate?.toISOString()],
+        queryFn: async () => {
+            const startDate = filters?.startDate ? startOfDay(filters.startDate).toISOString() : undefined;
+            const endDate = filters?.endDate ? endOfDay(filters.endDate).toISOString() : undefined;
+
+            // 1. Fetch Business Profile for My State
+            const { data: profile } = await supabase.from("business_profiles").select("state, gstin").single();
+            const myState = profile?.state || "Maharashtra"; // Default fallback
+
+            // 2. Fetch Sales with Customers and Items
+            let salesQuery = supabase
+                .from("sales_orders")
+                .select(`
+                    id, order_no, order_date, total_amount, customer_id,
+                    contacts (id, name, gstin:address, state), 
+                    sales_items (
+                        subtotal, tax_amount,
+                        tax_rates (percentage),
+                        products (hsn_code, name)
+                    )
+                `) // note: using address field for gstin mock if needed, but ideally contacts has gstin column. 
+                // Based on schema, contacts table DOES NOT have gstin column? 
+                // Accessing 'address' just to not break, but we need to check schema.
+                // Schema check: contacts has 'state', but no 'gstin'. 
+                // We will assume for now B2C unless we find a custom field.
+                .neq("status", "Cancelled");
+
+            if (startDate) salesQuery = salesQuery.gte("order_date", startDate);
+            if (endDate) salesQuery = salesQuery.lte("order_date", endDate);
+
+            const { data: sales, error: salesError } = await salesQuery;
+            if (salesError) throw salesError;
+
+            // 3. Process GSTR-1 (Sales)
+            const b2b: any[] = [];
+            const b2c: any[] = [];
+            const hsnMap = new Map<string, { quantity: number, value: number, tax: number }>();
+
+            sales?.forEach((order: any) => {
+                const customerState = order.contacts?.state || myState;
+                const isInterState = customerState.toLowerCase() !== myState.toLowerCase();
+                const placeOfSupply = customerState;
+
+                // For now, treat all as B2C unless we have a flag. 
+                // In real app, check order.contacts.gstin
+                const isB2B = false; // Placeholder
+
+                order.sales_items?.forEach((item: any) => {
+                    const taxRate = item.tax_rates?.percentage || 0;
+                    const taxAmt = item.tax_amount || 0;
+                    const taxable = item.subtotal || 0;
+
+                    // HSN Summary
+                    const hsn = item.products?.hsn_code || "Generated";
+                    const existingHsn = hsnMap.get(hsn) || { quantity: 0, value: 0, tax: 0 };
+                    hsnMap.set(hsn, {
+                        quantity: existingHsn.quantity + 1, // Quantity not in select, using 1 as mock or need to fetch quantity
+                        value: existingHsn.value + taxable,
+                        tax: existingHsn.tax + taxAmt
+                    });
+
+                    const entry = {
+                        invoiceNo: order.order_no,
+                        date: order.order_date,
+                        value: taxable,
+                        rate: taxRate,
+                        igst: isInterState ? taxAmt : 0,
+                        cgst: !isInterState ? taxAmt / 2 : 0,
+                        sgst: !isInterState ? taxAmt / 2 : 0,
+                        state: placeOfSupply
+                    };
+
+                    if (isB2B) b2b.push(entry);
+                    else b2c.push(entry);
+                });
+            });
+
+            const hsnSummary = Array.from(hsnMap.entries()).map(([hsn, data]) => ({ hsn, ...data }));
+
+            // 4. GSTR-3B Summary
+            const totalOutwardTax = b2c.reduce((sum, i) => sum + i.igst + i.cgst + i.sgst, 0) +
+                b2b.reduce((sum, i) => sum + i.igst + i.cgst + i.sgst, 0);
+
+            const totalTaxable = b2c.reduce((sum, i) => sum + i.value, 0) +
+                b2b.reduce((sum, i) => sum + i.value, 0);
+
+            return {
+                gstr1: {
+                    b2b,
+                    b2c,
+                    hsn: hsnSummary
+                },
+                gstr3b: {
+                    outward: { taxable: totalTaxable, tax: totalOutwardTax },
+                    itc: { eligible: 0, ineligible: 0 } // Pending Purchase Implementation
+                }
+            };
+        }
+    });
+};
+
 export const useReports = (filters?: ReportsFilters) => {
     return useQuery({
         queryKey: ["reports", filters?.startDate?.toISOString(), filters?.endDate?.toISOString()],

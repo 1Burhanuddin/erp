@@ -208,7 +208,7 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
 
             {/* Bottom Navigation for Mobile */}
             {/* Floating Bottom Navigation for Mobile */}
-            <nav className="fixed bottom-6 left-6 right-6 h-16 bg-background/80 backdrop-blur-xl border border-border/50 rounded-full shadow-2xl flex justify-between px-2 items-center md:hidden z-50">
+            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-sm h-16 bg-background/80 backdrop-blur-xl border border-border/50 rounded-full shadow-2xl flex justify-between px-2 items-center md:hidden z-50">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.href;
                     return (

@@ -11,6 +11,7 @@ import Inventory from "./pages/Inventory";
 import Invoices from "./pages/Invoices";
 import Reports from "./pages/Reports";
 import ProfitLoss from "./pages/reports/ProfitLoss";
+import GSTReports from "./pages/reports/GSTReports";
 import AuditLogs from "./pages/AuditLogs";
 import AuditLogDetails from "./pages/AuditLogDetails";
 import Settings from "./pages/Settings";
@@ -116,7 +117,13 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const hostname = window.location.hostname;
-  const isERP = hostname === 'localhost' || hostname.includes('erpsoft.vercel.app');
+  const isPrivateIP = hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    (hostname.startsWith('172.') && parseInt(hostname.split('.')[1], 10) >= 16 && parseInt(hostname.split('.')[1], 10) <= 31);
+
+  const isERP = isPrivateIP || hostname.includes('erpsoft.vercel.app');
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -220,6 +227,7 @@ const App = () => {
                   <Route path="/inventory" element={<Inventory />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/reports/profit-loss" element={<ProfitLoss />} />
+                  <Route path="/reports/gst" element={<GSTReports />} />
                   <Route path="/audit-logs" element={<AuditLogs />} />
                   <Route path="/audit-logs/:id" element={<AuditLogDetails />} />
                   <Route path="/settings" element={<Settings />} />

@@ -135,6 +135,7 @@ const navItems = [
     icon: BarChart3,
     children: [
       { path: "/reports/profit-loss", label: "Profit & Loss", description: "Financial health summary" },
+      { path: "/reports/gst", label: "GST Reports", description: "GSTR-1 & 3B" },
       { path: "/reports", label: "General Reports", description: "Analytics and insights" },
     ]
   },

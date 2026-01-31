@@ -1,31 +1,11 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { useEmployees } from "@/api/employees";
-import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Search, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DataCard, DataViewToggle } from "@/components/shared";
 import { useNavigate } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteEmployee } from "@/api/employees";
-import { Trash } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -36,9 +16,18 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// MUI Imports
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Card from '@mui/material/Card';
+import Skeleton from '@mui/material/Skeleton';
 
 const EmployeeList = () => {
     const navigate = useNavigate();
@@ -46,8 +35,8 @@ const EmployeeList = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [employeeToDelete, setEmployeeToDelete] = useState<string | null>(null);
-    const [showAllStores, setShowAllStores] = useState(false);
-    const { data: employees, isLoading } = useEmployees({ allStores: showAllStores });
+    // Removed filtered view state, defaulting to showing all employees if applicable or just ignoring the filter
+    const { data: employees, isLoading } = useEmployees({ allStores: true }); // Defaulting to all stores for now
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -67,46 +56,37 @@ const EmployeeList = () => {
         }
     };
 
-    // Portal actions to the header
-
-
     return (
         <PageLayout>
-
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
-            <Button
-                onClick={() => navigate("/employees/add")}
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                size="lg"
-            >
-                <Plus className="mr-2 h-5 w-5" />
-                <span className="font-medium text-base">Add Employee</span>
-            </Button>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search employees..."
-            />
-
-
-
-
-            <div className="space-y-4">
-                {/* View Tabs */}
-                <div className="mb-6">
-                    <Tabs value={showAllStores ? "all" : "current"} onValueChange={(v) => setShowAllStores(v === "all")} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="current">Current Store</TabsTrigger>
-                            <TabsTrigger value="all">All Stores</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+            <div className="flex flex-col gap-6">
+                <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-full max-w-sm">
+                        <ExpandableSearch
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            placeholder="Search employees..."
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            onClick={() => navigate("/employees/add")}
+                            className="h-9 px-4 ml-2"
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Employee
+                        </Button>
+                    </div>
                 </div>
 
                 {isLoading ? (
                     <div className="space-y-4">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
+                        <Skeleton variant="rectangular" height={50} className="w-full rounded-lg" />
+                        <Skeleton variant="rectangular" height={50} className="w-full rounded-lg" />
+                        <Skeleton variant="rectangular" height={50} className="w-full rounded-lg" />
                     </div>
                 ) : filteredEmployees.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground">
@@ -115,66 +95,69 @@ const EmployeeList = () => {
                 ) : (
                     <>
                         {viewMode === 'table' ? (
-                            <div className="bg-card rounded-3xl border-0 shadow-sm overflow-hidden">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Role</TableHead>
-                                            {showAllStores && <TableHead>Store</TableHead>}
-                                            <TableHead>Phone</TableHead>
-                                            <TableHead>Status</TableHead>
-
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {filteredEmployees.map((emp) => (
-                                            <TableRow
-                                                key={emp.id}
-                                                className={`hover:bg-muted/50 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                    if (emp.role === 'admin') return;
-                                                    navigate(`/employees/details/${emp.id}`);
-                                                }}
-                                                title={emp.role === 'admin' ? "Admin profiles cannot be edited here" : "Click to edit"}
-                                            >
-                                                <TableCell className="font-medium">{emp.full_name}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={emp.role === 'admin' ? 'default' : 'secondary'}>
-                                                        {emp.role}
-                                                    </Badge>
-                                                </TableCell>
-                                                {showAllStores && (
+                            <Card className="rounded-3xl border-0 shadow-sm overflow-hidden">
+                                <TableContainer>
+                                    <Table>
+                                        <TableHead className="bg-gray-50">
+                                            <TableRow>
+                                                <TableCell>Name</TableCell>
+                                                <TableCell>Role</TableCell>
+                                                <TableCell>Store</TableCell>
+                                                <TableCell>Phone</TableCell>
+                                                <TableCell>Status</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {filteredEmployees.map((emp) => (
+                                                <TableRow
+                                                    key={emp.id}
+                                                    className={`hover:bg-muted/50 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        if (emp.role === 'admin') return;
+                                                        navigate(`/employees/details/${emp.id}`);
+                                                    }}
+                                                    hover
+                                                >
+                                                    <TableCell className="font-medium">{emp.full_name}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={emp.role}
+                                                            size="small"
+                                                            color={emp.role === 'admin' ? 'default' : 'secondary'}
+                                                            className="capitalize"
+                                                        />
+                                                    </TableCell>
                                                     <TableCell className="text-muted-foreground">
                                                         {emp.store?.name || '-'}
                                                     </TableCell>
-                                                )}
-                                                <TableCell>{emp.phone || '-'}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={emp.status === 'active' ? 'outline' : 'destructive'} className={emp.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : ''}>
-                                                        {emp.status}
-                                                    </Badge>
-                                                </TableCell>
-
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                                                    <TableCell>{emp.phone || '-'}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={emp.status}
+                                                            size="small"
+                                                            color={emp.status === 'active' ? 'success' : 'error'}
+                                                            variant="outlined"
+                                                            className="capitalize"
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Card>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {filteredEmployees.map((emp) => (
                                     <DataCard
                                         key={emp.id}
-                                        className={`group relative !p-6 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+                                        className={`group relative !p-6 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} hover:border-primary/50 transition-colors`}
                                         onClick={() => {
                                             if (emp.role === 'admin') return;
                                             navigate(`/employees/details/${emp.id}`);
                                         }}
                                         hover={emp.role !== 'admin'}
                                     >
-
-
                                         <div className="flex flex-row items-center justify-between space-y-0 pb-2 mb-2">
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-12 w-12 border-2 border-primary/10">
@@ -186,21 +169,27 @@ const EmployeeList = () => {
                                                     {emp.full_name}
                                                 </div>
                                             </div>
-                                            {/* <User className="h-5 w-5 text-muted-foreground" /> */}
                                         </div>
                                         <div>
                                             <div className="flex flex-col gap-1.5 pl-1">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-base text-muted-foreground">Role</span>
-                                                    <Badge className="text-sm px-2.5 py-0.5" variant={emp.role === 'admin' ? 'default' : 'secondary'}>
-                                                        {emp.role}
-                                                    </Badge>
+                                                    <Chip
+                                                        label={emp.role}
+                                                        size="small"
+                                                        color={emp.role === 'admin' ? 'default' : 'secondary'}
+                                                        className="capitalize h-6 text-xs"
+                                                    />
                                                 </div>
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-base text-muted-foreground">Status</span>
-                                                    <Badge className={`text-sm px-2.5 py-0.5 ${emp.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : ''}`} variant={emp.status === 'active' ? 'outline' : 'destructive'}>
-                                                        {emp.status}
-                                                    </Badge>
+                                                    <Chip
+                                                        label={emp.status}
+                                                        size="small"
+                                                        color={emp.status === 'active' ? 'success' : 'error'}
+                                                        variant="outlined"
+                                                        className="capitalize h-6 text-xs"
+                                                    />
                                                 </div>
                                                 {emp.phone && (
                                                     <div className="text-lg text-muted-foreground mt-2 font-medium tracking-wide">
@@ -235,6 +224,6 @@ const EmployeeList = () => {
             </AlertDialog>
         </PageLayout>
     );
-}
+};
 
 export default EmployeeList;

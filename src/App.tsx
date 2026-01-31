@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
 import Index from "./pages/Index";
 import ContactDetails from "./pages/ContactDetails";
 import Deals from "./pages/Deals";
@@ -112,6 +113,8 @@ import ShopLayout from "./pages/demo-shop/ShopLayout";
 import LandingPage from "./pages/demo-shop/LandingPage";
 import ProductPage from "./pages/demo-shop/ProductPage";
 import CheckoutPage from "./pages/demo-shop/CheckoutPage";
+import ComponentsDemo from "./pages/demo/ComponentsDemo";
+import ModernLayoutTest from "./pages/demo/ModernLayoutTest";
 
 const queryClient = new QueryClient();
 
@@ -254,7 +257,12 @@ const App = () => {
                   <Route path="/employees/performance" element={<EmployeePerformance />} />
                   <Route path="/employees/attendance" element={<Attendance />} />
                   <Route path="/demo-cards" element={<DemoCards />} />
+                  <Route path="/demo" element={<ComponentsDemo />} />
 
+                </Route>
+                {/* Modern Layout Demo */}
+                <Route element={<ModernDashboardLayout />}>
+                  <Route path="/modern-demo" element={<ModernLayoutTest />} />
                 </Route>
               </Route>
 

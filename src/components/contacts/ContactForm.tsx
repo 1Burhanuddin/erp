@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+
+// MUI Imports
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
 
 interface ContactFormProps {
     initialData?: any;
@@ -51,90 +53,115 @@ export const ContactForm = ({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input
-                        id="name"
+        <form onSubmit={handleSubmit}>
+            <Grid container spacing={3}>
+                <Grid xs={12} md={6}>
+                    <TextField
+                        label="Name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
+                        fullWidth
+                        variant="outlined"
+                        size="small"
                         placeholder="John Doe"
                     />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="company">Company</Label>
-                    <Input
-                        id="company"
+                </Grid>
+                <Grid xs={12} md={6}>
+                    <TextField
+                        label="Company"
                         value={formData.company}
                         onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        fullWidth
+                        variant="outlined"
+                        size="small"
                         placeholder="Acme Inc."
                     />
-                </div>
-            </div>
+                </Grid>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
+                <Grid xs={12} md={6}>
+                    <TextField
+                        label="Email"
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        fullWidth
+                        variant="outlined"
+                        size="small"
                         placeholder="john@example.com"
                     />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                        id="phone"
+                </Grid>
+                <Grid xs={12} md={6}>
+                    <TextField
+                        label="Phone"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        fullWidth
+                        variant="outlined"
+                        size="small"
                         placeholder="+1234567890"
                     />
-                </div>
-            </div>
+                </Grid>
 
-            <div className="space-y-2">
-                <Label htmlFor="gstin">GSTIN (Tax ID)</Label>
-                <Input
-                    id="gstin"
-                    value={formData.gstin}
-                    onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
-                    placeholder="e.g. 29ABCDE1234F1Z5"
-                />
-            </div>
+                <Grid xs={12}>
+                    <TextField
+                        label="GSTIN (Tax ID)"
+                        value={formData.gstin}
+                        onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        placeholder="e.g. 29ABCDE1234F1Z5"
+                    />
+                </Grid>
 
-            <div className="space-y-2">
-                <Label htmlFor="state">State (Place of Supply)</Label>
-                <Input
-                    id="state"
-                    value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    placeholder="e.g. Maharashtra"
-                />
-            </div>
+                <Grid xs={12}>
+                    <TextField
+                        label="State (Place of Supply)"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        placeholder="e.g. Maharashtra"
+                    />
+                </Grid>
 
-            <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    rows={4}
-                    placeholder="Detailed address..."
-                />
-            </div>
+                <Grid xs={12}>
+                    <TextField
+                        label="Address"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        fullWidth
+                        multiline
+                        rows={4}
+                        variant="outlined"
+                        size="small"
+                        placeholder="Detailed address..."
+                    />
+                </Grid>
 
-            <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                    Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Saving..." : initialData ? "Update Contact" : "Create Contact"}
-                </Button>
-            </div>
+                <Grid xs={12}>
+                    <div className="flex justify-end gap-2 pt-4">
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={() => navigate(-1)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isSubmitting ? "Saving..." : initialData ? "Update Contact" : "Create Contact"}
+                        </Button>
+                    </div>
+                </Grid>
+            </Grid>
         </form>
     );
 };

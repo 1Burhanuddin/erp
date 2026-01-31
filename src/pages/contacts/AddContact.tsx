@@ -3,7 +3,15 @@ import { ContactForm } from "@/components/contacts/ContactForm";
 import { useCreateContact } from "@/api/contacts";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+
+// MUI Imports
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 
 const AddContact = () => {
     const navigate = useNavigate();
@@ -50,13 +58,24 @@ const AddContact = () => {
 
     return (
         <PageLayout>
-            <div className="max-w-4xl mx-auto p-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Add New {role}</CardTitle>
-                        <CardDescription>Enter details to create a new {role.toLowerCase()}.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+            <div className="max-w-4xl mx-auto p-4">
+                <Button
+                    startIcon={<ArrowLeft />}
+                    onClick={() => navigate(-1)}
+                    className="mb-4"
+                    color="inherit"
+                >
+                    Back to List
+                </Button>
+
+                <Card className="rounded-xl shadow-sm border-0">
+                    <CardHeader
+                        title={<Typography variant="h6" fontWeight="bold">Add New {role}</Typography>}
+                        subheader={<Typography variant="body2" color="textSecondary">Enter details to create a new {role?.toLowerCase()}.</Typography>}
+                        className="pb-2"
+                    />
+                    <Divider />
+                    <CardContent className="pt-6">
                         <ContactForm onSubmit={handleSubmit} isSubmitting={createContact.isPending} defaultRole={role!} />
                     </CardContent>
                 </Card>

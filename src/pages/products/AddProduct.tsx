@@ -3,7 +3,8 @@ import { ProductForm } from "@/components/products/ProductForm";
 import { useCreateProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@mui/material";
+import Typography from "@mui/material/Typography";
 
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -70,10 +71,13 @@ const AddProduct = () => {
         <PageLayout>
             <div className="max-w-4xl mx-auto p-2">
                 <Card>
-
-                    <CardHeader>
-                        <CardTitle>{isService ? "Add New Service" : "Add New Product"}</CardTitle>
-                        <CardDescription>{isService ? "Create a new service offering" : "Create a new inventory product"}</CardDescription>
+                    <CardHeader className="pb-4">
+                        <Typography variant="h5" component="div" className="font-semibold">
+                            {isService ? "Add New Service" : "Add New Product"}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {isService ? "Create a new service offering" : "Create a new inventory product"}
+                        </Typography>
                     </CardHeader>
                     <CardContent>
                         <ProductForm

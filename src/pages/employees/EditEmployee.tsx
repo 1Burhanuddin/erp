@@ -1,47 +1,33 @@
 import { useEffect, useState } from "react";
 import { PageLayout } from "@/components/layout";
-import { useEmployees, useCreateEmployee } from "@/api/employees"; // Need update/delete hooks
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { EmployeeForm } from "@/components/employees/EmployeeForm";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
-import { Loader2, Trash2 } from "lucide-react";
-import { EmployeeRole } from "@/types/employee";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+
+// MUI Imports
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import CircularProgress from '@mui/material/CircularProgress';
+import { ArrowLeft, Trash2 } from "lucide-react";
 
 export default function EditEmployee() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-    const [formData, setFormData] = useState({
-        full_name: "",
-        phone: "",
-        address: "",
-        role: "employee" as EmployeeRole,
-        shift_start: "09:00",
-        status: "active" as "active" | "inactive"
-    });
+    const [initialData, setInitialData] = useState<any>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -53,27 +39,19 @@ export default function EditEmployee() {
                 .single();
 
             if (error) {
-                toast({ title: "Error", description: "Could not load employee", variant: "destructive" });
+                toast.error("Could not load employee");
                 navigate("/employees/list");
                 return;
             }
             if (data) {
-                setFormData({
-                    full_name: data.full_name,
-                    phone: data.phone || "",
-                    address: data.address || "",
-                    role: data.role,
-                    shift_start: data.shift_start || "09:00",
-                    status: data.status as "active" | "inactive"
-                });
+                setInitialData(data);
             }
             setFetching(false);
         };
         fetchEmployee();
-    }, [id]);
+    }, [id, navigate]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (formData: any) => {
         setLoading(true);
         try {
             const { error } = await supabase
@@ -83,150 +61,98 @@ export default function EditEmployee() {
 
             if (error) throw error;
 
-            toast({ title: "Updated successfully" });
+            toast.success("Updated successfully");
             navigate("/employees/list");
         } catch (error: any) {
-            toast({ title: "Error", description: error.message, variant: "destructive" });
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
     };
 
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
     const handleDelete = async () => {
-        // Dialog handles confirmation now
         setLoading(true);
         try {
             const { error } = await supabase.from("employees").delete().eq("id", id);
             if (error) throw error;
-            toast({ title: "Employee deleted" });
+            toast.success("Employee deleted");
             navigate("/employees/list");
         } catch (error: any) {
-            toast({ title: "Error deleting", description: error.message, variant: "destructive" });
+            toast.error(error.message);
             setLoading(false);
             setShowDeleteDialog(false);
         }
     };
 
-    if (fetching) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>;
+    if (fetching) {
+        return (
+            <PageLayout>
+                <div className="flex justify-center items-center h-64">
+                    <CircularProgress />
+                </div>
+            </PageLayout>
+        );
+    }
 
     return (
         <PageLayout>
-            <div className="max-w-4xl mx-auto p-2">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
-                        <div className="space-y-1.5">
-                            <CardTitle>Edit Employee</CardTitle>
-                            <CardDescription>Managing {formData.full_name}</CardDescription>
-                        </div>
-                        <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="rounded-full w-10 h-10 p-0 hover:w-48 transition-all duration-500 ease-in-out flex items-center justify-center overflow-hidden group">
-                            <Trash2 className="w-4 h-4 shrink-0" />
-                            <span className="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 whitespace-nowrap">
-                                Delete Employee
-                            </span>
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
-                                    <Input
-                                        id="full_name"
-                                        required
-                                        value={formData.full_name}
-                                        onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone <span className="text-destructive">*</span></Label>
-                                    <Input
-                                        id="phone"
-                                        required
-                                        value={formData.phone}
-                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="role">Role</Label>
-                                    <Select
-                                        value={formData.role}
-                                        onValueChange={(v: EmployeeRole) => setFormData({ ...formData, role: v })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="employee">Employee</SelectItem>
-                                            <SelectItem value="admin">Admin</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="status">Status</Label>
-                                    <Select
-                                        value={formData.status}
-                                        onValueChange={(v: "active" | "inactive") => setFormData({ ...formData, status: v })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="inactive">Inactive</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="shift_start">Shift Start Time</Label>
-                                    <Input
-                                        id="shift_start"
-                                        type="time"
-                                        value={formData.shift_start}
-                                        onChange={e => setFormData({ ...formData, shift_start: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="address">Address</Label>
-                                    <Input
-                                        id="address"
-                                        value={formData.address}
-                                        onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                    />
-                                </div>
-                            </div>
+            <div className="max-w-4xl mx-auto p-4">
+                <Button
+                    startIcon={<ArrowLeft />}
+                    onClick={() => navigate("/employees/list")}
+                    className="mb-4"
+                    color="inherit"
+                >
+                    Back to List
+                </Button>
 
-                            <div className="flex justify-end gap-4 pt-4">
-                                <Button type="button" variant="outline" onClick={() => navigate("/employees/list")}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={loading}>
-                                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Save Changes
+                <Card className="rounded-xl shadow-sm border-0">
+                    <CardHeader
+                        title={
+                            <div className="flex justify-between items-center">
+                                <Typography variant="h6" fontWeight="bold">Edit Employee</Typography>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    startIcon={<Trash2 size={16} />}
+                                    onClick={() => setShowDeleteDialog(true)}
+                                >
+                                    Delete
                                 </Button>
                             </div>
-                        </form>
+                        }
+                        subheader={<Typography variant="body2" color="textSecondary">Managing {initialData?.full_name}</Typography>}
+                        className="pb-2"
+                    />
+                    <Divider />
+                    <CardContent className="pt-6">
+                        <EmployeeForm
+                            initialData={initialData}
+                            onSubmit={handleSubmit}
+                            isSubmitting={loading}
+                            isEditing={true}
+                        />
                     </CardContent>
                 </Card>
             </div>
 
-            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the employee.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <Dialog
+                open={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+            >
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        This action cannot be undone. This will permanently delete the employee.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowDeleteDialog(false)} color="inherit">Cancel</Button>
+                    <Button onClick={handleDelete} color="error" variant="contained" disabled={loading}>
+                        {loading ? "Deleting..." : "Delete"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </PageLayout>
     );
 }

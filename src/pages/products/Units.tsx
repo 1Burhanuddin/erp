@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { useUnits } from "@/api/products";
 import { DataViewToggle, DataCard } from "@/components/shared";
-import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import { Plus } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
+
+// MUI Imports
+import Button from '@mui/material/Button';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Card from '@mui/material/Card';
+import Skeleton from '@mui/material/Skeleton';
 
 const Units = () => {
     const { data: rawUnits, isLoading } = useUnits();
@@ -35,81 +35,80 @@ const Units = () => {
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search units..."
-            />
+            <div className="flex flex-col gap-6">
+                <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-full max-w-sm">
+                        <ExpandableSearch
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            placeholder="Search units..."
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => navigate("/products/units/add")}
+                            startIcon={<Plus className="h-4 w-4" />}
+                        >
+                            Add Unit
+                        </Button>
+                    </div>
+                </div>
 
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
-            <Button
-                onClick={() => navigate("/products/units/add")}
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                size="lg"
-            >
-                <Plus className="mr-2 h-5 w-5" />
-                <span className="font-medium text-base">Add Unit</span>
-            </Button>
-
-
-            <div className="p-4">
-                {viewMode === 'card' ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {isLoading ? (
-                            Array.from({ length: 4 }).map((_, i) => (
-                                <Skeleton key={i} className="h-24 w-full rounded-xl" />
-                            ))
-                        ) : units?.length === 0 ? (
-                            <div className="col-span-full text-center py-8 text-muted-foreground">No units found.</div>
-                        ) : (
-                            units?.map((unit) => (
-                                <DataCard
-                                    key={unit.id}
-                                    className="bg-card cursor-pointer hover:bg-muted/50 transition-colors"
-                                    onClick={() => navigate(`/products/units/edit/${unit.id}`)}
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <span className="font-medium">{unit.name}</span>
-                                    </div>
-                                </DataCard>
-                            ))
-                        )}
+                {isLoading ? (
+                    <div className="space-y-4">
+                        <Skeleton variant="rectangular" height={50} className="rounded-lg" />
+                        <Skeleton variant="rectangular" height={50} className="rounded-lg" />
+                        <Skeleton variant="rectangular" height={50} className="rounded-lg" />
+                    </div>
+                ) : units?.length === 0 ? (
+                    <div className="text-center py-10 text-muted-foreground">
+                        No units found.
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoading ? (
-                                    Array.from({ length: 3 }).map((_, i) => (
-                                        <TableRow key={i}>
-                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : units?.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={1} className="h-24 text-center text-muted-foreground">
-                                            No units found.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    units?.map((unit) => (
-                                        <TableRow
-                                            key={unit.id}
-                                            className="cursor-pointer hover:bg-muted/50"
-                                            onClick={() => navigate(`/products/units/edit/${unit.id}`)}
-                                        >
-                                            <TableCell className="font-medium">{unit.name}</TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                    <>
+                        {viewMode === 'card' ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {units?.map((unit) => (
+                                    <DataCard
+                                        key={unit.id}
+                                        className="bg-card cursor-pointer hover:bg-muted/50 transition-colors"
+                                        onClick={() => navigate(`/products/units/edit/${unit.id}`)}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-medium">{unit.name}</span>
+                                        </div>
+                                    </DataCard>
+                                ))}
+                            </div>
+                        ) : (
+                            <Card className="rounded-3xl border-0 shadow-sm overflow-hidden">
+                                <TableContainer>
+                                    <Table>
+                                        <TableHead className="bg-gray-50">
+                                            <TableRow>
+                                                <TableCell>Name</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {units?.map((unit) => (
+                                                <TableRow
+                                                    key={unit.id}
+                                                    className="cursor-pointer hover:bg-muted/50"
+                                                    onClick={() => navigate(`/products/units/edit/${unit.id}`)}
+                                                    hover
+                                                >
+                                                    <TableCell className="font-medium">{unit.name}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Card>
+                        )}
+                    </>
                 )}
             </div>
         </PageLayout >

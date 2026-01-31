@@ -1,24 +1,22 @@
 import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useUnits, useUpdateUnit, useDeleteUnit } from "@/api/products";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+
+// MUI Imports
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const EditUnit = () => {
     const { id } = useParams();
@@ -88,59 +86,68 @@ const EditUnit = () => {
         <PageLayout>
             <div className="max-w-2xl mx-auto p-4">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Edit Unit</CardTitle>
-                        <CardDescription>Edit Unit: {unit.name}</CardDescription>
-                    </CardHeader>
+                    <CardHeader
+                        title="Edit Unit"
+                        subheader={`Edit Unit: ${unit.name}`}
+                        action={
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={() => setIsDeleteDialogOpen(true)}
+                                startIcon={<Trash2 className="h-4 w-4" />}
+                            >
+                                Delete
+                            </Button>
+                        }
+                    />
                     <CardContent>
-                        <div className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="name"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                />
+                        <Stack spacing={3}>
+                            <TextField
+                                label="Name"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                required
+                                fullWidth
+                                variant="outlined"
+                            />
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outlined" color="inherit" onClick={() => navigate("/products/units")}>
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSubmit}
+                                    disabled={updateUnit.isPending}
+                                >
+                                    {updateUnit.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Update
+                                </Button>
                             </div>
-
-                            <div className="flex justify-between items-center mt-6 pt-4 border-t">
-                                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" type="button">
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Delete
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the unit.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-                                                Delete
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-
-                                <div className="flex gap-2">
-                                    <Button variant="outline" onClick={() => navigate("/products/units")}>
-                                        Cancel
-                                    </Button>
-                                    <Button onClick={handleSubmit} disabled={updateUnit.isPending}>
-                                        {updateUnit.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        Update
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
+                        </Stack>
                     </CardContent>
                 </Card>
             </div>
+
+            <Dialog
+                open={isDeleteDialogOpen}
+                onClose={() => setIsDeleteDialogOpen(false)}
+            >
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        This action cannot be undone. This will permanently delete the unit.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsDeleteDialogOpen(false)} color="inherit">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleDelete} color="error" variant="contained" autoFocus>
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </PageLayout>
     );
 };

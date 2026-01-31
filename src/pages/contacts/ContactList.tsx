@@ -1,29 +1,25 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { useContacts } from "@/api/contacts";
-import { Button } from "@/components/ui/button";
-import { DataCard, DataViewToggle, SearchInput } from "@/components/shared";
+import { DataCard, DataViewToggle } from "@/components/shared";
 import { Plus, Mail, Phone, MapPin, Upload, Download } from "lucide-react";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import { useNavigate } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
 import { downloadCSV } from "@/lib/csvParser";
 import { toast } from "sonner";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
+// MUI Imports
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Card from '@mui/material/Card';
+import Skeleton from '@mui/material/Skeleton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 interface ContactListProps {
     role: "Supplier" | "Customer";
@@ -37,6 +33,8 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const openExportMenu = Boolean(anchorEl);
 
     useEffect(() => {
         setMounted(true);
@@ -60,7 +58,16 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
         );
     }) || [];
 
+    const handleExportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleExportClose = () => {
+        setAnchorEl(null);
+    };
+
     const handleExportCSV = () => {
+        handleExportClose();
         if (filteredContacts.length === 0) {
             toast.error("No contacts to export");
             return;
@@ -82,59 +89,74 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
         );
     };
 
-
-
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={`Search ${role?.toLowerCase()}s...`}
-            />
-            {mounted && document.getElementById('header-actions') && createPortal(
-                <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4">
-                                <Download className="h-4 w-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Export</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleExportCSV}>
-                                Export as CSV
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4" onClick={() => navigate("/contacts/import")}>
-                        <Upload className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Import</span>
-                    </Button>
-                </div>,
-                document.getElementById('header-actions')!
-            )}
+            <div className="flex flex-col gap-6">
+                <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-full max-w-sm">
+                        <ExpandableSearch
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            placeholder={`Search ${role?.toLowerCase()}s...`}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
 
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            className="h-9 px-2 sm:px-4"
+                            onClick={handleExportClick}
+                        >
+                            <Download className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Export</span>
+                        </Button>
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={openExportMenu}
+                            onClose={handleExportClose}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                        >
+                            <MenuItem onClick={handleExportCSV}>Export as CSV</MenuItem>
+                        </Menu>
 
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
-            <Button
-                onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                size="lg"
-            >
-                <Plus className="mr-2 h-5 w-5" />
-                <span className="font-medium text-base">Add {role}</span>
-            </Button>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            className="h-9 px-2 sm:px-4"
+                            onClick={() => navigate("/contacts/import")}
+                        >
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}
+                            className="h-9 px-4 ml-2"
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add {role}
+                        </Button>
+                    </div>
+                </div>
 
-
-
-
-
-            <div className="p-4">
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
                             Array.from({ length: 6 }).map((_, i) => (
-                                <Skeleton key={i} className="h-40 w-full rounded-xl" />
+                                <Skeleton key={i} variant="rectangular" height={160} className="w-full rounded-xl" />
                             ))
                         ) : filteredContacts.length === 0 ? (
                             <div className="col-span-full text-center py-8 text-muted-foreground">
@@ -142,7 +164,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                             </div>
                         ) : (
                             filteredContacts.map((contact) => (
-                                <DataCard key={contact.id} onClick={() => navigate(`/contacts/edit/${contact.id}`)} className="cursor-pointer transition-colors">
+                                <DataCard key={contact.id} onClick={() => navigate(`/contacts/edit/${contact.id}`)} className="cursor-pointer transition-colors hover:border-primary/50">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-foreground">{contact.name}</h3>
@@ -178,70 +200,73 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name/Company</TableHead>
-                                    <TableHead>Contact Info</TableHead>
-                                    <TableHead>GSTIN / Address</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoading ? (
-                                    Array.from({ length: 3 }).map((_, i) => (
-                                        <TableRow key={i}>
-                                            <TableCell><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24 mt-2" /></TableCell>
-                                            <TableCell><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24 mt-2" /></TableCell>
-                                            <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : filteredContacts.length === 0 ? (
+                    <Card className="rounded-3xl border-0 shadow-sm overflow-hidden">
+                        <TableContainer>
+                            <Table>
+                                <TableHead className="bg-gray-50">
                                     <TableRow>
-                                        <TableCell
-                                            colSpan={3}
-                                            className="h-24 text-center text-muted-foreground"
-                                        >
-                                            {searchQuery ? `No ${role.toLowerCase()}s found matching "${searchQuery}"` : `No ${role.toLowerCase()}s found.`}
-                                        </TableCell>
+                                        <TableCell>Name/Company</TableCell>
+                                        <TableCell>Contact Info</TableCell>
+                                        <TableCell>GSTIN / Address</TableCell>
                                     </TableRow>
-                                ) : (
-                                    filteredContacts.map((contact) => (
-                                        <TableRow
-                                            key={contact.id}
-                                            className="cursor-pointer hover:bg-muted/50"
-                                            onClick={() => navigate(`/contacts/edit/${contact.id}`)}
-                                        >
-                                            <TableCell>
-                                                <div className="font-medium">{contact.name}</div>
-                                                {contact.company && <div className="text-sm text-muted-foreground">{contact.company}</div>}
-                                            </TableCell>
-                                            <TableCell>
-                                                {contact.email && (
-                                                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                        <Mail className="h-3 w-3" /> {contact.email}
-                                                    </div>
-                                                )}
-                                                {contact.phone && (
-                                                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
-                                                        <Phone className="h-3 w-3" /> {contact.phone}
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {contact.gstin && <div className="text-sm font-mono">GST: {contact.gstin}</div>}
-                                                {contact.address && (
-                                                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5 truncate max-w-[200px]">
-                                                        <MapPin className="h-3 w-3 flex-shrink-0" /> {contact.address}
-                                                    </div>
-                                                )}
+                                </TableHead>
+                                <TableBody>
+                                    {isLoading ? (
+                                        Array.from({ length: 3 }).map((_, i) => (
+                                            <TableRow key={i}>
+                                                <TableCell><Skeleton variant="text" width={120} /><Skeleton variant="text" width={80} /></TableCell>
+                                                <TableCell><Skeleton variant="text" width={150} /><Skeleton variant="text" width={100} /></TableCell>
+                                                <TableCell><Skeleton variant="text" width={200} /></TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : filteredContacts.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={3}
+                                                className="h-24 text-center text-muted-foreground"
+                                            >
+                                                {searchQuery ? `No ${role.toLowerCase()}s found matching "${searchQuery}"` : `No ${role.toLowerCase()}s found.`}
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                                    ) : (
+                                        filteredContacts.map((contact) => (
+                                            <TableRow
+                                                key={contact.id}
+                                                className="cursor-pointer hover:bg-muted/50"
+                                                onClick={() => navigate(`/contacts/edit/${contact.id}`)}
+                                                hover
+                                            >
+                                                <TableCell>
+                                                    <div className="font-medium">{contact.name}</div>
+                                                    {contact.company && <div className="text-sm text-muted-foreground">{contact.company}</div>}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {contact.email && (
+                                                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                                            <Mail className="h-3 w-3" /> {contact.email}
+                                                        </div>
+                                                    )}
+                                                    {contact.phone && (
+                                                        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
+                                                            <Phone className="h-3 w-3" /> {contact.phone}
+                                                        </div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {contact.gstin && <div className="text-sm font-mono">GST: {contact.gstin}</div>}
+                                                    {contact.address && (
+                                                        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5 truncate max-w-[200px]">
+                                                            <MapPin className="h-3 w-3 flex-shrink-0" /> {contact.address}
+                                                        </div>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Card>
                 )}
             </div>
         </PageLayout>

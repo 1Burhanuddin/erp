@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { PageLayout } from "@/components/layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useCreateUnit } from "@/api/products";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
+
+// MUI Imports
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
 
 const AddUnit = () => {
     const navigate = useNavigate();
@@ -48,31 +52,40 @@ const AddUnit = () => {
         <PageLayout>
             <div className="max-w-2xl mx-auto p-4">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Add Unit</CardTitle>
-                        <CardDescription>Create a new product unit</CardDescription>
-                    </CardHeader>
+                    <CardHeader
+                        title="Add Unit"
+                        subheader="Create a new product unit"
+                    />
                     <CardContent>
-                        <div className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="name"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="e.g., Kg, Pcs, Box"
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2 mt-4">
-                                <Button variant="outline" onClick={() => handleNavigateBack()}>
+                        <Stack spacing={3}>
+                            <TextField
+                                label="Name"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="e.g., Kg, Pcs, Box"
+                                required
+                                fullWidth
+                                variant="outlined"
+                            />
+                            <div className="flex justify-end gap-2">
+                                <Button
+                                    variant="outlined"
+                                    color="inherit"
+                                    onClick={() => handleNavigateBack()}
+                                >
                                     Cancel
                                 </Button>
-                                <Button onClick={handleSubmit} disabled={createUnit.isPending}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSubmit}
+                                    disabled={createUnit.isPending}
+                                >
                                     {createUnit.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Create Unit
                                 </Button>
                             </div>
-                        </div>
+                        </Stack>
                     </CardContent>
                 </Card>
             </div>

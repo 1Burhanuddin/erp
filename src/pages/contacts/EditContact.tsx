@@ -1,24 +1,25 @@
 import { PageLayout } from "@/components/layout";
 import { ContactForm } from "@/components/contacts/ContactForm";
 import { useUpdateContact, useContact, useDeleteContact } from "@/api/contacts";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
+// MUI Imports
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 
 import { useState } from "react";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 const EditContact = () => {
     const { id } = useParams();
@@ -75,9 +76,8 @@ const EditContact = () => {
     if (isLoading) {
         return (
             <PageLayout>
-                <div className="p-8 space-y-4">
-                    <Skeleton className="h-12 w-48" />
-                    <Skeleton className="h-[400px] w-full" />
+                <div className="flex items-center justify-center h-screen">
+                    <CircularProgress />
                 </div>
             </PageLayout>
         );
@@ -85,21 +85,33 @@ const EditContact = () => {
 
     return (
         <PageLayout>
-            <div className="max-w-4xl mx-auto p-2">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
-                        <div className="space-y-1.5">
-                            <CardTitle>Edit {contact?.role}</CardTitle>
-                            <CardDescription>Editing: {contact?.name}</CardDescription>
-                        </div>
-                        <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="rounded-full w-10 h-10 p-0 hover:w-48 transition-all duration-500 ease-in-out flex items-center justify-center overflow-hidden group">
-                            <Trash2 className="w-4 h-4 shrink-0" />
-                            <span className="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 whitespace-nowrap">
-                                Delete Contact
-                            </span>
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
+            <div className="max-w-4xl mx-auto p-4">
+                <div className="flex justify-between items-center mb-4">
+                    <Button
+                        startIcon={<ArrowLeft />}
+                        onClick={() => navigate(-1)}
+                        color="inherit"
+                    >
+                        Back
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<Trash2 size={16} />}
+                        onClick={() => setShowDeleteDialog(true)}
+                    >
+                        Delete Contact
+                    </Button>
+                </div>
+
+                <Card className="rounded-xl shadow-sm border-0">
+                    <CardHeader
+                        title={<Typography variant="h6" fontWeight="bold">Edit {contact?.role}</Typography>}
+                        subheader={<Typography variant="body2" color="textSecondary">Editing: {contact?.name}</Typography>}
+                        className="pb-2"
+                    />
+                    <Divider />
+                    <CardContent className="pt-6">
                         <ContactForm
                             initialData={contact}
                             onSubmit={handleSubmit}
@@ -109,22 +121,25 @@ const EditContact = () => {
                 </Card>
             </div>
 
-            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the contact.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <Dialog
+                open={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+            >
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        This action cannot be undone. This will permanently delete the contact.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowDeleteDialog(false)} color="inherit">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleDelete} color="error" variant="contained" autoFocus>
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </PageLayout>
     );
 };

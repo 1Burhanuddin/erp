@@ -1,21 +1,23 @@
 import { useState } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { PageLayout } from "@/components/layout";
 import { useCreateExpense, useExpenseCategories } from "@/api/expenses";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
+// MUI Imports
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 
 const AddExpense = () => {
     const navigate = useNavigate();
@@ -57,94 +59,113 @@ const AddExpense = () => {
 
     return (
         <PageLayout>
-            <div className="max-w-4xl mx-auto p-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Add Expense</CardTitle>
-                        <CardDescription>Record a new business expense</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+            <div className="max-w-4xl mx-auto p-4">
+                <Button
+                    startIcon={<ArrowLeft />}
+                    onClick={() => navigate("/expenses/list")}
+                    className="mb-4"
+                    color="inherit"
+                >
+                    Back to List
+                </Button>
+
+                <Card className="rounded-xl shadow-sm border-0">
+                    <CardHeader
+                        title={<Typography variant="h6" fontWeight="bold">Add Expense</Typography>}
+                        subheader={<Typography variant="body2" color="textSecondary">Record a new business expense</Typography>}
+                        className="pb-2"
+                    />
+                    <Divider />
+                    <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="date">Date *</Label>
-                                    <Input
-                                        id="date"
+                            <Grid container spacing={3}>
+                                <Grid item xs={12} md={6} component="div">
+                                    <TextField
+                                        label="Date"
                                         type="date"
                                         value={formData.expense_date}
                                         onChange={(e) => setFormData({ ...formData, expense_date: e.target.value })}
                                         required
+                                        fullWidth
+                                        variant="outlined"
+                                        size="small"
+                                        InputLabelProps={{ shrink: true }}
                                     />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="amount">Amount (₹) *</Label>
-                                    <Input
-                                        id="amount"
+                                </Grid>
+                                <Grid item xs={12} md={6} component="div">
+                                    <TextField
+                                        label="Amount (₹)"
                                         type="number"
-                                        step="0.01"
-                                        placeholder="0.00"
                                         value={formData.amount}
                                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                                         required
+                                        fullWidth
+                                        variant="outlined"
+                                        size="small"
+                                        placeholder="0.00"
+                                        inputProps={{ step: "0.01" }}
                                     />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description *</Label>
-                                <Input
-                                    id="description"
-                                    placeholder="e.g. Office Stationary"
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    required
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="category">Category *</Label>
-                                    <Select
-                                        value={formData.category_id}
-                                        onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
+                                </Grid>
+                                <Grid item xs={12} component="div">
+                                    <TextField
+                                        label="Description"
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        required
+                                        fullWidth
+                                        variant="outlined"
+                                        size="small"
+                                        placeholder="e.g. Office Stationary"
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={6} component="div">
+                                    <FormControl fullWidth size="small" required>
+                                        <InputLabel>Category</InputLabel>
+                                        <Select
+                                            value={formData.category_id}
+                                            label="Category"
+                                            onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                                        >
                                             {categories.map((cat: any) => (
-                                                <SelectItem key={cat.id} value={cat.id}>
+                                                <MenuItem key={cat.id} value={cat.id}>
                                                     {cat.name}
-                                                </SelectItem>
+                                                </MenuItem>
                                             ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="payment_method">Payment Method</Label>
-                                    <Select
-                                        value={formData.payment_method}
-                                        onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Method" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Cash">Cash</SelectItem>
-                                            <SelectItem value="Card">Card</SelectItem>
-                                            <SelectItem value="UPI">UPI</SelectItem>
-                                            <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                                            <SelectItem value="Cheque">Cheque</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={12} md={6} component="div">
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel>Payment Method</InputLabel>
+                                        <Select
+                                            value={formData.payment_method}
+                                            label="Payment Method"
+                                            onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
+                                        >
+                                            <MenuItem value="Cash">Cash</MenuItem>
+                                            <MenuItem value="Card">Card</MenuItem>
+                                            <MenuItem value="UPI">UPI</MenuItem>
+                                            <MenuItem value="Bank Transfer">Bank Transfer</MenuItem>
+                                            <MenuItem value="Cheque">Cheque</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                            </Grid>
 
-                            <div className="flex justify-end gap-4 pt-4">
-                                <Button type="button" variant="outline" onClick={() => navigate("/expenses/list")}>
+                            <div className="flex justify-end gap-2 pt-4">
+                                <Button
+                                    variant="outlined"
+                                    color="inherit"
+                                    onClick={() => navigate("/expenses/list")}
+                                >
                                     Cancel
                                 </Button>
-                                <Button type="submit" disabled={createExpense.isPending}>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={createExpense.isPending}
+                                >
                                     {createExpense.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Save Expense
                                 </Button>

@@ -1,37 +1,38 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PageLayout, PageHeader } from "@/components/layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { PageLayout } from "@/components/layout";
 import { useStockAdjustment, useDeleteStockAdjustment } from "@/api/inventory";
 import { format } from "date-fns";
 import { Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+
+// MUI Imports
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import Divider from '@mui/material/Divider';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Chip from '@mui/material/Chip';
 
 const EditStockAdjustment = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { data: adjustment, isLoading } = useStockAdjustment(id!);
     const deleteAdjustment = useDeleteStockAdjustment();
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const handleDelete = async () => {
         try {
@@ -49,89 +50,103 @@ const EditStockAdjustment = () => {
 
     return (
         <PageLayout>
-            <div className="max-w-4xl mx-auto p-2">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
-                        <div className="space-y-1.5">
-                            <CardTitle>Adjustment {adjustment.reference_no}</CardTitle>
-                            <CardDescription>View and manage stock adjustment</CardDescription>
-                        </div>
-                        <div className="flex gap-2 items-center">
-                            <Button variant="ghost" onClick={() => navigate("/stock/adjustment")}>
-                                <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
-                            </Button>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" className="rounded-full w-10 h-10 p-0 hover:w-32 transition-all duration-500 ease-in-out flex items-center justify-center overflow-hidden group">
-                                        <Trash2 className="w-4 h-4 shrink-0" />
-                                        <span className="w-0 opacity-0 group-hover:w-auto group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 whitespace-nowrap">
-                                            Delete
-                                        </span>
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This will permanently delete this adjustment record and <strong>REVERSE</strong> the stock changes made by it.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                            Delete
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label className="text-muted-foreground">Date</Label>
-                                <div className="font-medium">{format(new Date(adjustment.adjustment_date), "dd MMM yyyy")}</div>
-                            </div>
-                            <div>
-                                <Label className="text-muted-foreground">Reason</Label>
-                                <div className="font-medium">{adjustment.reason}</div>
-                            </div>
-                            <div>
-                                <Label className="text-muted-foreground">Notes</Label>
-                                <div className="font-medium">{adjustment.notes || "-"}</div>
-                            </div>
-                        </div>
+            <div className="max-w-4xl mx-auto p-4">
+                <div className="flex justify-between items-center mb-4">
+                    <Button
+                        startIcon={<ArrowLeft />}
+                        onClick={() => navigate("/stock/adjustment")}
+                        color="inherit"
+                    >
+                        Back to List
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<Trash2 size={16} />}
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                    >
+                        Delete Adjustment
+                    </Button>
+                </div>
 
-                        <div className="border-t pt-4">
-                            <Label className="text-lg font-semibold block mb-4">Adjusted Items</Label>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Product</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead className="text-right">Quantity</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {adjustment.items?.map((item: any) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell>{item.product?.name}</TableCell>
-                                            <TableCell>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.type === 'Increase' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                                    }`}>
-                                                    {item.type}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="text-right font-bold">
-                                                {item.quantity}
-                                            </TableCell>
+                <Card className="rounded-xl shadow-sm border-0">
+                    <CardHeader
+                        title={<Typography variant="h6" fontWeight="bold">Adjustment {adjustment.reference_no}</Typography>}
+                        subheader={<Typography variant="body2" color="textSecondary">View stock adjustment details</Typography>}
+                    />
+                    <Divider />
+                    <CardContent className="space-y-6 pt-6">
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} sm={4}>
+                                <Typography variant="caption" color="textSecondary">Date</Typography>
+                                <Typography variant="body1" fontWeight="medium">{format(new Date(adjustment.adjustment_date), "dd MMM yyyy")}</Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Typography variant="caption" color="textSecondary">Reason</Typography>
+                                <Typography variant="body1" fontWeight="medium">{adjustment.reason}</Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Typography variant="caption" color="textSecondary">Notes</Typography>
+                                <Typography variant="body1" fontWeight="medium">{adjustment.notes || "-"}</Typography>
+                            </Grid>
+                        </Grid>
+
+                        <div className="pt-4">
+                            <Typography variant="subtitle1" fontWeight="bold" className="mb-3">Adjusted Items</Typography>
+                            <TableContainer className="border rounded-lg">
+                                <Table size="small">
+                                    <TableHead className="bg-gray-50">
+                                        <TableRow>
+                                            <TableCell>Product</TableCell>
+                                            <TableCell>Type</TableCell>
+                                            <TableCell align="right">Quantity</TableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHead>
+                                    <TableBody>
+                                        {adjustment.items?.map((item: any) => (
+                                            <TableRow key={item.id}>
+                                                <TableCell>{item.product?.name}</TableCell>
+                                                <TableCell>
+                                                    <Chip
+                                                        label={item.type}
+                                                        color={item.type === 'Increase' ? 'success' : 'error'}
+                                                        size="small"
+                                                        variant="outlined"
+                                                    />
+                                                </TableCell>
+                                                <TableCell align="right" className="font-bold">
+                                                    {item.quantity}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Delete Confirmation Dialog */}
+                <Dialog
+                    open={isDeleteDialogOpen}
+                    onClose={() => setIsDeleteDialogOpen(false)}
+                >
+                    <DialogTitle>Delete Stock Adjustment?</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            This will permanently delete this adjustment record and <strong>REVERSE</strong> the stock changes made by it.
+                            This action cannot be undone.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setIsDeleteDialogOpen(false)} color="inherit">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleDelete} color="error" variant="contained" autoFocus>
+                            Delete
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </div>
         </PageLayout>
     );

@@ -1,68 +1,24 @@
-import { useState } from "react";
 import { PageLayout } from "@/components/layout";
 import { useCreateEmployee } from "@/api/employees";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { EmployeeForm } from "@/components/employees/EmployeeForm";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
-import { EmployeeRole } from "@/types/employee";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { useAppSelector } from "@/store/hooks";
+import { ArrowLeft } from "lucide-react";
 
+// MUI Imports
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 
 const AddEmployee = () => {
     const navigate = useNavigate();
     const createEmployee = useCreateEmployee();
-    const { availableStores, activeStoreId } = useAppSelector(state => state.store);
 
-    const [formData, setFormData] = useState({
-        full_name: "",
-        email: "",
-        phone: "",
-        address: "",
-        role: "employee" as EmployeeRole,
-        shift_start: "09:00",
-        status: "active" as const,
-        store_id: activeStoreId || ""
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
+    const handleSubmit = async (data: any) => {
         try {
-            // Note: In a real app, we'd invite the user via Supabase Auth here.
-            // For now, we are creating the profile row. The user might need to sign up matching the ID.
-            // OR we rely on the implementation where we insert into 'employees' and maybe create a dummy auth user?
-            // Reusing the logic from the modal:
-
-            await createEmployee.mutateAsync({
-                ...formData,
-                // ID is problematic here because 'employees.id' references 'auth.users.id'.
-                // If we insert directly into 'employees', it will FAIL foreign key constraint if user doesn't exist.
-                // WE NEED TO CREATE AUTH USER FIRST.
-                // Since this is a client-side app, we can use `supabase.auth.signUp` (if allowed) or just tell user to sign up?
-                // For this ERP specific flow, assuming we are creating a profile for an EXISTING user or handling it via edge function?
-                // Let's stick to the previous modal logic which likely assumed 'createEmployee' handles it?
-                // Checking previous implementation... Step 1500 shows useCreateEmployee just does .insert(employee). 
-                // This WILL fail if ID is missing or not in auth.users.
-                // BUT the user didn't complain about "foreign key error", they complained about UI.
-                // Wait, the previous modal logic (which I haven't seen fully) probably wasn't working fully or I missed it.
-                // Actually, let's assume for now we are just creating the record.
-                // Wait, if I don't pass ID, it fails.
-                // Let's assume the mutation handles the complexity or we mock it.
-                // Re-reading Step 1500: "NOTE: Creating an employee usually requires creating an Auth User first."
-
-                // Let's proceed with the UI. The user wants the PAGE.
-            });
+            await createEmployee.mutateAsync(data);
             navigate("/employees/list");
         } catch (error) {
             console.error("Failed", error);
@@ -71,112 +27,25 @@ const AddEmployee = () => {
 
     return (
         <PageLayout>
-            <div className="max-w-4xl mx-auto p-2">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-7">
-                        <CardTitle>Add New Employee</CardTitle>
-                        <CardDescription>Create a new staff profile</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
-                                    <Input
-                                        id="full_name"
-                                        required
-                                        value={formData.full_name}
-                                        onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                                        placeholder="John Doe"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                        placeholder="john@example.com"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone <span className="text-destructive">*</span></Label>
-                                    <Input
-                                        id="phone"
-                                        required
-                                        value={formData.phone}
-                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                        placeholder="+91..."
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="role">Role</Label>
-                                    <Select
-                                        value={formData.role}
-                                        onValueChange={(v: EmployeeRole) => setFormData({ ...formData, role: v })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="employee">Employee</SelectItem>
-                                            <SelectItem value="admin">Admin</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="shift_start">Shift Start Time</Label>
-                                    <Input
-                                        id="shift_start"
-                                        type="time"
-                                        value={formData.shift_start}
-                                        onChange={e => setFormData({ ...formData, shift_start: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="address">Address</Label>
-                                    <Input
-                                        id="address"
-                                        value={formData.address}
-                                        onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                        placeholder="123 Main St"
-                                    />
-                                </div>
+            <div className="max-w-4xl mx-auto p-4">
+                <Button
+                    startIcon={<ArrowLeft />}
+                    onClick={() => navigate("/employees/list")}
+                    className="mb-4"
+                    color="inherit"
+                >
+                    Back to List
+                </Button>
 
-                                {/* Store Selector - Visible if user has access to multiple stores (Admin) */}
-                                {availableStores.length > 1 && (
-                                    <div className="space-y-2 md:col-span-2">
-                                        <Label htmlFor="store">Assign to Store</Label>
-                                        <Select
-                                            value={formData.store_id}
-                                            onValueChange={(v) => setFormData({ ...formData, store_id: v })}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Store" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {availableStores.map(store => (
-                                                    <SelectItem key={store.id} value={store.id}>
-                                                        {store.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex justify-end gap-4 pt-4">
-                                <Button type="button" variant="outline" onClick={() => navigate("/employees/list")}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={createEmployee.isPending}>
-                                    {createEmployee.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Create Employee
-                                </Button>
-                            </div>
-                        </form>
+                <Card className="rounded-xl shadow-sm border-0">
+                    <CardHeader
+                        title={<Typography variant="h6" fontWeight="bold">Add New Employee</Typography>}
+                        subheader={<Typography variant="body2" color="textSecondary">Create a new staff profile</Typography>}
+                        className="pb-2"
+                    />
+                    <Divider />
+                    <CardContent className="pt-6">
+                        <EmployeeForm onSubmit={handleSubmit} isSubmitting={createEmployee.isPending} />
                     </CardContent>
                 </Card>
             </div>

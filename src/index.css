@@ -14,8 +14,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 221 83% 95%;
+    /* Very light blue */
+    --secondary-foreground: 221 83% 40%;
+    /* Darker blue */
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -94,6 +96,8 @@
   [data-theme='blue'] {
     --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
+    --secondary: 221 83% 95%;
+    --secondary-foreground: 221 83% 40%;
     --ring: 221 83% 53%;
     --sidebar-accent: 217 91% 60%;
   }
@@ -101,6 +105,8 @@
   .dark[data-theme='blue'] {
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 217 91% 20%;
+    --secondary-foreground: 210 40% 98%;
     --ring: 217 91% 60%;
     --sidebar-accent: 217 91% 60%;
   }
@@ -109,6 +115,8 @@
   [data-theme='teal'] {
     --primary: 175 70% 41%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 175 70% 95%;
+    --secondary-foreground: 175 70% 30%;
     --ring: 175 70% 41%;
     --sidebar-accent: 175 70% 41%;
   }
@@ -116,6 +124,8 @@
   .dark[data-theme='teal'] {
     --primary: 175 70% 55%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 175 70% 20%;
+    --secondary-foreground: 0 0% 100%;
     --ring: 175 70% 55%;
     --sidebar-accent: 175 70% 55%;
   }
@@ -124,6 +134,8 @@
   [data-theme='golden'] {
     --primary: 38 92% 50%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 38 92% 95%;
+    --secondary-foreground: 38 92% 30%;
     --ring: 38 92% 50%;
     --sidebar-accent: 38 92% 50%;
   }
@@ -131,6 +143,8 @@
   .dark[data-theme='golden'] {
     --primary: 38 92% 60%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 38 92% 20%;
+    --secondary-foreground: 0 0% 100%;
     --ring: 38 92% 60%;
     --sidebar-accent: 38 92% 60%;
   }
@@ -139,6 +153,8 @@
   [data-theme='red'] {
     --primary: 0 72% 51%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 0 72% 96%;
+    --secondary-foreground: 0 72% 30%;
     --ring: 0 72% 51%;
     --sidebar-accent: 0 72% 51%;
   }
@@ -146,6 +162,8 @@
   .dark[data-theme='red'] {
     --primary: 0 72% 65%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 0 72% 20%;
+    --secondary-foreground: 0 0% 100%;
     --ring: 0 72% 65%;
     --sidebar-accent: 0 72% 65%;
   }
@@ -154,6 +172,8 @@
   [data-theme='pink'] {
     --primary: 330 81% 60%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 330 81% 96%;
+    --secondary-foreground: 330 81% 30%;
     --ring: 330 81% 60%;
     --sidebar-accent: 330 81% 60%;
   }
@@ -161,6 +181,8 @@
   .dark[data-theme='pink'] {
     --primary: 330 81% 60%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 330 81% 20%;
+    --secondary-foreground: 0 0% 100%;
     --ring: 330 81% 60%;
     --sidebar-accent: 330 81% 60%;
   }
@@ -169,6 +191,8 @@
   [data-theme='zinc'] {
     --primary: 240 6% 10%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 240 6% 96%;
+    --secondary-foreground: 240 6% 10%;
     --ring: 240 6% 10%;
     --sidebar-accent: 240 6% 10%;
   }
@@ -176,15 +200,18 @@
   .dark[data-theme='zinc'] {
     --primary: 0 0% 98%;
     --primary-foreground: 240 6% 10%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 98%;
     --ring: 0 0% 98%;
     --sidebar-accent: 240 5% 26%;
-    /* Lighter for visibility */
   }
 
   /* Forest (Custom Green) */
   [data-theme='forest'] {
     --primary: 124 42% 19%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 124 42% 95%;
+    --secondary-foreground: 124 42% 19%;
     --ring: 124 42% 19%;
     --sidebar-accent: 124 42% 19%;
   }
@@ -192,6 +219,8 @@
   .dark[data-theme='forest'] {
     --primary: 124 42% 40%;
     --primary-foreground: 0 0% 100%;
+    --secondary: 124 42% 15%;
+    --secondary-foreground: 0 0% 100%;
     --ring: 124 42% 40%;
     --sidebar-accent: 124 42% 40%;
   }
@@ -250,4 +279,28 @@
     scrollbar-width: none;
     /* Firefox */
   }
+}
+
+/* Force MUI Overrides */
+.MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root,
+.MuiFilledInput-root {
+  border-radius: 12px !important;
+}
+
+/* Ensure filled input doesn't have the bottom line radius only */
+.MuiFilledInput-root:before,
+.MuiFilledInput-root:after {
+  border-radius: 12px !important;
+  /* Optional: if underlines interfere */
+}
+
+/* Force MUI Button Overrides */
+.MuiButton-root {
+  border-radius: 12px !important;
+}
+
+.MuiButton-sizeMedium {
+  min-height: 56px !important;
+  font-size: 1rem !important;
 }

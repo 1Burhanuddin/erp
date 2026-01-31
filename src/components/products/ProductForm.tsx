@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+// MUI Imports
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+
 import { Plus, Loader2, Upload, X, RefreshCw } from "lucide-react";
 
 import {
@@ -47,16 +46,14 @@ const StoreSelector = ({ selectedStores, onChange }: { selectedStores: string[],
     return (
         <div className="flex flex-wrap gap-2">
             {stores.map(store => (
-                <Button
+                <Chip
                     key={store.id}
-                    type="button"
-                    variant={selectedStores.includes(store.id) ? "default" : "outline"}
-                    size="sm"
+                    label={store.name}
+                    color={selectedStores.includes(store.id) ? "primary" : "default"}
+                    variant={selectedStores.includes(store.id) ? "filled" : "outlined"}
                     onClick={() => toggleStore(store.id)}
-                    className="h-8"
-                >
-                    {store.name}
-                </Button>
+                    clickable
+                />
             ))}
         </div>
     );
@@ -349,7 +346,7 @@ export const ProductForm = ({
         <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
             {!fixedType && (
                 <div className="space-y-2">
-                    <Label>Product Type</Label>
+                    <Typography variant="subtitle2">Product Type</Typography>
                     <div className="flex gap-4">
                         <label className="flex items-center gap-2 cursor-pointer border p-3 rounded-lg hover:bg-muted/50 transition-colors has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                             <input
@@ -384,309 +381,254 @@ export const ProductForm = ({
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Label htmlFor="name">
-                        {formData.type === "Service" ? "Service Name" : "Product Name"} <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        onBlur={() => !initialData && handleAutoSKU(formData.type)} // Only auto-gen on blur for new items
+                <TextField
+                    id="name"
+                    label={formData.type === "Service" ? "Service Name" : "Product Name"}
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onBlur={() => !initialData && handleAutoSKU(formData.type)}
+                    required
+                    fullWidth
+                    placeholder={formData.type === "Service" ? "e.g. Repair" : "e.g. Wireless Mouse"}
+                />
+
+                <div className="flex gap-2">
+                    <TextField
+                        id="sku"
+                        label={formData.type === "Service" ? "Service Code" : "SKU"}
+                        value={formData.sku}
+                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                         required
-                        placeholder={formData.type === "Service" ? "e.g. Repair" : "e.g. Wireless Mouse"}
+                        fullWidth
+                        placeholder={formData.type === "Service" ? "e.g. SVC-001" : "e.g. WM-001"}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        onClick={() => handleAutoSKU(formData.type)}
+                                        title="Regenerate Code based on Name"
+                                        edge="end"
+                                        size="small"
+                                    >
+                                        <RefreshCw className="h-4 w-4" />
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
                     />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="sku">
-                        {formData.type === "Service" ? "Service Code" : "SKU (Stock Keeping Unit)"} <span className="text-destructive">*</span>
-                    </Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="sku"
-                            value={formData.sku}
-                            onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                            required
-                            placeholder={formData.type === "Service" ? "e.g. SVC-001" : "e.g. WM-001"}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <TextField
+                    label="HSN/SAC Code"
+                    value={formData.hsn_code}
+                    onChange={(e) => setFormData({ ...formData, hsn_code: e.target.value })}
+                    fullWidth
+                />
+
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={formData.is_tax_inclusive}
+                            onChange={(e) => setFormData({ ...formData, is_tax_inclusive: e.target.checked })}
+                            color="primary"
                         />
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleAutoSKU(formData.type)}
-                            title="Regenerate Code based on Name"
-                        >
-                            <RefreshCw className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
+                    }
+                    label="Tax Inclusive Price"
+                />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Label htmlFor="hsn_code">HSN/SAC Code</Label>
-                    <Input
-                        value={formData.hsn_code}
-                        onChange={(e) => setFormData({ ...formData, hsn_code: e.target.value })}
-                        placeholder="HSN/SAC Code"
-                    />
+                <div className="flex gap-2">
+                    <TextField
+                        select
+                        label="Category"
+                        value={formData.category_id}
+                        onChange={(e) => setFormData({ ...formData, category_id: e.target.value, sub_category_id: "" })}
+                        fullWidth
+                    >
+                        {categories?.map((c) => (
+                            <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                        ))}
+                    </TextField>
+                    <Button variant="outlined" className="min-w-[40px] px-0" onClick={() => handleQuickAdd('category')}>
+                        <Plus className="h-4 w-4" />
+                    </Button>
                 </div>
 
-                <div className="flex items-center space-x-2 pt-8">
-                    <Switch
-                        id="tax-inclusive"
-                        checked={formData.is_tax_inclusive}
-                        onCheckedChange={(checked) => setFormData({ ...formData, is_tax_inclusive: checked })}
-                    />
-                    <Label htmlFor="tax-inclusive">Tax Inclusive Price</Label>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Label>Category</Label>
-                    <div className="flex gap-2">
-                        <Select
-                            value={formData.category_id}
-                            onValueChange={(val) =>
-                                setFormData({ ...formData, category_id: val, sub_category_id: "" })
-                            }
-                        >
-                            <SelectTrigger className="flex-1">
-                                <SelectValue placeholder="Select Category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {categories?.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>
-                                        {c.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Button type="button" variant="outline" size="icon" onClick={() => handleQuickAdd('category')}>
-                            <Plus className="h-4 w-4" />
-                        </Button>
-                    </div>
+                <div className="flex gap-2">
+                    <TextField
+                        select
+                        label="Sub Category"
+                        value={formData.sub_category_id}
+                        onChange={(e) => setFormData({ ...formData, sub_category_id: e.target.value })}
+                        disabled={!formData.category_id}
+                        fullWidth
+                    >
+                        {formData.category_id ? (
+                            subCategories?.map((sc) => (
+                                <MenuItem key={sc.id} value={sc.id}>{sc.name}</MenuItem>
+                            ))
+                        ) : (
+                            <MenuItem value="" disabled>Select Category First</MenuItem>
+                        )}
+                    </TextField>
+                    <Button
+                        variant="outlined"
+                        className="min-w-[40px] px-0"
+                        onClick={() => handleQuickAdd('subcategory')}
+                        disabled={!formData.category_id}
+                    >
+                        <Plus className="h-4 w-4" />
+                    </Button>
                 </div>
 
-                <div className="space-y-2">
-                    <Label>Sub Category</Label>
-                    <div className="flex gap-2">
-                        <Select
-                            value={formData.sub_category_id}
-                            onValueChange={(val) =>
-                                setFormData({ ...formData, sub_category_id: val })
-                            }
-                            disabled={!formData.category_id}
-                        >
-                            <SelectTrigger className="flex-1">
-                                <SelectValue placeholder={formData.category_id ? "Select Sub Category" : "Select Category First"} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {subCategories?.map((sc) => (
-                                    <SelectItem key={sc.id} value={sc.id}>
-                                        {sc.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleQuickAdd('subcategory')}
-                            disabled={!formData.category_id}
-                        >
-                            <Plus className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
-
-                {
-                    formData.type === "Product" && (
-                        <>
-                            <div className="space-y-2">
-                                <Label>Brand</Label>
-                                <div className="flex gap-2">
-                                    <Select
-                                        value={formData.brand_id}
-                                        onValueChange={(val) =>
-                                            setFormData({ ...formData, brand_id: val })
-                                        }
-                                    >
-                                        <SelectTrigger className="flex-1">
-                                            <SelectValue placeholder="Select Brand" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {brands?.map((b) => (
-                                                <SelectItem key={b.id} value={b.id}>
-                                                    {b.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuickAdd('brand')}>
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Unit</Label>
-                                <div className="flex gap-2">
-                                    <Select
-                                        value={formData.unit_id}
-                                        onValueChange={(val) =>
-                                            setFormData({ ...formData, unit_id: val })
-                                        }
-                                    >
-                                        <SelectTrigger className="flex-1">
-                                            <SelectValue placeholder="Select Unit" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {units?.map((u) => (
-                                                <SelectItem key={u.id} value={u.id}>
-                                                    {u.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuickAdd('unit')}>
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        </>
-                    )
-                }
-            </div >
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                    <Label htmlFor="purchase_price">
-                        {formData.type === "Service" ? "Cost Price (Optional)" : "Purchase Price"}
-                    </Label>
-                    <Input
-                        id="purchase_price"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.purchase_price}
-                        onChange={(e) =>
-                            setFormData({ ...formData, purchase_price: e.target.value })
-                        }
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="sale_price">
-                        {formData.type === "Service" ? "Service Charge" : "Sale Price"} <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                        id="sale_price"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.sale_price}
-                        onChange={(e) =>
-                            setFormData({ ...formData, sale_price: e.target.value })
-                        }
-                    />
-                </div>
                 {formData.type === "Product" && (
-                    <div className="space-y-2">
-                        <Label htmlFor="alert_quantity">Alert Quantity</Label>
-                        <Input
-                            id="alert_quantity"
-                            type="number"
-                            min="0"
-                            value={formData.alert_quantity}
-                            onChange={(e) =>
-                                setFormData({ ...formData, alert_quantity: e.target.value })
-                            }
-                        />
-                    </div>
+                    <>
+                        <div className="flex gap-2">
+                            <TextField
+                                select
+                                label="Brand"
+                                value={formData.brand_id}
+                                onChange={(e) => setFormData({ ...formData, brand_id: e.target.value })}
+                                fullWidth
+                            >
+                                {brands?.map((b) => (
+                                    <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>
+                                ))}
+                            </TextField>
+                            <Button variant="outlined" className="min-w-[40px] px-0" onClick={() => handleQuickAdd('brand')}>
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <TextField
+                                select
+                                label="Unit"
+                                value={formData.unit_id}
+                                onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
+                                fullWidth
+                            >
+                                {units?.map((u) => (
+                                    <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>
+                                ))}
+                            </TextField>
+                            <Button variant="outlined" className="min-w-[40px] px-0" onClick={() => handleQuickAdd('unit')}>
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </>
                 )}
             </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
-                    }
-                    rows={4}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <TextField
+                    id="purchase_price"
+                    label={formData.type === "Service" ? "Cost Price (Optional)" : "Purchase Price"}
+                    type="number"
+                    value={formData.purchase_price}
+                    onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
+                    fullWidth
                 />
+                <TextField
+                    id="sale_price"
+                    label={formData.type === "Service" ? "Service Charge" : "Sale Price"}
+                    type="number"
+                    value={formData.sale_price}
+                    onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
+                    required
+                    fullWidth
+                />
+                {formData.type === "Product" && (
+                    <TextField
+                        id="alert_quantity"
+                        label="Alert Quantity"
+                        type="number"
+                        value={formData.alert_quantity}
+                        onChange={(e) => setFormData({ ...formData, alert_quantity: e.target.value })}
+                        fullWidth
+                    />
+                )}
             </div>
+
+            <TextField
+                id="description"
+                label="Description"
+                multiline
+                rows={4}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                fullWidth
+            />
 
             <div className="space-y-4 border rounded-lg p-4 bg-muted/20">
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                        <Label>Online Store</Label>
+                        <Typography variant="subtitle2">Online Store</Typography>
                         <p className="text-sm text-muted-foreground">Make this item visible on the e-commerce website</p>
                     </div>
-                    <Switch
-                        checked={formData.is_online}
-                        onCheckedChange={(checked) => {
-                            setFormData({ ...formData, is_online: checked });
-                        }}
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={formData.is_online}
+                                onChange={(e) => setFormData({ ...formData, is_online: e.target.checked })}
+                                color="primary"
+                            />
+                        }
+                        label={formData.is_online ? "Visible" : "Hidden"}
                     />
                 </div>
 
                 {formData.is_online && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                         <div className="col-span-1 md:col-span-2 space-y-2">
-                            <Label>Available on Stores <span className="text-destructive">*</span></Label>
-                            <div className="flex flex-wrap gap-2">
-                                <StoreSelector
-                                    selectedStores={formData.store_ids || []}
-                                    onChange={(ids) => setFormData({ ...formData, store_ids: ids })}
-                                />
-                            </div>
+                            <Typography variant="subtitle2">Available on Stores <span className="text-destructive">*</span></Typography>
+                            <StoreSelector
+                                selectedStores={formData.store_ids || []}
+                                onChange={(ids) => setFormData({ ...formData, store_ids: ids })}
+                            />
                             <p className="text-xs text-muted-foreground">Select which stores this product appears on.</p>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="condition">Type <span className="text-destructive">*</span></Label>
-                            <Select
+                            <TextField
+                                select
+                                label="Type"
                                 value={formData.condition}
-                                onValueChange={(val) => setFormData({ ...formData, condition: val })}
+                                onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                                required
+                                fullWidth
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select Type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="New">New</SelectItem>
-                                    <SelectItem value="Used - Like New">Used - Like New</SelectItem>
-                                    <SelectItem value="Used - Good">Used - Good</SelectItem>
-                                    <SelectItem value="Used - Fair">Used - Fair</SelectItem>
-                                </SelectContent>
-                            </Select>
+                                <MenuItem value="New">New</MenuItem>
+                                <MenuItem value="Used - Like New">Used - Like New</MenuItem>
+                                <MenuItem value="Used - Good">Used - Good</MenuItem>
+                                <MenuItem value="Used - Fair">Used - Fair</MenuItem>
+                            </TextField>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="online_price">Online Price (Optional Override)</Label>
-                            <Input
-                                id="online_price"
+                            <TextField
+                                label="Online Price (Optional Override)"
                                 type="number"
-                                min="0"
-                                step="0.01"
                                 value={formData.online_price}
                                 onChange={(e) => setFormData({ ...formData, online_price: e.target.value })}
                                 placeholder={formData.sale_price || "Same as Sale Price"}
+                                fullWidth
                             />
                         </div>
                         <div className="col-span-1 md:col-span-2 space-y-2">
-                            <Label htmlFor="features">Features (One per line)</Label>
-                            <Textarea
-                                id="features"
+                            <TextField
+                                label="Features (One per line)"
+                                multiline
+                                rows={4}
                                 value={formData.features}
                                 onChange={(e) => setFormData({ ...formData, features: e.target.value })}
                                 placeholder="Free Installation&#10;5 Year Warranty&#10;Inverter Technology"
-                                rows={4}
+                                fullWidth
                             />
                         </div>
                         <div className="col-span-1 md:col-span-2 space-y-2">
-                            <Label>Product Image</Label>
+                            <Typography variant="subtitle2">Product Image</Typography>
                             <div className="flex items-center gap-4">
                                 {formData.image_url && (
                                     <div className="relative w-24 h-24 border rounded-lg overflow-hidden shrink-0 group">
@@ -728,10 +670,10 @@ export const ProductForm = ({
             </div>
 
             <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                <Button type="button" variant="outlined" onClick={() => navigate(-1)}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" variant="contained" disabled={isSubmitting}>
                     {isSubmitting ? "Saving..." : initialData ? "Update Product" : "Create Product"}
                 </Button>
             </div>

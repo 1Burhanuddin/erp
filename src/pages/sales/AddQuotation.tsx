@@ -18,12 +18,16 @@ import { toast } from "sonner";
 import { useCreateQuotation } from "@/api/sales";
 import { useContacts } from "@/api/contacts";
 import { useProducts } from "@/api/products";
+import { useStores } from "@/api/stores";
+import { useTaxRates } from "@/api/taxRates";
 
 interface LineItem {
     id: string; // temp id for UI
     product_id: string;
     quantity: number;
     unit_price: number;
+    tax_rate_id: string;
+    tax_amount: number;
     subtotal: number;
 }
 
@@ -32,6 +36,9 @@ const AddQuotation = () => {
     const createQuotation = useCreateQuotation();
     const { data: contacts = [] } = useContacts();
     const { data: products = [] } = useProducts();
+    const { data: stores } = useStores();
+    const currentStore = stores?.[0];
+    const { data: taxRates } = useTaxRates(currentStore?.id);
 
     const [formData, setFormData] = useState({
         customer_id: "",
@@ -41,7 +48,7 @@ const AddQuotation = () => {
     });
 
     const [items, setItems] = useState<LineItem[]>([
-        { id: "1", product_id: "", quantity: 1, unit_price: 0, subtotal: 0 }
+        { id: "1", product_id: "", quantity: 1, unit_price: 0, tax_rate_id: "", tax_amount: 0, subtotal: 0 }
     ]);
 
     // Update item and recalculate subtotal
@@ -58,8 +65,20 @@ const AddQuotation = () => {
                     }
                 }
 
+                // If tax rate changed or price/qty changed, recalculate tax
+                let taxAmount = 0;
+                const taxRateId = field === "tax_rate_id" ? value : updated.tax_rate_id;
+
+                if (taxRateId) {
+                    const rate = taxRates?.find(r => r.id === taxRateId);
+                    if (rate) {
+                        taxAmount = (updated.unit_price * updated.quantity * rate.percentage) / 100;
+                    }
+                }
+                updated.tax_amount = taxAmount;
+
                 // Recalculate subtotal
-                updated.subtotal = updated.quantity * updated.unit_price;
+                updated.subtotal = (updated.quantity * updated.unit_price) + taxAmount;
                 return updated;
             }
             return item;
@@ -69,7 +88,7 @@ const AddQuotation = () => {
     const addItem = () => {
         setItems([
             ...items,
-            { id: Date.now().toString(), product_id: "", quantity: 1, unit_price: 0, subtotal: 0 }
+            { id: Date.now().toString(), product_id: "", quantity: 1, unit_price: 0, tax_rate_id: "", tax_amount: 0, subtotal: 0 }
         ]);
     };
 
@@ -173,8 +192,9 @@ const AddQuotation = () => {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center bg-muted/50 p-2 rounded-md font-medium text-sm">
                                     <div className="flex-1 px-2">Product</div>
-                                    <div className="w-24 px-2">Qty</div>
-                                    <div className="w-32 px-2">Price</div>
+                                    <div className="w-20 px-2">Qty</div>
+                                    <div className="w-28 px-2">Price</div>
+                                    <div className="w-32 px-2">Tax</div>
                                     <div className="w-32 px-2">Subtotal</div>
                                     <div className="w-10"></div>
                                 </div>
@@ -198,7 +218,7 @@ const AddQuotation = () => {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <div className="w-24">
+                                        <div className="w-20">
                                             <Input
                                                 type="number"
                                                 min="1"
@@ -206,7 +226,7 @@ const AddQuotation = () => {
                                                 onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value) || 0)}
                                             />
                                         </div>
-                                        <div className="w-32">
+                                        <div className="w-28">
                                             <Input
                                                 type="number"
                                                 min="0"
@@ -214,6 +234,23 @@ const AddQuotation = () => {
                                                 value={item.unit_price}
                                                 onChange={(e) => updateItem(item.id, "unit_price", parseFloat(e.target.value) || 0)}
                                             />
+                                        </div>
+                                        <div className="w-32">
+                                            <Select
+                                                value={item.tax_rate_id}
+                                                onValueChange={(value) => updateItem(item.id, "tax_rate_id", value)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Tax" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {taxRates?.map((rate) => (
+                                                        <SelectItem key={rate.id} value={rate.id}>
+                                                            {rate.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="w-32">
                                             <Input

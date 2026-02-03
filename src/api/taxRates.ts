@@ -7,18 +7,26 @@ type TaxRate = Database['public']['Tables']['tax_rates']['Row'];
 type TaxRateInsert = Database['public']['Tables']['tax_rates']['Insert'];
 type TaxRateUpdate = Database['public']['Tables']['tax_rates']['Update'];
 
-export const useTaxRates = () => {
+export const useTaxRates = (storeId?: string) => {
     return useQuery({
-        queryKey: ["tax_rates"],
+        queryKey: ["tax_rates", storeId],
         queryFn: async () => {
-            const { data, error } = await supabase
+            let query = supabase
                 .from("tax_rates")
                 .select("*")
                 .order("percentage", { ascending: true });
 
+            if (storeId) {
+                // Fetch rates for this store OR global rates (store_id is null)
+                query = query.or(`store_id.eq.${storeId},store_id.is.null`);
+            }
+
+            const { data, error } = await query;
+
             if (error) throw error;
             return data;
         },
+        enabled: true // Always enabled, even if storeId is undefined (fetches all visible)
     });
 };
 

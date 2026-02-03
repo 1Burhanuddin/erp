@@ -1,12 +1,11 @@
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Receipt, Building2, Plus, ArrowLeft, Loader2, ChevronUp, ChevronDown } from "lucide-react";
+import { Receipt, Building2, Plus, ArrowLeft, Loader2, ChevronUp, ChevronDown, Edit, X, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBusinessProfile, useUpdateBusinessProfile } from "@/api/businessProfile";
 import { useTaxRates, useCreateTaxRate, useUpdateTaxRate, useDeleteTaxRate } from "@/api/taxRates";
 import { toast } from "sonner";
-import { SettingsField, BusinessActionButtons } from "@/components/settings/SettingsCommon";
 import { useNavigate } from "react-router-dom";
 import {
     Table,
@@ -31,13 +30,20 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import { useStores, useUpdateStore } from "@/api/stores";
+
 export default function TaxAndBank() {
     const navigate = useNavigate();
     const { data: businessProfile, isLoading: isBusinessLoading } = useBusinessProfile();
     const updateBusinessProfileMutation = useUpdateBusinessProfile();
 
+    // Stores
+    const { data: stores, isLoading: isStoresLoading } = useStores();
+    const updateStoreMutation = useUpdateStore();
+    const currentStore = stores?.[0];
+
     // Tax Rates
-    const { data: taxRates } = useTaxRates();
+    const { data: taxRates } = useTaxRates(currentStore?.id);
     const createTaxRateMutation = useCreateTaxRate();
     const deleteTaxRateMutation = useDeleteTaxRate();
     const updateTaxRateMutation = useUpdateTaxRate();
@@ -61,28 +67,46 @@ export default function TaxAndBank() {
     });
 
     useEffect(() => {
-        if (businessProfile) {
+        if (!isEditingBusiness) {
             setBusinessForm({
-                gstin: businessProfile.gstin || "",
-                pan_no: businessProfile.pan_no || "",
-                tax_scheme: businessProfile.tax_scheme || "",
-                bank_name: businessProfile.bank_name || "",
-                account_no: businessProfile.account_no || "",
-                ifsc_code: businessProfile.ifsc_code || "",
-                branch_name: businessProfile.branch_name || "",
+                gstin: currentStore?.gstin || businessProfile?.gstin || "",
+                pan_no: businessProfile?.pan_no || "",
+                tax_scheme: businessProfile?.tax_scheme || "",
+                bank_name: businessProfile?.bank_name || "",
+                account_no: businessProfile?.account_no || "",
+                ifsc_code: businessProfile?.ifsc_code || "",
+                branch_name: businessProfile?.branch_name || "",
             });
         }
-    }, [businessProfile]);
+    }, [businessProfile, currentStore, isEditingBusiness]);
 
-    const handleBusinessUpdate = () => {
-        if (!businessProfile) return;
+    const handleBusinessUpdate = async () => {
         const payload = { ...businessProfile, ...businessForm };
-        updateBusinessProfileMutation.mutate(payload as any, {
-            onSuccess: () => {
+
+        try {
+            // 1. Update Business Profile
+            updateBusinessProfileMutation.mutate(payload as any, {
+                onSuccess: () => {
+                    if (!currentStore) {
+                        setIsEditingBusiness(false);
+                        toast.success("Updated successfully");
+                    }
+                },
+                onError: () => toast.error("Failed to update profile")
+            });
+
+            // 2. Update Store GSTIN
+            if (currentStore) {
+                await updateStoreMutation.mutateAsync({
+                    id: currentStore.id,
+                    gstin: businessForm.gstin
+                });
                 setIsEditingBusiness(false);
-                toast.success("Updated successfully");
+                toast.success("Tax & Bank details updated");
             }
-        });
+        } catch (e: any) {
+            toast.error("Error updating: " + e.message);
+        }
     };
 
     const handleAddTaxRate = () => {
@@ -90,7 +114,14 @@ export default function TaxAndBank() {
             toast.error("Name and Percentage are required");
             return;
         }
+
+        if (!currentStore) {
+            toast.error("No store selected");
+            return;
+        }
+
         const rateData = {
+            store_id: currentStore.id,
             name: newTaxRate.name,
             percentage: parseFloat(newTaxRate.percentage),
             description: newTaxRate.description
@@ -104,7 +135,10 @@ export default function TaxAndBank() {
                     setNewTaxRate({ name: "", percentage: "", description: "" });
                     setEditingTaxRateId(null);
                 },
-                onError: (error) => toast.error(error.message)
+                onError: (error: any) => {
+                    console.error("Update Tax Rate Error:", error);
+                    toast.error(error.message || "Failed to update tax rate");
+                }
             });
         } else {
             createTaxRateMutation.mutate(rateData, {
@@ -113,7 +147,10 @@ export default function TaxAndBank() {
                     setIsAddTaxRateOpen(false);
                     setNewTaxRate({ name: "", percentage: "", description: "" });
                 },
-                onError: (error) => toast.error(error.message)
+                onError: (error: any) => {
+                    console.error("Create Tax Rate Error:", error);
+                    toast.error(error.message + (error.details ? ` (${error.details})` : ""));
+                }
             });
         }
     };
@@ -144,25 +181,154 @@ export default function TaxAndBank() {
 
     return (
         <PageLayout>
-            <div className="flex items-center gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Tax & Bank</h1>
-                    <p className="text-muted-foreground">Manage GST rates, tax info, and bank details.</p>
-                </div>
-            </div>
+            <div className="space-y-6 max-w-4xl">
+                {/* Tax & Bank Information Card */}
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="h-16 w-16 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold">
+                                    <Building2 className="h-8 w-8" />
+                                </div>
+                                <div className="min-w-0">
+                                    <CardTitle className="text-xl">Tax & Bank Information</CardTitle>
+                                    <CardDescription>GSTIN, PAN, and Bank Details</CardDescription>
+                                </div>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => isEditingBusiness ? setIsEditingBusiness(false) : setIsEditingBusiness(true)}
+                                disabled={updateBusinessProfileMutation.isPending || updateStoreMutation.isPending}
+                            >
+                                {isEditingBusiness ? <X className="h-5 w-5" /> : <Edit className="h-5 w-5" />}
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                        {/* Tax Info Section */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold flex items-center gap-2 border-b pb-2">
+                                <Receipt className="h-5 w-5 text-muted-foreground" />
+                                Tax Details
+                            </h3>
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="gstin">GSTIN</Label>
+                                    <Input
+                                        id="gstin"
+                                        value={businessForm.gstin}
+                                        onChange={(e) => handleChange("gstin", e.target.value)}
+                                        disabled={!isEditingBusiness}
+                                        className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                        placeholder="GSTIN Number"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="pan_no">PAN Number</Label>
+                                    <Input
+                                        id="pan_no"
+                                        value={businessForm.pan_no}
+                                        onChange={(e) => handleChange("pan_no", e.target.value)}
+                                        disabled={!isEditingBusiness}
+                                        className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                        placeholder="PAN Number"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="tax_scheme">Tax Scheme</Label>
+                                    <Input
+                                        id="tax_scheme"
+                                        value={businessForm.tax_scheme}
+                                        onChange={(e) => handleChange("tax_scheme", e.target.value)}
+                                        disabled={!isEditingBusiness}
+                                        className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                        placeholder="Regular / Composition"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-            <div className="space-y-6 max-w-4xl mx-auto">
+                        {/* Bank Details Section */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold flex items-center gap-2 border-b pb-2">
+                                <Building2 className="h-5 w-5 text-muted-foreground" />
+                                Bank Details
+                            </h3>
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="bank_name">Bank Name</Label>
+                                    <Input
+                                        id="bank_name"
+                                        value={businessForm.bank_name}
+                                        onChange={(e) => handleChange("bank_name", e.target.value)}
+                                        disabled={!isEditingBusiness}
+                                        className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="account_no">Account Number</Label>
+                                    <Input
+                                        id="account_no"
+                                        value={businessForm.account_no}
+                                        onChange={(e) => handleChange("account_no", e.target.value)}
+                                        disabled={!isEditingBusiness}
+                                        className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="ifsc_code">IFSC Code</Label>
+                                    <Input
+                                        id="ifsc_code"
+                                        value={businessForm.ifsc_code}
+                                        onChange={(e) => handleChange("ifsc_code", e.target.value)}
+                                        disabled={!isEditingBusiness}
+                                        className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="branch_name">Branch</Label>
+                                    <Input
+                                        id="branch_name"
+                                        value={businessForm.branch_name}
+                                        onChange={(e) => handleChange("branch_name", e.target.value)}
+                                        disabled={!isEditingBusiness}
+                                        className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {isEditingBusiness && (
+                            <div className="flex justify-end pt-4 border-t">
+                                <Button onClick={handleBusinessUpdate} disabled={updateBusinessProfileMutation.isPending || updateStoreMutation.isPending}>
+                                    {(updateBusinessProfileMutation.isPending || updateStoreMutation.isPending) ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="mr-2 h-4 w-4" />
+                                    )}
+                                    Save Changes
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
                 {/* Tax Rates Section */}
-                <Card className="rounded-2xl shadow-sm">
+                <Card>
                     <CardHeader className="cursor-pointer select-none" onClick={() => setIsTaxExpanded(!isTaxExpanded)}>
                         <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Receipt className="h-5 w-5 text-primary" />
-                                    Tax Rates
-                                    {isTaxExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                </CardTitle>
-                                <CardDescription>Manage GST and other tax rates.</CardDescription>
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-lg bg-secondary/50">
+                                    <Receipt className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        Tax Rates
+                                        {isTaxExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                                    </CardTitle>
+                                    <CardDescription>Manage GST and other tax rates</CardDescription>
+                                </div>
                             </div>
                             <Button size="sm" onClick={(e) => {
                                 e.stopPropagation();
@@ -177,131 +343,50 @@ export default function TaxAndBank() {
                     </CardHeader>
                     {isTaxExpanded && (
                         <CardContent>
-                            <div className="space-y-4">
-                                {!taxRates ? (
-                                    <div className="flex justify-center py-8">
-                                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                                    </div>
-                                ) : taxRates.length === 0 ? (
-                                    <div className="text-center py-8 text-muted-foreground border rounded-xl bg-muted/20">
-                                        No tax rates found. Add one to get started.
-                                    </div>
-                                ) : (
-                                    <div className="border rounded-xl overflow-hidden">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Tax Name</TableHead>
-                                                    <TableHead>Percentage</TableHead>
-                                                    <TableHead>Description</TableHead>
+                            {!taxRates ? (
+                                <div className="flex justify-center py-8">
+                                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                </div>
+                            ) : taxRates.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground border rounded-xl bg-muted/20">
+                                    No tax rates found. Add one to get started.
+                                </div>
+                            ) : (
+                                <div className="border rounded-xl overflow-hidden">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Tax Name</TableHead>
+                                                <TableHead>Percentage</TableHead>
+                                                <TableHead>Description</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {taxRates.map((rate) => (
+                                                <TableRow
+                                                    key={rate.id}
+                                                    className="cursor-pointer hover:bg-muted/50"
+                                                    onClick={() => {
+                                                        setEditingTaxRateId(rate.id);
+                                                        setNewTaxRate({
+                                                            name: rate.name,
+                                                            percentage: rate.percentage.toString(),
+                                                            description: rate.description || ""
+                                                        });
+                                                        setIsAddTaxRateOpen(true);
+                                                    }}
+                                                >
+                                                    <TableCell className="font-medium">{rate.name}</TableCell>
+                                                    <TableCell>{rate.percentage}%</TableCell>
+                                                    <TableCell className="text-muted-foreground">{rate.description || "-"}</TableCell>
                                                 </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {taxRates.map((rate) => (
-                                                    <TableRow
-                                                        key={rate.id}
-                                                        className="cursor-pointer hover:bg-muted/50"
-                                                        onClick={() => {
-                                                            setEditingTaxRateId(rate.id);
-                                                            setNewTaxRate({
-                                                                name: rate.name,
-                                                                percentage: rate.percentage.toString(),
-                                                                description: rate.description || ""
-                                                            });
-                                                            setIsAddTaxRateOpen(true);
-                                                        }}
-                                                    >
-                                                        <TableCell className="font-medium">{rate.name}</TableCell>
-                                                        <TableCell>{rate.percentage}%</TableCell>
-                                                        <TableCell className="text-muted-foreground">{rate.description || "-"}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                )}
-                            </div>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            )}
                         </CardContent>
                     )}
-                </Card>
-
-                {/* Tax Info Section */}
-                <Card className="rounded-2xl shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Building2 className="h-5 w-5 text-primary" />
-                            Tax Information
-                        </CardTitle>
-                        <CardDescription>GSTIN and PAN details.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <SettingsField
-                                label="GSTIN"
-                                value={businessForm.gstin}
-                                onChange={(val) => handleChange("gstin", val)}
-                                placeholder="GSTIN Number"
-                                isEditing={isEditingBusiness}
-                            />
-                            <SettingsField
-                                label="PAN Number"
-                                value={businessForm.pan_no}
-                                onChange={(val) => handleChange("pan_no", val)}
-                                placeholder="PAN Number"
-                                isEditing={isEditingBusiness}
-                            />
-                            <SettingsField
-                                label="Tax Scheme"
-                                value={businessForm.tax_scheme}
-                                onChange={(val) => handleChange("tax_scheme", val)}
-                                placeholder="Regular / Composition"
-                                isEditing={isEditingBusiness}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Bank Details Section */}
-                <Card className="rounded-2xl shadow-sm">
-                    <CardHeader>
-                        <CardTitle>Bank Details</CardTitle>
-                        <CardDescription>For receiving payments.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <SettingsField
-                                label="Bank Name"
-                                value={businessForm.bank_name}
-                                onChange={(val) => handleChange("bank_name", val)}
-                                isEditing={isEditingBusiness}
-                            />
-                            <SettingsField
-                                label="Account Number"
-                                value={businessForm.account_no}
-                                onChange={(val) => handleChange("account_no", val)}
-                                isEditing={isEditingBusiness}
-                            />
-                            <SettingsField
-                                label="IFSC Code"
-                                value={businessForm.ifsc_code}
-                                onChange={(val) => handleChange("ifsc_code", val)}
-                                isEditing={isEditingBusiness}
-                            />
-                            <SettingsField
-                                label="Branch"
-                                value={businessForm.branch_name}
-                                onChange={(val) => handleChange("branch_name", val)}
-                                isEditing={isEditingBusiness}
-                            />
-                        </div>
-                        <BusinessActionButtons
-                            isEditing={isEditingBusiness}
-                            onEdit={() => setIsEditingBusiness(true)}
-                            onCancel={() => { setIsEditingBusiness(false); /* Re-trigger useEffect check */ }}
-                            onSave={handleBusinessUpdate}
-                            isPending={updateBusinessProfileMutation.isPending}
-                        />
-                    </CardContent>
                 </Card>
             </div>
 

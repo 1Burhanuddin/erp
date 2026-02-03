@@ -31,11 +31,15 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 
+import { useStores } from "@/api/stores"; // Add same for Sales Invoice
+
 const AddSalesInvoice = () => {
     const navigate = useNavigate();
     const { data: customers } = useContacts();
     const { data: products } = useProducts();
-    const { data: taxRates } = useTaxRates();
+    const { data: stores } = useStores();
+    const currentStore = stores?.[0];
+    const { data: taxRates } = useTaxRates(currentStore?.id);
     const createSale = useCreateSale();
 
     const [orderDate, setOrderDate] = useState(format(new Date(), "yyyy-MM-dd"));

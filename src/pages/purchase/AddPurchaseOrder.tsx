@@ -29,11 +29,15 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 
+import { useStores } from "@/api/stores"; // Add import
+
 const AddPurchaseOrder = () => {
     const navigate = useNavigate();
     const { data: suppliers } = useContacts(); // We filter for suppliers in the render
     const { data: products } = useProducts();
-    const { data: taxRates } = useTaxRates();
+    const { data: stores } = useStores(); // Get stores
+    const currentStore = stores?.[0]; // Assuming single store context
+    const { data: taxRates } = useTaxRates(currentStore?.id); // Pass storeId
     const createOrder = useCreatePurchaseOrder();
 
     const [orderDate, setOrderDate] = useState(format(new Date(), "yyyy-MM-dd"));

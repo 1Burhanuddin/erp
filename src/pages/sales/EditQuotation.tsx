@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { useQuotation, useUpdateQuotation, useDeleteQuotation, useConvertQuotation } from "@/api/sales";
 import { useContacts } from "@/api/contacts";
 import { useProducts } from "@/api/products";
+import { useStores } from "@/api/stores";
+import { useTaxRates } from "@/api/taxRates";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -35,6 +37,8 @@ interface LineItem {
     product_id: string;
     quantity: number;
     unit_price: number;
+    tax_rate_id: string;
+    tax_amount: number;
     subtotal: number;
 }
 
@@ -47,6 +51,12 @@ const EditQuotation = () => {
     const convertQuotation = useConvertQuotation();
     const { data: contacts = [] } = useContacts();
     const { data: products = [] } = useProducts();
+    const { data: stores } = useStores();
+    const currentStore = stores?.[0];
+
+    // Retrieve tax rates based on the quotation's store, or fallback to current active store
+    const targetStoreId = quotation?.store_id || currentStore?.id;
+    const { data: taxRates } = useTaxRates(targetStoreId);
 
     const [formData, setFormData] = useState({
         customer_id: "",
@@ -72,10 +82,12 @@ const EditQuotation = () => {
                     product_id: item.product_id,
                     quantity: item.quantity,
                     unit_price: item.unit_price,
+                    tax_rate_id: item.tax_rate_id || "",
+                    tax_amount: item.tax_amount || 0,
                     subtotal: item.subtotal
                 })));
             } else {
-                setItems([{ id: "1", product_id: "", quantity: 1, unit_price: 0, subtotal: 0 }]);
+                setItems([{ id: "1", product_id: "", quantity: 1, unit_price: 0, tax_rate_id: "", tax_amount: 0, subtotal: 0 }]);
             }
         }
     }, [quotation]);
@@ -94,8 +106,20 @@ const EditQuotation = () => {
                     }
                 }
 
+                // If tax rate changed or price/qty changed, recalculate tax
+                let taxAmount = 0;
+                const taxRateId = field === "tax_rate_id" ? value : updated.tax_rate_id;
+
+                if (taxRateId) {
+                    const rate = taxRates?.find(r => r.id === taxRateId);
+                    if (rate) {
+                        taxAmount = (updated.unit_price * updated.quantity * rate.percentage) / 100;
+                    }
+                }
+                updated.tax_amount = taxAmount;
+
                 // Recalculate subtotal
-                updated.subtotal = updated.quantity * updated.unit_price;
+                updated.subtotal = (updated.quantity * updated.unit_price) + taxAmount;
                 return updated;
             }
             return item;
@@ -105,7 +129,7 @@ const EditQuotation = () => {
     const addItem = () => {
         setItems([
             ...items,
-            { id: Date.now().toString(), product_id: "", quantity: 1, unit_price: 0, subtotal: 0 }
+            { id: Date.now().toString(), product_id: "", quantity: 1, unit_price: 0, tax_rate_id: "", tax_amount: 0, subtotal: 0 }
         ]);
     };
 
@@ -136,7 +160,9 @@ const EditQuotation = () => {
             product_id: item.product_id,
             quantity: item.quantity,
             unit_price: item.unit_price,
-            subtotal: item.subtotal
+            subtotal: item.subtotal,
+            tax_rate_id: item.tax_rate_id || null,
+            tax_amount: item.tax_amount
         }));
 
         updateQuotation.mutate({
@@ -275,8 +301,9 @@ const EditQuotation = () => {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center bg-muted/50 p-2 rounded-md font-medium text-sm">
                                     <div className="flex-1 px-2">Product</div>
-                                    <div className="w-24 px-2">Qty</div>
-                                    <div className="w-32 px-2">Price</div>
+                                    <div className="w-20 px-2">Qty</div>
+                                    <div className="w-28 px-2">Price</div>
+                                    <div className="w-32 px-2">Tax</div>
                                     <div className="w-32 px-2">Subtotal</div>
                                     <div className="w-10"></div>
                                 </div>
@@ -300,7 +327,7 @@ const EditQuotation = () => {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <div className="w-24">
+                                        <div className="w-20">
                                             <Input
                                                 type="number"
                                                 min="1"
@@ -308,7 +335,7 @@ const EditQuotation = () => {
                                                 onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value) || 0)}
                                             />
                                         </div>
-                                        <div className="w-32">
+                                        <div className="w-28">
                                             <Input
                                                 type="number"
                                                 min="0"
@@ -316,6 +343,23 @@ const EditQuotation = () => {
                                                 value={item.unit_price}
                                                 onChange={(e) => updateItem(item.id, "unit_price", parseFloat(e.target.value) || 0)}
                                             />
+                                        </div>
+                                        <div className="w-32">
+                                            <Select
+                                                value={item.tax_rate_id}
+                                                onValueChange={(value) => updateItem(item.id, "tax_rate_id", value)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Tax" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {taxRates?.map((rate) => (
+                                                        <SelectItem key={rate.id} value={rate.id}>
+                                                            {rate.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="w-32">
                                             <Input

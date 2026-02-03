@@ -1,11 +1,12 @@
-import { PageLayout } from "@/components/layout";
+import { PageLayout, PageHeader } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Users, ArrowLeft, Edit, X, Save, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBusinessProfile, useUpdateBusinessProfile } from "@/api/businessProfile";
 import { toast } from "sonner";
-import { SettingsField, BusinessActionButtons } from "@/components/settings/SettingsCommon";
 import { useNavigate } from "react-router-dom";
 
 export default function OwnerDetails() {
@@ -21,14 +22,14 @@ export default function OwnerDetails() {
     });
 
     useEffect(() => {
-        if (businessProfile) {
+        if (businessProfile && !isEditingBusiness) {
             setBusinessForm({
                 owner_name: businessProfile.owner_name || "",
                 owner_phone: businessProfile.owner_phone || "",
                 owner_email: businessProfile.owner_email || "",
             });
         }
-    }, [businessProfile]);
+    }, [businessProfile, isEditingBusiness]);
 
     const handleBusinessUpdate = () => {
         if (!businessProfile) return;
@@ -46,54 +47,80 @@ export default function OwnerDetails() {
     };
 
     if (isBusinessLoading) {
-        return <PageLayout><div className="p-8">Loading...</div></PageLayout>;
+        return <PageLayout><PageHeader title="Owner Information" description="Loading..." /></PageLayout>;
     }
 
     return (
         <PageLayout>
-            <div className="flex items-center gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Owner Information</h1>
-                    <p className="text-muted-foreground">Details of the primary business owner.</p>
-                </div>
-            </div>
-
             <div className="space-y-6 max-w-4xl">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users className="h-5 w-5 text-primary" />
-                            Owner Information
-                        </CardTitle>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="h-16 w-16 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold">
+                                    <Users className="h-8 w-8" />
+                                </div>
+                                <div className="min-w-0">
+                                    <CardTitle className="text-xl">{businessForm.owner_name || "Owner Name"}</CardTitle>
+                                    <CardDescription>{businessForm.owner_email || "Email Not Set"}</CardDescription>
+                                </div>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => isEditingBusiness ? setIsEditingBusiness(false) : setIsEditingBusiness(true)}
+                                disabled={updateBusinessProfileMutation.isPending}
+                            >
+                                {isEditingBusiness ? <X className="h-5 w-5" /> : <Edit className="h-5 w-5" />}
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <SettingsField
-                                label="Owner Name"
-                                value={businessForm.owner_name}
-                                onChange={(val) => handleChange("owner_name", val)}
-                                isEditing={isEditingBusiness}
-                            />
-                            <SettingsField
-                                label="Owner Phone"
-                                value={businessForm.owner_phone}
-                                onChange={(val) => handleChange("owner_phone", val)}
-                                isEditing={isEditingBusiness}
-                            />
-                            <SettingsField
-                                label="Owner Email"
-                                value={businessForm.owner_email}
-                                onChange={(val) => handleChange("owner_email", val)}
-                                isEditing={isEditingBusiness}
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="owner_name">Owner Name</Label>
+                                <Input
+                                    id="owner_name"
+                                    value={businessForm.owner_name}
+                                    onChange={(e) => handleChange("owner_name", e.target.value)}
+                                    disabled={!isEditingBusiness}
+                                    className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="owner_phone">Owner Phone</Label>
+                                <Input
+                                    id="owner_phone"
+                                    value={businessForm.owner_phone}
+                                    onChange={(e) => handleChange("owner_phone", e.target.value)}
+                                    disabled={!isEditingBusiness}
+                                    className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="owner_email">Owner Email</Label>
+                                <Input
+                                    id="owner_email"
+                                    value={businessForm.owner_email}
+                                    onChange={(e) => handleChange("owner_email", e.target.value)}
+                                    disabled={!isEditingBusiness}
+                                    className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                />
+                            </div>
                         </div>
-                        <BusinessActionButtons
-                            isEditing={isEditingBusiness}
-                            onEdit={() => setIsEditingBusiness(true)}
-                            onCancel={() => setIsEditingBusiness(false)}
-                            onSave={handleBusinessUpdate}
-                            isPending={updateBusinessProfileMutation.isPending}
-                        />
+
+                        {isEditingBusiness && (
+                            <div className="flex justify-end pt-4 border-t">
+                                <Button onClick={handleBusinessUpdate} disabled={updateBusinessProfileMutation.isPending}>
+                                    {updateBusinessProfileMutation.isPending ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="mr-2 h-4 w-4" />
+                                    )}
+                                    Save Changes
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

@@ -212,7 +212,7 @@ export const useStoreDetails = (slug?: string) => {
 
             if (slug) {
                 query = query.eq("domain", slug);
-            } else if (hostname !== 'localhost' && !hostname.includes('erpsoft.vercel.app')) {
+            } else if (hostname !== 'localhost' && !hostname.includes('erpsoft.vercel.app') && !hostname.includes('operra.in')) {
                 // If on a custom domain, resolve by hostname
                 query = query.eq("domain", hostname);
             } else {
@@ -224,7 +224,7 @@ export const useStoreDetails = (slug?: string) => {
             // Fallback: If hostname resolution fails on a custom domain, 
             // try to fetch the first store instead of failing completely.
             // This handles cases where the 'domain' column isn't set up yet.
-            if (error && !slug && hostname !== 'localhost' && !hostname.includes('erpsoft.vercel.app')) {
+            if (error && !slug && hostname !== 'localhost' && !hostname.includes('erpsoft.vercel.app') && !hostname.includes('operra.in')) {
                 const { data: fallbackData, error: fallbackError } = await supabase
                     .from("stores")
                     .select("id, name, address, phone, email, domain")

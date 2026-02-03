@@ -175,6 +175,7 @@ export const useConvertQuotation = () => {
                 .from("sales_orders")
                 .insert({
                     customer_id: quote.customer_id,
+                    store_id: quote.store_id, // Ensure store_id is copied
                     order_date: new Date().toISOString(),
                     total_amount: quote.total_amount,
                     status: "Pending",
@@ -193,7 +194,9 @@ export const useConvertQuotation = () => {
                     product_id: item.product_id,
                     quantity: item.quantity,
                     unit_price: item.unit_price,
-                    subtotal: item.subtotal
+                    subtotal: item.subtotal,
+                    tax_rate_id: item.tax_rate_id, // Copy tax fields
+                    tax_amount: item.tax_amount
                 }));
 
                 const { error: itemsError } = await supabase

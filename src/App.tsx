@@ -123,7 +123,7 @@ const App = () => {
     hostname.startsWith('10.') ||
     (hostname.startsWith('172.') && parseInt(hostname.split('.')[1], 10) >= 16 && parseInt(hostname.split('.')[1], 10) <= 31);
 
-  const isERP = isPrivateIP || hostname.includes('erpsoft.vercel.app');
+  const isERP = isPrivateIP || hostname.includes('erpsoft.vercel.app') || hostname.includes('operra.in');
 
   return (
     <QueryClientProvider client={queryClient}>

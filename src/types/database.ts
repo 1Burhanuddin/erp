@@ -584,6 +584,8 @@ export interface Database {
             tax_rates: {
                 Row: {
                     id: string
+                    store_id: string | null
+                    user_id: string | null
                     name: string
                     percentage: number
                     description: string | null
@@ -593,6 +595,8 @@ export interface Database {
                 }
                 Insert: {
                     id?: string
+                    store_id?: string | null
+                    user_id?: string | null
                     name: string
                     percentage: number
                     description?: string | null
@@ -602,6 +606,8 @@ export interface Database {
                 }
                 Update: {
                     id?: string
+                    store_id?: string | null
+                    user_id?: string | null
                     name?: string
                     percentage?: number
                     description?: string | null

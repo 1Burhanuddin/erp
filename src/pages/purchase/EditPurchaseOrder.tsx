@@ -23,20 +23,25 @@ import {
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useContacts } from "@/api/contacts";
 import { useProducts } from "@/api/products";
-import { usePurchaseOrder, useUpdatePurchaseOrder } from "@/api/purchase";
+import { usePurchaseOrder, useUpdatePurchaseOrder, useDeletePurchaseOrder } from "@/api/purchase";
 import { useTaxRates } from "@/api/taxRates";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
 
+import { useStores } from "@/api/stores";
+
 const EditPurchaseOrder = () => {
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>(); // use orderId
     const navigate = useNavigate();
     const { data: contacts } = useContacts(); // Check if this should be useContacts with supplier filter
     const { data: products } = useProducts();
-    const { data: taxRates } = useTaxRates();
+    const { data: stores } = useStores();
+    const currentStore = stores?.[0];
+    const { data: taxRates } = useTaxRates(currentStore?.id);
     const { data: existingOrder, isLoading: isLoadingOrder } = usePurchaseOrder(id || "");
     const updateOrder = useUpdatePurchaseOrder();
+    const deleteOrder = useDeletePurchaseOrder();
 
     const [orderDate, setOrderDate] = useState(format(new Date(), "yyyy-MM-dd"));
     const [orderNo, setOrderNo] = useState("");

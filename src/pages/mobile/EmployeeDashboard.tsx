@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import EmployeeLayout from "@/components/layout/EmployeeLayout";
 import { useAttendance, useCheckIn, useCheckOut, useEmployeeTasks, useMyStoreConfig } from "@/api/employees";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, Clock, CalendarDays, ChevronRight, Bell, Search, LayoutGrid, CheckCircle2, AlertCircle, Loader2, LogOut, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,9 +21,9 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// Haversine Formula to calculate distance between two points in meters
+// Haversine Formula (unchanged)
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-    const R = 6371e3; // Earth radius in meters
+    const R = 6371e3;
     const φ1 = lat1 * Math.PI / 180;
     const φ2 = lat2 * Math.PI / 180;
     const Δφ = (lat2 - lat1) * Math.PI / 180;
@@ -33,24 +34,30 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
         Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    return R * c; // Distance in meters
+    return R * c;
 }
 
 export default function EmployeeDashboard() {
     const { user } = useAuth();
-    const { data: attendanceLogs, isLoading: isLoadingAttendance } = useAttendance(new Date());
-    const { data: tasks, isLoading: isLoadingTasks } = useEmployeeTasks(user?.id);
+    const navigate = useNavigate();
+    const { data: attendanceLogs } = useAttendance(new Date());
+    const { data: tasks } = useEmployeeTasks(user?.id);
     const { data: storeConfig } = useMyStoreConfig();
 
     const checkIn = useCheckIn();
     const checkOut = useCheckOut();
 
     // Location State
-    const [locationStatus, setLocationStatus] = useState<'verifying' | 'valid' | 'invalid' | 'error' | 'unavailable'>('verifying');
+    const [locationStatus, setLocationStatus] = useState<'verifying' | 'valid' | 'invalid' | 'error'>('verifying');
     const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
-    const [statusMessage, setStatusMessage] = useState("Verifying location...");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [distance, setDistance] = useState<number | null>(null);
+    const [statusMessage, setStatusMessage] = useState("Locating...");
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Clock
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Watch Position
     useEffect(() => {
@@ -58,7 +65,7 @@ export default function EmployeeDashboard() {
 
         if (!("geolocation" in navigator)) {
             setLocationStatus('error');
-            setStatusMessage("Geolocation not supported.");
+            setStatusMessage("No GPS");
             return;
         }
 
@@ -69,25 +76,19 @@ export default function EmployeeDashboard() {
                 setUserLocation({ lat, lng });
 
                 const dist = calculateDistance(lat, lng, storeConfig.latitude, storeConfig.longitude);
-                setDistance(dist);
-
-                const maxRadius = storeConfig.geofence_radius || 10;
+                const maxRadius = storeConfig.geofence_radius || 50;
 
                 if (dist <= maxRadius) {
                     setLocationStatus('valid');
-                    setStatusMessage(`You are present at the store (${Math.round(dist)}m)`);
+                    setStatusMessage(`In Range (${Math.round(dist)}m)`);
                 } else {
                     setLocationStatus('invalid');
-                    setStatusMessage(`Too far: ${Math.round(dist)}m (Allowed: ${maxRadius}m)`);
+                    setStatusMessage(`Too Far (${Math.round(dist)}m)`);
                 }
             },
             (error) => {
                 setLocationStatus('error');
-                if (error.code === error.PERMISSION_DENIED) {
-                    setStatusMessage("Location access denied. Please enable it.");
-                } else {
-                    setStatusMessage("Unable to retrieve location.");
-                }
+                setStatusMessage("GPS Error");
             },
             { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
         );
@@ -95,20 +96,47 @@ export default function EmployeeDashboard() {
         return () => navigator.geolocation.clearWatch(watchId);
     }, [storeConfig]);
 
-    // RLS ensures we only receive our own attendance records.
-    // Unique constraint ensures only one record per day.
+    const refreshLocation = () => {
+        if (!storeConfig?.latitude || !storeConfig?.longitude) return;
+
+        setLocationStatus('verifying');
+        setStatusMessage("Refreshing...");
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                setUserLocation({ lat, lng });
+
+                const dist = calculateDistance(lat, lng, storeConfig.latitude, storeConfig.longitude);
+                const maxRadius = storeConfig.geofence_radius || 50;
+
+                if (dist <= maxRadius) {
+                    setLocationStatus('valid');
+                    setStatusMessage(`In Range (${Math.round(dist)}m)`);
+                } else {
+                    setLocationStatus('invalid');
+                    setStatusMessage(`Too Far (${Math.round(dist)}m)`);
+                }
+            },
+            (error) => {
+                setLocationStatus('error');
+                setStatusMessage("GPS Error");
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    };
+
     const todaySession = attendanceLogs?.[0];
     const isCheckedIn = !!todaySession?.check_in && !todaySession?.check_out;
     const hasCompletedShift = !!todaySession?.check_in && !!todaySession?.check_out;
 
     const handleCheckIn = () => {
         if (!userLocation) {
-            toast.error("Location not verified yet.");
+            toast.error("Waiting for location...");
             return;
         }
-        checkIn.mutate({
-            location: userLocation
-        });
+        checkIn.mutate({ location: userLocation });
     };
 
     const handleCheckOut = () => {
@@ -116,192 +144,184 @@ export default function EmployeeDashboard() {
         checkOut.mutate({ attendanceId: todaySession.id });
     };
 
-    // Stats
     const pendingCount = tasks?.filter(t => ['pending', 'accepted', 'in_progress'].includes(t.status)).length || 0;
     const completedCount = tasks?.filter(t => t.status === 'completed').length || 0;
 
     return (
         <EmployeeLayout>
-            <div className="space-y-6 pb-20 px-4 pt-2">
+            <div className="min-h-screen bg-[#F2F4F7] dark:bg-slate-950 pb-24 font-sans text-slate-800 dark:text-slate-100">
 
-                {/* Hero Attendance Card (Theme Color) */}
-                <div className="relative overflow-hidden rounded-[2.5rem] bg-primary text-primary-foreground shadow-xl shadow-primary/20 p-8">
-                    {/* Background Patterns */}
-                    <div className="absolute top-0 right-0 p-12 opacity-10 transform translate-x-1/2 -translate-y-1/2">
-                        <div className="w-48 h-48 rounded-full border-[24px] border-white/30" />
+                <main className="px-6 pt-6 pb-6 space-y-8">
+
+                    {/* Hero Title */}
+                    <div className="space-y-1">
+                        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                            Your Workflow
+                        </h2>
+                        <p className="text-slate-500 font-medium">
+                            {format(currentTime, "EEEE, d MMM yyyy")}
+                        </p>
                     </div>
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
 
-                    <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+                    {/* Quick Access Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <motion.div whileTap={{ scale: 0.98 }}>
+                            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900 h-32 rounded-[2rem] relative overflow-hidden group cursor-pointer" onClick={() => navigate('/mobile/tasks')}>
+                                <CardContent className="p-5 flex flex-col justify-between h-full">
+                                    <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-500">
+                                        <AlertCircle className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{pendingCount}</p>
+                                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
 
-                        <div className="relative">
-                            <div className={`w-20 h-20 rounded-full flex items-center justify-center ${isCheckedIn ? 'bg-white/20 backdrop-blur-md animate-pulse' : 'bg-white/10'}`}>
-                                <MapPin className="w-8 h-8 text-primary-foreground" />
+                        <motion.div whileTap={{ scale: 0.98 }}>
+                            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900 h-32 rounded-[2rem] relative overflow-hidden group cursor-pointer" onClick={() => navigate('/mobile/attendance')}>
+                                <CardContent className="p-5 flex flex-col justify-between h-full">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{completedCount}</p>
+                                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Completed</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </div>
+
+                    {/* Check In / Status Section */}
+                    <div className="relative">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Time Tracking</h3>
+
+                        <Card className="border-0 shadow-lg bg-blue-600 text-white rounded-[2.5rem] overflow-hidden relative min-h-[220px]">
+                            {/* Abstract Map/Pattern Background */}
+                            <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
+                                </svg>
                             </div>
-                            {isCheckedIn && (
-                                <span className="absolute -top-1 -right-1 flex h-6 w-6">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-6 w-6 bg-green-400 border-2 border-primary"></span>
-                                </span>
-                            )}
-                        </div>
 
-                        <div>
-                            {isCheckedIn ? (
-                                <>
-                                    <h3 className="text-3xl font-bold tracking-tight">On Duty</h3>
-                                    <p className="text-primary-foreground/80 mt-1 font-medium">Checked in at {format(new Date(todaySession!.check_in!), "h:mm a")}</p>
-                                </>
-                            ) : hasCompletedShift ? (
-                                <>
-                                    <h3 className="text-3xl font-bold tracking-tight">Shift Found</h3>
-                                    <p className="text-primary-foreground/80 mt-1 font-medium">Have a great evening!</p>
-                                </>
-                            ) : (
-                                <>
-                                    <h3 className="text-3xl font-bold tracking-tight">Not Checked In</h3>
-                                    <p className="text-primary-foreground/80 mt-1 font-medium">Ready to start your day?</p>
-                                </>
-                            )}
-                        </div>
-
-                        {isCheckedIn ? (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button
-                                        variant="secondary"
-                                        size="lg"
-                                        className="w-full h-14 rounded-full text-lg font-bold shadow-lg bg-white/90 text-destructive hover:bg-white"
-                                        disabled={checkOut.isPending}
-                                    >
-                                        Check Out
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="w-[90%] rounded-2xl">
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>End Shift?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Are you sure you want to check out now? This will mark the end of your shift for today.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleCheckOut} className="bg-destructive text-destructive-foreground">Confirm Check Out</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        ) : hasCompletedShift ? (
-                            <Button
-                                variant="secondary"
-                                size="lg"
-                                className="w-full h-14 rounded-full text-lg font-bold bg-white/20 backdrop-blur text-primary-foreground/50 hover:bg-white/30 border-0"
-                                disabled
-                            >
-                                Shift Completed
-                            </Button>
-                        ) : (
-                            <div className="space-y-3 w-full">
-                                {/* Status Message Bubble */}
-                                <div className={`px-4 py-2 rounded-xl text-sm font-medium text-center backdrop-blur-md transition-colors duration-300
-                                    ${locationStatus === 'valid' ? 'bg-green-500/20 text-white' :
-                                        locationStatus === 'verifying' ? 'bg-white/20 text-white' :
-                                            'bg-red-500/20 text-white'}`}>
-                                    {locationStatus === 'verifying' && <Loader2 className="w-3 h-3 inline-block animate-spin mr-2" />}
-                                    {statusMessage}
+                            <CardContent className="p-8 flex flex-col justify-between h-full relative z-10">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="opacity-80 font-medium mb-1">Current Status</p>
+                                        <h4 className="text-2xl font-bold">
+                                            {isCheckedIn ? "On Duty" : hasCompletedShift ? "Shift Done" : "Off Duty"}
+                                        </h4>
+                                    </div>
+                                    <div className="bg-white/20 backdrop-blur-md rounded-2xl px-3 py-1.5 flex items-center gap-2">
+                                        <Clock className="w-4 h-4" />
+                                        <span className="font-mono font-bold text-sm">
+                                            {format(currentTime, "HH:mm")}
+                                        </span>
+                                    </div>
                                 </div>
 
-                                <SwipeSlider
-                                    onComplete={handleCheckIn}
-                                    isLoading={checkIn.isPending}
-                                    disabled={locationStatus !== 'valid'}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
+                                <div className="mt-8">
+                                    {isCheckedIn ? (
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-3 text-sm opacity-90">
+                                                <MapPin className="w-4 h-4" />
+                                                <span>Location Verified</span>
+                                            </div>
 
-                {/* Stats Grid - Pastel Glass Widgets */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="p-6 rounded-[2rem] bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/50 flex flex-col items-center justify-center text-center space-y-2 backdrop-blur-sm">
-                        <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-2">
-                            <AlertCircle className="w-6 h-6" />
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button className="w-full bg-white text-blue-600 hover:bg-blue-50 h-14 rounded-2xl font-bold text-lg shadow-xl shadow-blue-900/20">
+                                                        <LogOut className="mr-2 w-5 h-5" /> Check Out
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="w-[90%] rounded-3xl">
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Finish Shift?</AlertDialogTitle>
+                                                        <AlertDialogDescription>Are you sure you want to clock out?</AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel className="rounded-xl h-12">Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={handleCheckOut} className="bg-blue-600 text-white rounded-xl h-12" disabled={checkOut.isPending}>
+                                                            {checkOut.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Confirm"}
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
+                                    ) : hasCompletedShift ? (
+                                        <Button disabled className="w-full bg-white/20 text-white h-14 rounded-2xl font-medium border-0">
+                                            See you tomorrow!
+                                        </Button>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`w-2 h-2 rounded-full ${locationStatus === 'valid' ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
+                                                    <span className="text-sm font-medium opacity-90">{statusMessage}</span>
+                                                </div>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="h-8 w-8 text-white hover:bg-white/20 rounded-full"
+                                                    onClick={refreshLocation}
+                                                >
+                                                    <RefreshCw className={`h-4 w-4 ${locationStatus === 'verifying' ? 'animate-spin' : ''}`} />
+                                                </Button>
+                                            </div>
+                                            <Button
+                                                onClick={handleCheckIn}
+                                                disabled={locationStatus !== 'valid' || checkIn.isPending}
+                                                className="w-full bg-white text-blue-600 hover:bg-blue-50 h-14 rounded-2xl font-bold text-lg shadow-xl shadow-blue-900/20"
+                                            >
+                                                {checkIn.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Clock In"}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Upcoming / Announcements */}
+                    <div>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Up Next</h3>
+                            <Button variant="link" className="text-blue-600 p-0 h-auto font-semibold">See All</Button>
                         </div>
-                        <span className="text-4xl font-black text-orange-900 dark:text-orange-100">{pendingCount}</span>
-                        <span className="text-xs font-bold text-orange-600/70 dark:text-orange-400 uppercase tracking-widest">Pending</span>
-                    </div>
 
-                    <div className="p-6 rounded-[2rem] bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 flex flex-col items-center justify-center text-center space-y-2 backdrop-blur-sm">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-2">
-                            <CheckCircle2 className="w-6 h-6" />
+                        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-2 shadow-sm border border-slate-100 dark:border-slate-800">
+                            {tasks?.filter(t => t.status === 'pending').slice(0, 1).map((task) => (
+                                <div key={task.id} className="p-4 flex gap-4 items-center">
+                                    <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center">
+                                        <CalendarDays className="w-8 h-8 text-slate-400" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-bold text-slate-900 dark:text-white truncate">{task.title}</h4>
+                                        <p className="text-sm text-slate-500 truncate mt-1">Due today by 5:00 PM</p>
+                                        <div className="flex gap-2 mt-2">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-orange-50 text-orange-600 text-[10px] font-bold uppercase tracking-wide">
+                                                Priority
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <Button size="icon" variant="ghost" className="rounded-full text-slate-400">
+                                        <ChevronRight className="w-5 h-5" />
+                                    </Button>
+                                </div>
+                            ))}
+                            {(!tasks || tasks.filter(t => t.status === 'pending').length === 0) && (
+                                <div className="p-8 text-center text-slate-400">
+                                    <LayoutGrid className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm">No upcoming tasks</p>
+                                </div>
+                            )}
                         </div>
-                        <span className="text-4xl font-black text-emerald-900 dark:text-emerald-100">{completedCount}</span>
-                        <span className="text-xs font-bold text-emerald-600/70 dark:text-emerald-400 uppercase tracking-widest">Done</span>
                     </div>
-                </div>
 
+                </main>
             </div>
         </EmployeeLayout>
-    );
-}
-
-// Updated Swipe Slider to accept disabled prop
-function SwipeSlider({ onComplete, isLoading, disabled }: { onComplete: () => void, isLoading: boolean, disabled: boolean }) {
-    const [sliderValue, setSliderValue] = useState(0);
-    const [isDragging, setIsDragging] = useState(false);
-
-    const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSliderValue(parseInt(e.target.value));
-    };
-
-    const handleEnd = () => {
-        setIsDragging(false);
-        if (sliderValue >= 95) {
-            setSliderValue(100);
-            onComplete();
-        } else {
-            setSliderValue(0);
-        }
-    };
-
-    return (
-        <div className={`relative w-full h-14 bg-white rounded-full overflow-hidden shadow-lg select-none touch-none transition-opacity ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
-            {/* Success Fill */}
-            <div
-                className="absolute left-0 top-0 bottom-0 bg-primary/20 transition-all duration-75 ease-linear"
-                style={{ width: `${sliderValue}%` }}
-            />
-
-            {/* Text */}
-            <div className={`absolute inset-0 flex items-center justify-center font-bold tracking-wide text-lg uppercase pointer-events-none transition-opacity duration-300 ${sliderValue > 50 ? 'opacity-0' : 'opacity-100'}`}>
-                <span className={`bg-gradient-to-r from-primary/40 via-primary to-primary/40 bg-[length:200%_auto] bg-clip-text text-transparent ${isLoading ? 'animate-shine' : ''}`}>
-                    {isLoading ? "Checking In..." : disabled ? "Swipe Disabled" : "Swipe to Check In"}
-                </span>
-            </div>
-
-            {/* Thumb Visual */}
-            <div
-                className={`absolute top-1 bottom-1 w-12 bg-primary rounded-full flex items-center justify-center shadow-md pointer-events-none transition-all duration-75 ease-linear ${disabled ? 'bg-gray-400' : 'bg-primary'}`}
-                style={{ left: `calc(${sliderValue}% - ${sliderValue * 0.48}px + 4px)` }}
-            >
-                <div className="text-primary-foreground">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-                </div>
-            </div>
-
-            {/* Input Range Overlay */}
-            <input
-                type="range"
-                min="0"
-                max="100"
-                value={sliderValue}
-                onChange={handleInput}
-                onTouchStart={() => !disabled && setIsDragging(true)}
-                onTouchEnd={handleEnd}
-                onMouseDown={() => !disabled && setIsDragging(true)}
-                onMouseUp={handleEnd}
-                disabled={isLoading || disabled}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            />
-        </div>
     );
 }

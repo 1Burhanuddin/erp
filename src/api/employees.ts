@@ -206,9 +206,17 @@ export const useEmployeeTasks = (employeeId?: string) => {
             if (currentUserData.role === 'admin') {
                 // Admin sees ALL tasks in the store
                 query = query.eq("employees.store_id", currentUserData.store_id);
+
                 // Optionally filter by specific employee if param provided
                 if (employeeId) {
-                    query = query.eq("employee_id", employeeId); // This expects internal ID
+                    // Check if the passed ID is the Auth ID of the current user (e.g. from MyTasks page)
+                    if (employeeId === user.id) {
+                        // Filter by MY internal ID
+                        query = query.eq("employee_id", currentUserData.id);
+                    } else {
+                        // Filter by the provided ID (assuming it is an internal ID, or if it isn't, no results will be found)
+                        query = query.eq("employee_id", employeeId);
+                    }
                 }
             } else {
                 // Regular Employee sees ONLY their own tasks

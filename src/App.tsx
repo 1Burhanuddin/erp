@@ -112,11 +112,13 @@ import ShopLayout from "./pages/demo-shop/ShopLayout";
 import LandingPage from "./pages/demo-shop/LandingPage";
 import ProductPage from "./pages/demo-shop/ProductPage";
 import CheckoutPage from "./pages/demo-shop/CheckoutPage";
+import ERPLandingPage from "./pages/ERPLandingPage";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const hostname = window.location.hostname;
+  // ... existing IP checks ...
   const isPrivateIP = hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
     hostname.startsWith('192.168.') ||

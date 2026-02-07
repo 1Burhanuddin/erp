@@ -46,7 +46,7 @@ const DeliveryChallans = () => {
             {/* Floating Action Button */}
             <div className="fixed bottom-6 right-6 z-50">
                 <Button
-                    onClick={() => navigate("/sales/delivery-challans/add")}
+                    onClick={() => navigate("/sales/challans/add")}
                     size="icon"
                     className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                 >

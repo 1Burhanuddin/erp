@@ -69,3 +69,15 @@ Simply visit your project at [GPT Engineer](https://gptengineer.app/projects/7e7
 ## I want to use a custom domain - is that possible?
 
 We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.gptengineer.app/tips-tricks/custom-domain/)
+
+## Debugging Scripts
+
+We have provided utility scripts in the `scripts/` directory to help with debugging database issues.
+
+### `scripts/debug_sales_items.cjs`
+This script checks if the `sales_items` table has the necessary tax columns populated.
+Usage:
+```sh
+node scripts/debug_sales_items.cjs
+```
+

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './Anniversary.module.css';
-import {
-    Play, Pause, SkipBack, SkipForward, Heart,
-    Plane, Home, TrendingUp, Mail, X, Bell
+import { 
+    Play, Pause, SkipBack, SkipForward, Heart, 
+    Plane, Home, TrendingUp, Mail, X, Bell 
 } from 'lucide-react';
 
-const MUSIC_URL = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=piano-moment-111718.mp3";
+const MUSIC_URL = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=piano-moment-111718.mp3"; 
 
 const REASONS = [
     "Your laugh is my favorite sound.",
@@ -40,7 +40,7 @@ const Anniversary = () => {
     const [loading, setLoading] = useState(true);
     const [visibleSections, setVisibleSections] = useState<string[]>([]);
     const [hearts, setHearts] = useState<{ id: number; left: number; animationDuration: number }[]>([]);
-
+    
     // Notification State
     const [activeNotification, setActiveNotification] = useState<string | null>(null);
 
@@ -86,7 +86,7 @@ const Anniversary = () => {
         const timer = setInterval(() => {
             const now = new Date();
             const diff = now.getTime() - START_DATE.getTime();
-
+            
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -156,20 +156,20 @@ const Anniversary = () => {
             </div>
 
             <div className={styles.noise}></div>
-
+            
             {/* Hero Section */}
             <section id="hero" className={`${styles.hero} ${styles.observe} ${visibleSections.includes('hero') ? styles.visible : ''}`}>
                 <div className={styles.heroContent}>
                     <p className={styles.date}>11 February 2026</p>
-                    <h1 className={styles.title}>Two Years<br /><span className={styles.italic}>With You</span></h1>
+                    <h1 className={styles.title}>Two Years<br/><span className={styles.italic}>With You</span></h1>
                     <p className={styles.subtitle}>Still choosing you.</p>
                 </div>
                 <div className={styles.scrollIndicator}></div>
             </section>
 
             {/* Live Timer Section */}
-            <section
-                id="timer"
+            <section 
+                id="timer" 
                 className={`${styles.section} ${styles.timerSection} ${styles.observe} ${visibleSections.includes('timer') ? styles.visible : ''}`}
             >
                 <h3 className={styles.sectionTitle}>Every Second Counts</h3>
@@ -196,9 +196,9 @@ const Anniversary = () => {
                 </div>
             </section>
 
-            {/* Music Player Section */}
-            <section
-                id="music"
+             {/* Music Player Section */}
+             <section 
+                id="music" 
                 className={`${styles.section} ${styles.musicSection} ${styles.observe} ${visibleSections.includes('music') ? styles.visible : ''}`}
             >
                 <div className={styles.musicCard}>
@@ -226,8 +226,8 @@ const Anniversary = () => {
             </section>
 
             {/* Reasons Why Card - Verified "Quote Box" */}
-            <section
-                id="reasons"
+            <section 
+                id="reasons" 
                 className={`${styles.section} ${styles.reasonsSection} ${styles.observe} ${visibleSections.includes('reasons') ? styles.visible : ''}`}
             >
                 <h3 className={styles.sectionTitle}>Why I Love You</h3>
@@ -245,8 +245,8 @@ const Anniversary = () => {
             </section>
 
             {/* Open When Envelopes */}
-            <section
-                id="envelopes"
+            <section 
+                id="envelopes" 
                 className={`${styles.section} ${styles.envelopesSection} ${styles.observe} ${visibleSections.includes('envelopes') ? styles.visible : ''}`}
             >
                 <h3 className={styles.sectionTitle}>Open When...</h3>
@@ -262,21 +262,21 @@ const Anniversary = () => {
             </section>
 
             {/* Letter Section */}
-            <section
-                id="letter"
+            <section 
+                id="letter" 
                 className={`${styles.section} ${styles.letterSection} ${styles.observe} ${visibleSections.includes('letter') ? styles.visible : ''}`}
             >
                 <div className={styles.letterContent}>
-                    <p className={styles.fadeItem}>Two years ago, you didn’t just enter my life,<br /> you quietly became its constant.</p>
-                    <p className={styles.fadeItem}>In chaos, you became calm.<br /> In noise, you became home.</p>
+                    <p className={styles.fadeItem}>Two years ago, you didn’t just enter my life,<br/> you quietly became its constant.</p>
+                    <p className={styles.fadeItem}>In chaos, you became calm.<br/> In noise, you became home.</p>
                     <div className={styles.spacer}></div>
-                    <p className={styles.fadeItem}>Loving you hasn’t been loud or dramatic —<br /> it’s been steady, grounding, real.</p>
+                    <p className={styles.fadeItem}>Loving you hasn’t been loud or dramatic —<br/> it’s been steady, grounding, real.</p>
                 </div>
             </section>
 
             {/* Timeline Section */}
-            <section
-                id="timeline"
+            <section 
+                id="timeline" 
                 className={`${styles.section} ${styles.timelineSection} ${styles.observe} ${visibleSections.includes('timeline') ? styles.visible : ''}`}
             >
                 <h3 className={styles.sectionTitle}>Our Journey</h3>
@@ -309,8 +309,8 @@ const Anniversary = () => {
             </section>
 
             {/* Future Goals */}
-            <section
-                id="future"
+            <section 
+                id="future" 
                 className={`${styles.section} ${styles.futureSection} ${styles.observe} ${visibleSections.includes('future') ? styles.visible : ''}`}
             >
                 <h3 className={styles.sectionTitle}>The Next Chapter</h3>
@@ -328,47 +328,47 @@ const Anniversary = () => {
             </section>
 
             {/* Photo Gallery */}
-            <section
-                id="gallery"
+            <section 
+                id="gallery" 
                 className={`${styles.section} ${styles.gallerySection} ${styles.observe} ${visibleSections.includes('gallery') ? styles.visible : ''}`}
             >
                 <h3 className={styles.sectionTitle}>Moments</h3>
-                <div className={styles.grid}>
+               <div className={styles.grid}>
                     <div className={`${styles.photoWrapper} ${styles.photo1}`}>
                         <img src="/anniversary/image1.png" alt="Memory 1" className={styles.photo} />
                     </div>
                     <div className={`${styles.photoWrapper} ${styles.photo2}`}>
-                        <img src="/anniversary/image2.png" alt="Memory 2" className={styles.photo} />
+                       <img src="/anniversary/image2.png" alt="Memory 2" className={styles.photo} />
                     </div>
                     <div className={`${styles.photoWrapper} ${styles.photo3}`}>
-                        <img src="/anniversary/image3.png" alt="Memory 3" className={styles.photo} />
+                       <img src="/anniversary/image3.png" alt="Memory 3" className={styles.photo} />
                     </div>
                     <div className={`${styles.photoWrapper} ${styles.photo4}`}>
-                        <img src="/anniversary/image4.png" alt="Memory 4" className={styles.photo} />
+                       <img src="/anniversary/image4.png" alt="Memory 4" className={styles.photo} />
                     </div>
-                </div>
+               </div>
             </section>
 
             {/* Promise Section */}
-            <section
-                id="promise"
+            <section 
+                id="promise" 
                 className={`${styles.section} ${styles.promiseSection} ${styles.observe} ${visibleSections.includes('promise') ? styles.visible : ''}`}
             >
                 <div className={styles.letterContent}>
                     <p className={styles.fadeItem}>I don’t promise perfection. I promise presence.</p>
                     <p className={styles.fadeItem}>Not forever in words, but forever in effort.</p>
                     <div className={styles.spacer}></div>
-                    <p className={styles.fadeItem}>If I had to choose again,<br /> through every lifetime, every uncertainty —</p>
+                    <p className={styles.fadeItem}>If I had to choose again,<br/> through every lifetime, every uncertainty —</p>
                     <p className={styles.highlight}>I’d still find my way to you.</p>
                 </div>
-                <h2 className={styles.promiseText}>No matter how life changes,<br /> I choose you.</h2>
+                <h2 className={styles.promiseText}>No matter how life changes,<br/> I choose you.</h2>
             </section>
 
             {/* Footer */}
             <footer className={styles.footer}>
                 <p>Always. — Burhanuddin</p>
-                <div
-                    onClick={handleSurprise}
+                <div 
+                    onClick={handleSurprise} 
                     className={`${styles.heartTrigger} ${styles.pulse}`}
                     role="button"
                     title="Click me!"
@@ -381,12 +381,12 @@ const Anniversary = () => {
 
             {/* Hearts Overlay */}
             {hearts.map(heart => (
-                <div
-                    key={heart.id}
+                <div 
+                    key={heart.id} 
                     className={styles.floatingHeart}
-                    style={{
-                        left: `${heart.left}%`,
-                        animationDuration: `${heart.animationDuration}s`
+                    style={{ 
+                        left: `${heart.left}%`, 
+                        animationDuration: `${heart.animationDuration}s` 
                     }}
                 >
                     ♥

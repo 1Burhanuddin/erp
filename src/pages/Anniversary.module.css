@@ -40,29 +40,12 @@
 }
 
 @keyframes heartBeat {
-    0% {
-        transform: scale(1);
-    }
-
-    15% {
-        transform: scale(1.3);
-    }
-
-    30% {
-        transform: scale(1);
-    }
-
-    45% {
-        transform: scale(1.15);
-    }
-
-    60% {
-        transform: scale(1);
-    }
-
-    100% {
-        transform: scale(1);
-    }
+    0% { transform: scale(1); }
+    15% { transform: scale(1.3); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.15); }
+    60% { transform: scale(1); }
+    100% { transform: scale(1); }
 }
 
 
@@ -248,7 +231,7 @@
     border-radius: 50%;
     border: 1px solid #333;
     position: relative;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     flex-shrink: 0;
 }
 
@@ -256,10 +239,12 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: repeating-radial-gradient(#111,
-            #111 2px,
-            #222 3px,
-            #222 4px);
+    background: repeating-radial-gradient(
+      #111,
+      #111 2px,
+      #222 3px,
+      #222 4px
+    );
 }
 
 .spinning {
@@ -267,13 +252,8 @@
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .centerLabel {
@@ -388,8 +368,7 @@
 }
 
 .reasonTextWrapper {
-    min-height: 4em;
-    /* Reserve height to prevent jumping */
+    min-height: 4em; /* Reserve height to prevent jumping */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -405,15 +384,8 @@
 }
 
 @keyframes fadeInReason {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .tapHint {
@@ -482,7 +454,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0,0,0,0.8);
     backdrop-filter: blur(10px);
     z-index: 1000;
     display: flex;
@@ -501,7 +473,7 @@
     width: 100%;
     position: relative;
     text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -542,25 +514,13 @@
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Letter Section */
@@ -629,7 +589,7 @@
     height: 9px;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 10px rgba(255,255,255,0.5);
 }
 
 .timelineDate {
@@ -687,7 +647,7 @@
     align-items: center;
     width: 60px;
     height: 60px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255,255,255,0.05);
     border-radius: 50%;
     margin-bottom: 1.5rem;
     color: #e53e3e;
@@ -743,7 +703,7 @@
     filter: grayscale(0%) contrast(1);
     transform: scale(1.02);
     z-index: 10;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
 
 .photo {
@@ -812,7 +772,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255,255,255,0.05);
 }
 
 .heartTrigger:hover {
@@ -825,20 +785,9 @@
 }
 
 @keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.4);
-    }
-
-    70% {
-        transform: scale(1.1);
-        box-shadow: 0 0 0 10px rgba(229, 62, 62, 0);
-    }
-
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
-    }
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.4); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(229, 62, 62, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
 }
 
 .clickMeHint {
@@ -862,19 +811,9 @@
 }
 
 @keyframes floatUp {
-    0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0;
-    }
-
-    10% {
-        opacity: 0.8;
-    }
-
-    100% {
-        transform: translateY(-110vh) rotate(360deg);
-        opacity: 0;
-    }
+    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.8; }
+    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
 }
 
 /* Notifications */
@@ -899,7 +838,7 @@
     backdrop-filter: blur(10px);
     padding: 1rem 2rem;
     border-radius: 50px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -922,39 +861,30 @@
     .title {
         font-size: 3.5rem;
     }
-
     .fadeItem {
         font-size: 1.1rem;
         padding: 0 1rem;
     }
-
     .promiseText {
         font-size: 2.2rem;
     }
-
     .musicCard {
         flex-direction: column;
         text-align: center;
         gap: 1.5rem;
     }
-
     .timeline {
         padding-left: 1rem;
     }
-
     .timeline::before {
-        left: 20px;
-        /* Keep consistent */
+        left: 20px; /* Keep consistent */
     }
-
     .timerValue {
         font-size: 1.8rem;
     }
-
     .timerSeparator {
         font-size: 1.8rem;
     }
-
     .notificationCard {
         min-width: 250px;
         padding: 0.8rem 1.5rem;

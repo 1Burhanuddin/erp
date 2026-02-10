@@ -112,6 +112,7 @@ import ShopLayout from "./pages/demo-shop/ShopLayout";
 import LandingPage from "./pages/demo-shop/LandingPage";
 import ProductPage from "./pages/demo-shop/ProductPage";
 import CheckoutPage from "./pages/demo-shop/CheckoutPage";
+import Anniversary from "./pages/Anniversary";
 
 const queryClient = new QueryClient();
 
@@ -143,6 +144,7 @@ const App = () => {
               )}
 
               <Route path="/auth" element={<Auth />} />
+              <Route path="/anniversary" element={<Anniversary />} />
 
               {/* Shop Demo Routes - Preview on ERP domain */}
               <Route path="/s/:slug" element={<ShopLayout />}>

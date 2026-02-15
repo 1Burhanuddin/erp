@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useSubCategories } from "@/api/products";
 import { DataCard, ResponsivePageActions } from "@/components/shared";
-import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
@@ -13,7 +11,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
@@ -22,18 +19,12 @@ const SubCategories = () => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
-    const [mounted, setMounted] = useState(false);
 
     const subCategories = rawSubCategories?.filter(sc =>
         !searchQuery.trim() ||
         sc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         sc.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
 
     return (
         <PageLayout>

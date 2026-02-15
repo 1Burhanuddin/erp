@@ -1,6 +1,6 @@
 import { LayoutGrid, Table } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface DataViewToggleProps {
     viewMode: 'table' | 'card';
@@ -9,8 +9,11 @@ interface DataViewToggleProps {
 }
 
 export const DataViewToggle = ({ viewMode, setViewMode, variant = 'default' }: DataViewToggleProps) => {
+    const hasInitializedRef = useRef(false);
 
     useEffect(() => {
+        if (hasInitializedRef.current) return;
+
         const handleResize = () => {
             if (window.innerWidth < 768) {
                 setViewMode('card');
@@ -19,11 +22,12 @@ export const DataViewToggle = ({ viewMode, setViewMode, variant = 'default' }: D
 
         // Initial check
         handleResize();
+        hasInitializedRef.current = true;
 
         // Optional: Add listener if we want dynamic resizing behavior
         // window.addEventListener('resize', handleResize);
         // return () => window.removeEventListener('resize', handleResize);
-    }, []); // Run only on mount to avoid overriding user choice during session
+    }, [setViewMode]); // Include setViewMode in deps
 
     if (variant === 'floating') {
         return (

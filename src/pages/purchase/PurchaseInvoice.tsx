@@ -71,7 +71,7 @@ const PurchaseInvoice = () => {
                         <ResponsivePageActions
                             viewMode={viewMode}
                             setViewMode={setViewMode}
-                            onAdd={() => navigate("/purchase/invoice/add")} // Assuming add route exists, or maybe it doesn't? checking...
+                            onAdd={() => navigate("/purchase/invoice/add")}
                             addLabel="Create Invoice"
                         />
                     </div>
@@ -126,11 +126,11 @@ const PurchaseInvoice = () => {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center h-24">Loading...</TableCell>
+                                    <TableCell colSpan={5} className="text-center h-24">Loading...</TableCell>
                                 </TableRow>
                             ) : filteredOrders?.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">No invoices found</TableCell>
+                                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">No invoices found</TableCell>
                                 </TableRow>
                             ) : (
                                 filteredOrders?.map((order) => (

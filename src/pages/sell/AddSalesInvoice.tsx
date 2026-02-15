@@ -232,6 +232,7 @@ const AddSalesInvoice = () => {
                                         id="invoice_date"
                                         label="Invoice Date"
                                         type="date"
+                                        className="pt-4"
                                         value={orderDate}
                                         onChange={e => setOrderDate(e.target.value)}
                                     />

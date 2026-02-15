@@ -92,16 +92,16 @@ const Auth = () => {
             {/* Decorative Blobs - Desktop */}
             <div className="hidden lg:block absolute inset-0 overflow-hidden pointer-events-none">
                 {/* Purple blob - top left */}
-                <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-[#8B6B9E] dark:bg-[#7A5A8D] rounded-[40%_60%_70%_30%/40%_50%_60%_50%]"></div>
+                <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-lavender-500 dark:bg-lavender-600 rounded-[40%_60%_70%_30%/40%_50%_60%_50%]"></div>
 
                 {/* Coral blob - top right */}
-                <div className="absolute -top-20 right-0 w-[400px] h-[400px] bg-[#F5A5A0] dark:bg-[#E89590] rounded-[60%_40%_30%_70%/60%_30%_70%_40%]"></div>
+                <div className="absolute -top-20 right-0 w-[400px] h-[400px] bg-coral dark:bg-coral-dark rounded-[60%_40%_30%_70%/60%_30%_70%_40%]"></div>
 
                 {/* Yellow blob - bottom right */}
-                <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] bg-[#F4E5A0] dark:bg-[#E8D890] rounded-[30%_70%_70%_30%/30%_30%_70%_70%]"></div>
+                <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] bg-butter dark:bg-butter-dark rounded-[30%_70%_70%_30%/30%_30%_70%_70%]"></div>
 
                 {/* Purple blob - bottom left */}
-                <div className="absolute bottom-20 -left-20 w-[350px] h-[350px] bg-[#9B7BAE] dark:bg-[#8A6A9D] rounded-[70%_30%_50%_50%/30%_60%_40%_70%]"></div>
+                <div className="absolute bottom-20 -left-20 w-[350px] h-[350px] bg-lavender-400 dark:bg-lavender-700 rounded-[70%_30%_50%_50%/30%_60%_40%_70%]"></div>
             </div>
 
             {/* Main Content Container */}
@@ -153,12 +153,12 @@ const Auth = () => {
                     {/* Mobile Branding */}
                     <div className="lg:hidden text-center mb-6 relative z-10">
                         <div className="flex items-center justify-center gap-2 mb-3">
-                            <LayoutDashboard className="h-8 w-8 text-[#8B6B9E] dark:text-[#9B7BAE]" />
-                            <h1 className="text-3xl font-bold text-[#8B6B9E] dark:text-[#9B7BAE] tracking-tight">
+                            <LayoutDashboard className="h-8 w-8 text-lavender-500 dark:text-lavender-400" />
+                            <h1 className="text-3xl font-bold text-lavender-500 dark:text-lavender-400 tracking-tight">
                                 Operra
                             </h1>
                         </div>
-                        <p className="text-xs text-[#8B6B9E]/70 dark:text-[#9B7BAE]/70 font-medium tracking-widest uppercase">
+                        <p className="text-xs text-lavender-500/70 dark:text-lavender-400/70 font-medium tracking-widest uppercase">
                             Enterprise Resource Planning
                         </p>
                     </div>
@@ -166,16 +166,16 @@ const Auth = () => {
                     {/* Mobile Decorative Blobs - Positioned relative to viewport */}
                     <div className="lg:hidden fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
                         {/* Purple blob - top left */}
-                        <div className="absolute top-0 left-0 w-[200px] h-[200px] bg-[#8B6B9E] dark:bg-[#7A5A8D] rounded-[60%_40%_30%_70%/60%_30%_70%_40%] -translate-x-1/3 -translate-y-1/3"></div>
+                        <div className="absolute top-0 left-0 w-[200px] h-[200px] bg-lavender-500 dark:bg-lavender-600 rounded-[60%_40%_30%_70%/60%_30%_70%_40%] -translate-x-1/3 -translate-y-1/3"></div>
 
                         {/* Yellow blob - top right */}
-                        <div className="absolute top-10 right-0 w-[150px] h-[150px] bg-[#F4E5A0] dark:bg-[#E8D890] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] translate-x-1/3"></div>
+                        <div className="absolute top-10 right-0 w-[150px] h-[150px] bg-butter dark:bg-butter-dark rounded-[40%_60%_70%_30%/40%_50%_60%_50%] translate-x-1/3"></div>
 
                         {/* Coral blob - bottom right */}
-                        <div className="absolute bottom-20 right-0 w-[180px] h-[180px] bg-[#F5A5A0] dark:bg-[#E89590] rounded-[70%_30%_50%_50%/30%_60%_40%_70%] translate-x-1/4"></div>
+                        <div className="absolute bottom-20 right-0 w-[180px] h-[180px] bg-coral dark:bg-coral-dark rounded-[70%_30%_50%_50%/30%_60%_40%_70%] translate-x-1/4"></div>
 
                         {/* Small purple blob - bottom left */}
-                        <div className="absolute bottom-0 left-0 w-[120px] h-[120px] bg-[#9B7BAE] dark:bg-[#8A6A9D] rounded-[50%_50%_50%_50%/50%_50%_50%_50%] -translate-x-1/4 translate-y-1/4"></div>
+                        <div className="absolute bottom-0 left-0 w-[120px] h-[120px] bg-lavender-400 dark:bg-lavender-700 rounded-[50%_50%_50%_50%/50%_50%_50%_50%] -translate-x-1/4 translate-y-1/4"></div>
                     </div>
 
                     {/* Auth Card */}
@@ -200,8 +200,8 @@ const Auth = () => {
                                     </TabsList>
 
                                     <motion.div
+                                        layout
                                         className="relative overflow-hidden"
-                                        animate={{ height: "auto" }}
                                         transition={{ duration: 0.3, ease: "easeInOut" }}
                                     >
                                         <AnimatePresence mode="wait">
@@ -300,7 +300,7 @@ const Auth = () => {
 
                             <CardFooter className="flex flex-col gap-4 px-8 pb-8">
                                 <Button
-                                    className="w-full font-semibold h-12 text-base bg-[#8B6B9E] hover:bg-[#7A5A8D] dark:bg-[#9B7BAE] dark:hover:bg-[#8A6A9D]"
+                                    className="w-full font-semibold h-12 text-base bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80"
                                     type="submit"
                                     disabled={loading}
                                 >

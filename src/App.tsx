@@ -118,6 +118,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const hostname = window.location.hostname;
+  // ... existing IP checks ...
   const isPrivateIP = hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
     hostname.startsWith('192.168.') ||

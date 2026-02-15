@@ -2,6 +2,7 @@ import { ReactNode, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { motion } from "framer-motion";
 import {
     ClipboardList,
     Clock,
@@ -201,14 +202,21 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                 )}
 
                 {/* Page Content */}
-                <main className="flex-1 p-4 pb-20 md:pb-4 overflow-auto">
-                    {children}
+                <main className="flex-1 overflow-auto md:pb-4">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="h-full"
+                    >
+                        {children}
+                    </motion.div>
                 </main>
             </div>
 
             {/* Bottom Navigation for Mobile */}
             {/* Floating Bottom Navigation for Mobile */}
-            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-sm h-16 bg-background/80 backdrop-blur-xl border border-border/50 rounded-full shadow-2xl flex justify-between px-2 items-center md:hidden z-50">
+            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-fit px-8 h-16 flex justify-center gap-2 items-center md:hidden z-50">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.href;
                     return (
@@ -216,13 +224,13 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                             key={item.href}
                             to={item.href}
                             className={cn(
-                                "flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300",
+                                "flex items-center justify-center w-14 h-14 rounded-full transition-all duration-300 shadow-sm",
                                 isActive
                                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-110"
-                                    : "text-muted-foreground hover:bg-muted"
+                                    : "bg-white dark:bg-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
                             )}
                         >
-                            <item.icon className="h-5 w-5" />
+                            <item.icon className={cn("transition-all", isActive ? "h-7 w-7 stroke-[2.5px]" : "h-7 w-7")} />
                             <span className="sr-only">{item.label}</span>
                         </Link>
                     );

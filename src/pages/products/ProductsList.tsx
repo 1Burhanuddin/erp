@@ -90,6 +90,7 @@ const ProductsList = () => {
                         value={searchQuery}
                         onChange={setSearchQuery}
                         placeholder="Search products..."
+                        renderInline={true}
                         className="w-full sm:w-auto"
                     />
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">

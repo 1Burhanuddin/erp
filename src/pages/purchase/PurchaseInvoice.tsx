@@ -61,6 +61,7 @@ const PurchaseInvoice = () => {
                         value={search}
                         onChange={setSearch}
                         placeholder="Search invoices..."
+                        renderInline={true}
                         className="w-full sm:w-auto"
                     />
                     <div className="flex items-center gap-2 self-end sm:self-auto">

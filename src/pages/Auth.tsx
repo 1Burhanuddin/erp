@@ -87,12 +87,12 @@ const Auth = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="min-h-screen flex items-start justify-center p-4 pt-32 bg-background">
             <div className="w-full max-w-md space-y-8 animate-enter">
                 <div className="flex flex-col items-center text-center space-y-2">
                     <div className="mb-6 flex flex-col items-center animate-fade-in">
 
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent tracking-tight">
+                        <h1 className="text-7xl font-bold bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent tracking-tight pb-4">
                             Operra
                         </h1>
                         <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase mt-1">

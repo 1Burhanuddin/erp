@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataCard, ResponsivePageActions } from "@/components/shared";
 import { usePurchaseOrders, useConvertPOToGRN } from "@/api/purchase";
@@ -23,12 +23,6 @@ const GRN = () => {
     const { data: allOrders, isLoading } = usePurchaseOrders();
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
 
     // Filter locally
     const filteredAll = allOrders?.filter((o: any) =>

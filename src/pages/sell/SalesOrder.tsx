@@ -37,10 +37,6 @@ const SalesOrder = () => {
             order.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
     ) || [];
 
-
-
-    // ... existing code ...
-
     return (
         <PageLayout>
             <div className="flex flex-col gap-4 mb-4">
@@ -49,6 +45,7 @@ const SalesOrder = () => {
                         value={searchQuery}
                         onChange={setSearchQuery}
                         placeholder="Search sales orders..."
+                        renderInline={true}
                         className="w-full sm:w-auto"
                     />
                     <ResponsivePageActions

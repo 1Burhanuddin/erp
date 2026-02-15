@@ -75,6 +75,7 @@ import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/RoleRoutes";
 import { AuthProvider } from "./hooks/useAuth";
+import { isLocalDomain, isERPDomain } from "@/config/domains";
 
 // Employee Management
 import EmployeeList from "./pages/employees/EmployeeList";
@@ -117,15 +118,10 @@ import Anniversary from "./pages/Anniversary";
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Domain Detection
   const hostname = window.location.hostname;
-  // ... existing IP checks ...
-  const isPrivateIP = hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname.startsWith('192.168.') ||
-    hostname.startsWith('10.') ||
-    (hostname.startsWith('172.') && parseInt(hostname.split('.')[1], 10) >= 16 && parseInt(hostname.split('.')[1], 10) <= 31);
-
-  const isERP = isPrivateIP || hostname.includes('erpsoft.vercel.app') || hostname.includes('operra.in');
+  const isPrivateIP = isLocalDomain(hostname);
+  const isERP = isPrivateIP || isERPDomain(hostname);
 
   return (
     <QueryClientProvider client={queryClient}>

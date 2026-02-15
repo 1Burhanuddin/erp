@@ -47,6 +47,7 @@ const PurchaseReturn = () => {
                     <ExpandableSearch
                         value={searchQuery}
                         onChange={setSearchQuery}
+                        renderInline={true}
                     />
                     <ResponsivePageActions
                         viewMode={viewMode}

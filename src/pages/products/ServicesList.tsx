@@ -59,6 +59,7 @@ const ServicesList = () => {
                         value={searchQuery}
                         onChange={setSearchQuery}
                         placeholder="Search services..."
+                        renderInline={true}
                         className="w-full sm:w-auto"
                     />
                     <ResponsivePageActions

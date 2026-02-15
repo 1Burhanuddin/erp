@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 export interface FloatingLabelInputProps
     extends React.InputHTMLAttributes<HTMLInputElement> {
-    label: string;
+    label?: React.ReactNode; // Changed from string to ReactNode to support JSX labels
     labelClassName?: string;
 }
 

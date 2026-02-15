@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -385,11 +385,9 @@ export const ProductForm = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="name">
-                        {formData.type === "Service" ? "Service Name" : "Product Name"} <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
+                    <FloatingLabelInput
                         id="name"
+                        label={<>{formData.type === "Service" ? "Service Name" : "Product Name"} <span className="text-destructive">*</span></>}
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         onBlur={() => !initialData && handleAutoSKU(formData.type)} // Only auto-gen on blur for new items
@@ -398,12 +396,10 @@ export const ProductForm = ({
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="sku">
-                        {formData.type === "Service" ? "Service Code" : "SKU (Stock Keeping Unit)"} <span className="text-destructive">*</span>
-                    </Label>
                     <div className="flex gap-2">
-                        <Input
+                        <FloatingLabelInput
                             id="sku"
+                            label={<>{formData.type === "Service" ? "Service Code" : "SKU (Stock Keeping Unit)"} <span className="text-destructive">*</span></>}
                             value={formData.sku}
                             onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                             required
@@ -424,8 +420,8 @@ export const ProductForm = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="hsn_code">HSN/SAC Code</Label>
-                    <Input
+                    <FloatingLabelInput
+                        label="HSN/SAC Code"
                         value={formData.hsn_code}
                         onChange={(e) => setFormData({ ...formData, hsn_code: e.target.value })}
                         placeholder="HSN/SAC Code"
@@ -563,12 +559,10 @@ export const ProductForm = ({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="purchase_price">
-                        {formData.type === "Service" ? "Cost Price (Optional)" : "Purchase Price"}
-                    </Label>
-                    <Input
+                    <FloatingLabelInput
                         id="purchase_price"
                         type="number"
+                        label={formData.type === "Service" ? "Cost Price (Optional)" : "Purchase Price"}
                         min="0"
                         step="0.01"
                         value={formData.purchase_price}
@@ -578,12 +572,10 @@ export const ProductForm = ({
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="sale_price">
-                        {formData.type === "Service" ? "Service Charge" : "Sale Price"} <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
+                    <FloatingLabelInput
                         id="sale_price"
                         type="number"
+                        label={<>{formData.type === "Service" ? "Service Charge" : "Sale Price"} <span className="text-destructive">*</span></>}
                         min="0"
                         step="0.01"
                         value={formData.sale_price}
@@ -594,10 +586,10 @@ export const ProductForm = ({
                 </div>
                 {formData.type === "Product" && (
                     <div className="space-y-2">
-                        <Label htmlFor="alert_quantity">Alert Quantity</Label>
-                        <Input
+                        <FloatingLabelInput
                             id="alert_quantity"
                             type="number"
+                            label="Alert Quantity"
                             min="0"
                             value={formData.alert_quantity}
                             onChange={(e) =>
@@ -664,10 +656,10 @@ export const ProductForm = ({
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="online_price">Online Price (Optional Override)</Label>
-                            <Input
+                            <FloatingLabelInput
                                 id="online_price"
                                 type="number"
+                                label="Online Price (Optional Override)"
                                 min="0"
                                 step="0.01"
                                 value={formData.online_price}

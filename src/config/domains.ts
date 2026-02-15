@@ -26,16 +26,24 @@ export const ECOMMERCE_DOMAINS = [
  * Check if the given hostname is an ERP domain
  */
 export const isERPDomain = (hostname: string): boolean => {
-    const cleanHostname = hostname.replace('www.', '');
-    return ERP_DOMAINS.some(domain => cleanHostname.includes(domain));
+    // Normalize: lowercase and remove only leading "www."
+    const cleanHostname = hostname.toLowerCase().replace(/^www\./, '');
+    // Strict equality or proper suffix match with dot boundary
+    return ERP_DOMAINS.some(domain =>
+        cleanHostname === domain || cleanHostname.endsWith(`.${domain}`)
+    );
 };
 
 /**
  * Check if the given hostname is an e-commerce domain
  */
 export const isEcommerceDomain = (hostname: string): boolean => {
-    const cleanHostname = hostname.replace('www.', '');
-    return ECOMMERCE_DOMAINS.some(domain => cleanHostname.includes(domain));
+    // Normalize: lowercase and remove only leading "www."
+    const cleanHostname = hostname.toLowerCase().replace(/^www\./, '');
+    // Strict equality or proper suffix match with dot boundary
+    return ECOMMERCE_DOMAINS.some(domain =>
+        cleanHostname === domain || cleanHostname.endsWith(`.${domain}`)
+    );
 };
 
 /**

@@ -97,7 +97,7 @@ const AddSubCategory = () => {
                             <div className="grid gap-2">
                                 <FloatingLabelInput
                                     id="name"
-                                    label="Name *"
+                                    label={<>Name <span className="text-destructive">*</span></>}
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />

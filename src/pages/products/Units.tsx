@@ -41,6 +41,7 @@ const Units = () => {
                         value={searchQuery}
                         onChange={setSearchQuery}
                         placeholder="Search units..."
+                        renderInline={true}
                         className="w-full sm:w-auto"
                     />
                     <ResponsivePageActions

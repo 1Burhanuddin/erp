@@ -109,7 +109,7 @@ const StockAdjustment = () => {
                     )}
                 </div>
             ) : (
-                <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden mt-6">
+                <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                     <Table>
                         <TableHeader>
                             <TableRow>

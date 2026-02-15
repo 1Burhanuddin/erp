@@ -92,6 +92,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                         value={searchQuery}
                         onChange={setSearchQuery}
                         placeholder={`Search ${role?.toLowerCase()}s...`}
+                        renderInline={true}
                         className="w-full sm:w-auto"
                     />
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">

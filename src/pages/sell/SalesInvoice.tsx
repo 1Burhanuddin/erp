@@ -50,6 +50,7 @@ const SalesInvoice = () => {
                         value={searchQuery}
                         onChange={setSearchQuery}
                         placeholder="Search invoices..."
+                        renderInline={true}
                         className="w-full sm:w-auto"
                     />
                     <ResponsivePageActions

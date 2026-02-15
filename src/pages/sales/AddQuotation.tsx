@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -152,8 +153,9 @@ const AddQuotation = () => {
                             {/* Header Details */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-2">
-                                    <Label>Quotation No.</Label>
-                                    <Input
+                                    <FloatingLabelInput
+                                        id="order_no"
+                                        label="Quotation No."
                                         value={formData.order_no}
                                         onChange={(e) => setFormData({ ...formData, order_no: e.target.value })}
                                         required
@@ -178,12 +180,14 @@ const AddQuotation = () => {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Date</Label>
-                                    <Input
+                                    <FloatingLabelInput
+                                        id="order_date"
                                         type="date"
+                                        label="Date"
                                         value={formData.order_date}
                                         onChange={(e) => setFormData({ ...formData, order_date: e.target.value })}
                                         required
+                                        className="pt-4" // Ensure date input text alignment if needed
                                     />
                                 </div>
                             </div>
@@ -219,7 +223,9 @@ const AddQuotation = () => {
                                             </Select>
                                         </div>
                                         <div className="w-20">
-                                            <Input
+                                            <FloatingLabelInput
+                                                id={`qty-${item.id}`}
+                                                label="Qty"
                                                 type="number"
                                                 min="1"
                                                 value={item.quantity}
@@ -227,7 +233,9 @@ const AddQuotation = () => {
                                             />
                                         </div>
                                         <div className="w-28">
-                                            <Input
+                                            <FloatingLabelInput
+                                                id={`price-${item.id}`}
+                                                label="Price"
                                                 type="number"
                                                 min="0"
                                                 step="0.01"

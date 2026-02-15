@@ -2,6 +2,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Users, ArrowLeft, Edit, X, Save, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -78,33 +79,36 @@ export default function OwnerDetails() {
                     <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="owner_name">Owner Name</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="owner_name"
+                                    label="Owner Name"
                                     value={businessForm.owner_name}
                                     onChange={(e) => handleChange("owner_name", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="owner_phone">Owner Phone</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="owner_phone"
+                                    label="Owner Phone"
                                     value={businessForm.owner_phone}
                                     onChange={(e) => handleChange("owner_phone", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="owner_email">Owner Email</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="owner_email"
+                                    label="Owner Email"
                                     value={businessForm.owner_email}
                                     onChange={(e) => handleChange("owner_email", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
                         </div>

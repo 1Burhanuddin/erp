@@ -9,6 +9,7 @@ interface ExpandableSearchProps {
     onChange: (value: string) => void;
     placeholder?: string;
     portalTargetId?: string; // ID of the portal target (default: header-actions)
+    renderInline?: boolean; // If true, render inline instead of using portal
     className?: string; // Class for the portal container
 }
 
@@ -17,6 +18,7 @@ export function ExpandableSearch({
     onChange,
     placeholder = "Search...",
     portalTargetId = "header-actions",
+    renderInline = false,
     className
 }: ExpandableSearchProps) {
     const [isOpen, setIsOpen] = useState(false);
@@ -34,10 +36,7 @@ export function ExpandableSearch({
 
     if (!mounted) return null;
 
-    const target = document.getElementById(portalTargetId);
-    if (!target) return null; // Or render inline if target not found? For now strict portal.
-
-    return createPortal(
+    const searchContent = (
         <div className={cn("flex items-center", className)}>
             {isOpen ? (
                 <div className="flex items-center bg-background border rounded-full px-4 py-1.5 animate-in fade-in zoom-in-95 duration-200 shadow-sm mr-2 absolute right-0 z-50 h-11">
@@ -68,7 +67,19 @@ export function ExpandableSearch({
                     <Search className="w-5 h-5" />
                 </Button>
             )}
-        </div>,
-        target
+        </div>
     );
+
+    // If renderInline is true, or portal target doesn't exist, render inline
+    if (renderInline) {
+        return searchContent;
+    }
+
+    const target = document.getElementById(portalTargetId);
+    if (!target) {
+        // Fallback to inline rendering if portal target is missing
+        return searchContent;
+    }
+
+    return createPortal(searchContent, target);
 }

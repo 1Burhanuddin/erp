@@ -2,7 +2,8 @@ import { useState } from "react";
 import { PageLayout } from "@/components/layout";
 import { useCreateEmployee } from "@/api/employees";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -80,34 +81,32 @@ const AddEmployee = () => {
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                                 <div className="space-y-2">
-                                    <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="full_name"
+                                        label="Full Name *"
                                         required
                                         value={formData.full_name}
                                         onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                                        placeholder="John Doe"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="email"
+                                        label="Email"
                                         type="email"
                                         value={formData.email}
                                         onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                        placeholder="john@example.com"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone <span className="text-destructive">*</span></Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="phone"
+                                        label="Phone *"
                                         required
                                         value={formData.phone}
                                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                        placeholder="+91..."
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -126,21 +125,20 @@ const AddEmployee = () => {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="shift_start">Shift Start Time</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="shift_start"
+                                        label="Shift Start Time"
                                         type="time"
                                         value={formData.shift_start}
                                         onChange={e => setFormData({ ...formData, shift_start: e.target.value })}
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="address">Address</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="address"
+                                        label="Address"
                                         value={formData.address}
                                         onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                        placeholder="123 Main St"
                                     />
                                 </div>
 

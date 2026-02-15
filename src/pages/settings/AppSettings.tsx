@@ -86,6 +86,7 @@ export default function AppSettings() {
                                     <div className="flex gap-3">
                                         {[
                                             { name: "blue", color: "#2563eb" },
+                                            { name: "lavender", color: "#8B6B9E" },
                                             { name: "teal", color: "#0d9488" },
                                             { name: "forest", color: "#1e4620" },
                                             { name: "golden", color: "#d97706" },

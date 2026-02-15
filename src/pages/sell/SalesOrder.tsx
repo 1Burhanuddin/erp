@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
@@ -7,6 +8,7 @@ import { useSalesOrders } from "@/api/sales";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
+import { ResponsivePageActions } from "@/components/shared";
 import {
     Table,
     TableBody,
@@ -35,25 +37,28 @@ const SalesOrder = () => {
             order.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
     ) || [];
 
+
+
+    // ... existing code ...
+
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search sales orders..."
-            />
-
-            {/* Floating Action Button */}
-            <div className="fixed bottom-6 right-6 z-50">
-                <Button
-                    onClick={() => navigate("/sell/order/add")}
-                    size="icon"
-                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                    <Plus className="h-6 w-6" />
-                </Button>
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search sales orders..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/sell/order/add")}
+                        addLabel="Add Order"
+                    />
+                </div>
             </div>
-
             <div className="p-4">
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -85,7 +90,7 @@ const SalesOrder = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -141,7 +146,7 @@ const SalesOrder = () => {
                     </div>
                 )}
             </div>
-        </PageLayout>
+        </PageLayout >
     );
 };
 

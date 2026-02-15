@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useSubCategories } from "@/api/products";
-import { DataViewToggle, DataCard } from "@/components/shared";
-import { Button } from "@/components/ui/button";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
@@ -13,7 +11,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
@@ -22,7 +19,6 @@ const SubCategories = () => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
-    const [mounted, setMounted] = useState(false);
 
     const subCategories = rawSubCategories?.filter(sc =>
         !searchQuery.trim() ||
@@ -30,28 +26,24 @@ const SubCategories = () => {
         sc.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
-
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search sub-categories..."
-            />
-
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
-            <Button
-                onClick={() => navigate("/products/sub-categories/add")}
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                size="lg"
-            >
-                <Plus className="mr-2 h-5 w-5" />
-                <span className="font-medium text-base">Add Sub Category</span>
-            </Button>
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search sub-categories..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/products/sub-categories/add")}
+                        addLabel="Add Sub Category"
+                    />
+                </div>
+            </div>
 
 
             <div className="p-4">
@@ -84,7 +76,7 @@ const SubCategories = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

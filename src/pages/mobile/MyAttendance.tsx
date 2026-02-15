@@ -57,7 +57,7 @@ export default function MyAttendance() {
                     </div>
 
                     {/* Calendar Section */}
-                    <Card className="border-0 shadow-sm bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
+                    <Card className="border-0 shadow-sm bg-white dark:bg-slate-900 rounded-xl overflow-hidden">
                         <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="font-bold text-lg text-slate-900 dark:text-white">{format(currentMonth, 'MMMM yyyy')}</h2>

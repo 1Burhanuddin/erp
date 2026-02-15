@@ -1,7 +1,8 @@
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
@@ -62,14 +63,13 @@ export default function ChangePassword() {
                     <CardContent className="space-y-4">
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="newPassword">New Password</Label>
                                 <div className="relative">
-                                    <Input
+                                    <FloatingLabelInput
                                         id="newPassword"
+                                        label="New Password"
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Minimum 6 characters"
                                         className="pr-10"
                                     />
                                     <Button
@@ -89,14 +89,13 @@ export default function ChangePassword() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword">Confirm Password</Label>
                                 <div className="relative">
-                                    <Input
+                                    <FloatingLabelInput
                                         id="confirmPassword"
+                                        label="Confirm Password"
                                         type={showPassword ? "text" : "password"}
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        placeholder="Re-enter new password"
                                         className="pr-10"
                                     />
                                     {/* Optional: Add toggle here too, or relying on the first one is enough? 

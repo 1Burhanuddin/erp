@@ -1,7 +1,8 @@
 import { PageLayout } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Mail, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -99,13 +100,12 @@ export default function ChangeEmail() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="newEmail">New Email</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="newEmail"
                                     type="email"
+                                    label="New Email"
                                     value={newEmail}
                                     onChange={(e) => setNewEmail(e.target.value)}
-                                    placeholder="enter@new.email"
                                 />
                             </div>
                         </div>

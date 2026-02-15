@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import { useNavigate } from "react-router-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard } from "@/components/shared";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { Plus } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -23,6 +23,12 @@ const SaleReturn = () => {
     const { data: rawReturns, isLoading } = useSaleReturns();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     const returns = rawReturns?.filter((r: any) =>
         !searchQuery.trim() ||
@@ -33,28 +39,25 @@ const SaleReturn = () => {
 
 
 
+    // ...
+
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search returns..."
-            />
-
-            {/* Floating Action Button */}
-            <div className="fixed bottom-6 right-6 z-50">
-                <Button
-                    onClick={() => navigate("/sell/return/add")}
-                    size="icon"
-                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                    <Plus className="h-6 w-6" />
-                </Button>
-            </div>
-
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search returns..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/sell/return/add")}
+                        addLabel="Create Return"
+                    />
+                </div>
             </div>
 
             <div className="p-4">
@@ -88,7 +91,7 @@ const SaleReturn = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

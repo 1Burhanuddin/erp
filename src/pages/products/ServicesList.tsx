@@ -6,6 +6,7 @@ import { useProducts } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
+import { ResponsivePageActions } from "@/components/shared";
 import {
     Table,
     TableBody,
@@ -46,18 +47,28 @@ const ServicesList = () => {
         );
     }) || [];
 
+
+
+    // ...
+
     return (
         <PageLayout>
-
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
-            <Button
-                onClick={() => navigate("/services/add")}
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                size="lg"
-            >
-                <Plus className="mr-2 h-5 w-5" />
-                <span className="font-medium text-base">Add Service</span>
-            </Button>
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search services..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/services/add")}
+                        addLabel="Add Service"
+                    />
+                </div>
+            </div>
 
 
 
@@ -93,7 +104,7 @@ const ServicesList = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

@@ -33,7 +33,7 @@ const ImportProducts = () => {
   const [parsedData, setParsedData] = useState<ParsedProduct[]>([]);
   const [parseErrors, setParseErrors] = useState<string[]>([]);
   const [isPreviewing, setIsPreviewing] = useState(false);
-  
+
   const bulkImportMutation = useBulkImportProducts();
   const { data: categories = [] } = useCategories();
   const { data: brands = [] } = useBrands();
@@ -55,7 +55,7 @@ const ImportProducts = () => {
 
     setSelectedFile(file);
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       const content = e.target?.result as string;
       parseCSVFile(content);

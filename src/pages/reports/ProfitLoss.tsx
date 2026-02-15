@@ -176,7 +176,7 @@ const ProfitLoss = () => {
             </div>
 
             {/* Main Profit Graph */}
-            <Card className="rounded-3xl border-0 shadow-sm p-8 mb-8">
+            <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
                         <h3 className="text-xl font-bold">Profit Trend</h3>
@@ -231,7 +231,7 @@ const ProfitLoss = () => {
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
-            </Card>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Revenue Breakdown */}

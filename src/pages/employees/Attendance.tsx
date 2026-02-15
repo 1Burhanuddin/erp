@@ -83,7 +83,7 @@ export default function AttendancePage() {
                         <p>No attendance records found for this date.</p>
                     </Card>
                 ) : viewMode === 'table' ? (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

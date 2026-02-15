@@ -8,6 +8,10 @@
     --background: 210 20% 98%;
     --foreground: 222 47% 11%;
 
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary-foreground: 0 0% 100%;
+
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
 
@@ -37,12 +41,10 @@
     --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
 
-    /* Sidebar Base */
-    --sidebar: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-muted: 215 16% 47%;
     --sidebar-accent: 217 91% 60%;
+
+    --floating-label-bg: var(--background);
   }
 
   .dark {
@@ -86,6 +88,8 @@
     --surface: 223 47% 14%;
     --surface-hover: 217 33% 17%;
     --surface-active: 217 33% 20%;
+
+    --floating-label-bg: var(--background);
   }
 
   /* --- Color Themes --- */
@@ -94,15 +98,32 @@
   [data-theme='blue'] {
     --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
-    --ring: 221 83% 53%;
     --sidebar-accent: 217 91% 60%;
+    --ring: 221 83% 53%;
   }
 
-  .dark[data-theme='blue'] {
+  [data-theme='blue'].dark {
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --ring: 217 91% 60%;
     --sidebar-accent: 217 91% 60%;
+    --ring: 217 91% 60%;
+  }
+
+  /* Lavender Purple */
+  [data-theme='lavender'] {
+    --primary: 280 20% 50%;
+    /* #8B6B9E - Lavender purple */
+    --primary-foreground: 0 0% 100%;
+    --sidebar-accent: 280 25% 55%;
+    --ring: 280 20% 50%;
+  }
+
+  [data-theme='lavender'].dark {
+    --primary: 280 25% 60%;
+    /* #9B7BAE - Lighter lavender for dark mode */
+    --primary-foreground: 0 0% 100%;
+    --sidebar-accent: 280 25% 60%;
+    --ring: 280 25% 60%;
   }
 
   /* Teal (Professional) */

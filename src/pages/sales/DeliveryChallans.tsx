@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard } from "@/components/shared";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 import { useDeliveryChallans } from "@/api/sales";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
@@ -35,28 +36,27 @@ const DeliveryChallans = () => {
         return () => setMounted(false);
     }, []);
 
+
+
+    // ...
+
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search challans..."
-            />
-
-            {/* Floating Action Button */}
-            <div className="fixed bottom-6 right-6 z-50">
-                <Button
-                    onClick={() => navigate("/sales/challans/add")}
-                    size="icon"
-                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                    <Plus className="h-6 w-6" />
-                </Button>
-            </div>
-
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search challans..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/sales/challans/add")}
+                        addLabel="Add Challan"
+                    />
+                </div>
             </div>
 
             <div className="p-4">
@@ -92,7 +92,7 @@ const DeliveryChallans = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

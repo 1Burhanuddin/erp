@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -176,12 +176,22 @@ const AddPurchaseOrder = () => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Order Date</Label>
-                                <Input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} />
+                                <FloatingLabelInput
+                                    id="order_date"
+                                    label="Order Date"
+                                    type="date"
+                                    value={orderDate}
+                                    onChange={e => setOrderDate(e.target.value)}
+                                    className="pt-4"
+                                />
                             </div>
                             <div className="space-y-2">
-                                <Label>Order No.</Label>
-                                <Input value={orderNo} onChange={e => setOrderNo(e.target.value)} />
+                                <FloatingLabelInput
+                                    id="order_no"
+                                    label="Order No."
+                                    value={orderNo}
+                                    onChange={e => setOrderNo(e.target.value)}
+                                />
                             </div>
                         </div>
 
@@ -203,8 +213,9 @@ const AddPurchaseOrder = () => {
                                     </Select>
                                 </div>
                                 <div className="md:col-span-2 space-y-2">
-                                    <Label>Quantity</Label>
-                                    <Input
+                                    <FloatingLabelInput
+                                        id="quantity"
+                                        label="Quantity"
                                         type="number"
                                         min="1"
                                         value={currentItem.quantity}
@@ -212,8 +223,9 @@ const AddPurchaseOrder = () => {
                                     />
                                 </div>
                                 <div className="md:col-span-2 space-y-2">
-                                    <Label>Unit Cost</Label>
-                                    <Input
+                                    <FloatingLabelInput
+                                        id="unit_price"
+                                        label="Unit Cost"
                                         type="number"
                                         min="0"
                                         value={currentItem.unitPrice}

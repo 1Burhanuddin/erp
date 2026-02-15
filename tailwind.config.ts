@@ -80,6 +80,29 @@ export default {
           hover: "hsl(var(--surface-hover))",
           active: "hsl(var(--surface-active))",
         },
+        // Custom lavender purple palette
+        lavender: {
+          50: "#f5f3f7",
+          100: "#ebe7ef",
+          200: "#d7cfe0",
+          300: "#c3b7d0",
+          400: "#9B7BAE", // Lighter lavender (dark mode primary)
+          500: "#8B6B9E", // Main lavender (light mode primary)
+          600: "#7A5A8D", // Darker lavender
+          700: "#6A4A7D",
+          800: "#5A3A6D",
+          900: "#4A2A5D",
+        },
+        coral: {
+          DEFAULT: "#F5A5A0",
+          light: "#F8B5B0",
+          dark: "#E89590",
+        },
+        butter: {
+          DEFAULT: "#F4E5A0",
+          light: "#F8EAB0",
+          dark: "#E8D890",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

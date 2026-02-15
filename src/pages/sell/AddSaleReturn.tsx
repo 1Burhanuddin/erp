@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -143,8 +144,13 @@ const AddSaleReturn = () => {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Return Date</Label>
-                                    <Input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
+                                    <FloatingLabelInput
+                                        id="return_date"
+                                        label="Return Date"
+                                        type="date"
+                                        value={returnDate}
+                                        onChange={(e) => setReturnDate(e.target.value)}
+                                    />
                                 </div>
                             </div>
 
@@ -179,15 +185,16 @@ const AddSaleReturn = () => {
                                                     <div className="text-xs text-gray-500">Sold: {item.sold_qty} @ ₹{item.unit_price}</div>
                                                 </div>
                                                 <div className="w-32">
-                                                    <Label className="text-xs">Return Qty</Label>
-                                                    <Input
+                                                    <FloatingLabelInput
+                                                        id={`return-qty-${index}`}
+                                                        label="Return Qty"
                                                         type="number"
                                                         min="0"
                                                         max={item.sold_qty}
                                                         value={item.return_qty}
                                                         disabled={!item.isSelected}
                                                         onChange={(e) => handleItemChange(index, 'return_qty', Number(e.target.value))}
-                                                        className="h-8"
+                                                        className="h-10 pt-4" // Adjusted height for floating label
                                                     />
                                                 </div>
                                                 <div className="w-24 text-right font-medium text-sm">

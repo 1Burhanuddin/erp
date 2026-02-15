@@ -3,7 +3,8 @@ import { PageLayout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useSubCategories, useUpdateSubCategory, useDeleteSubCategory, useCategories } from "@/api/products";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -128,9 +129,9 @@ const EditSubCategory = () => {
                                 </Select>
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="name"
+                                    label="Name *"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />

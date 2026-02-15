@@ -12,6 +12,7 @@ const Card = React.forwardRef<
       "rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md",
       className
     )}
+    style={{ "--floating-label-bg": "var(--card)", ...props.style } as React.CSSProperties}
     {...props}
   />
 ))

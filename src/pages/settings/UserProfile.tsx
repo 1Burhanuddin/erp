@@ -2,7 +2,8 @@ import { PageLayout } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { User, Loader2, LogOut, Phone, MapPin, Calendar, Clock, Mail, Edit, X, Save } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -184,29 +185,33 @@ export default function UserProfile() {
                         <div className="space-y-4 pt-4 border-t">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone" className="flex items-center gap-2">
-                                        <Phone className="h-4 w-4" /> Phone Number
-                                    </Label>
-                                    <Input
-                                        id="phone"
-                                        value={isEditing ? phone : (displayUser.phone || "Not set")}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        disabled={!isEditing}
-                                        className={!isEditing ? "bg-muted border-none" : ""}
-                                    />
+                                    <div className="relative">
+                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                        <FloatingLabelInput
+                                            id="phone"
+                                            label="Phone Number"
+                                            className={!isEditing ? "bg-muted border-none pl-10" : "pl-10"}
+                                            labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
+                                            value={isEditing ? phone : (displayUser.phone || "Not set")}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            disabled={!isEditing}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="address" className="flex items-center gap-2">
-                                        <MapPin className="h-4 w-4" /> Address
-                                    </Label>
-                                    <Input
-                                        id="address"
-                                        value={isEditing ? address : (displayUser.address || "Not set")}
-                                        onChange={(e) => setAddress(e.target.value)}
-                                        disabled={!isEditing}
-                                        className={!isEditing ? "bg-muted border-none" : ""}
-                                    />
+                                    <div className="relative">
+                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                        <FloatingLabelInput
+                                            id="address"
+                                            label="Address"
+                                            className={!isEditing ? "bg-muted border-none pl-10" : "pl-10"}
+                                            labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
+                                            value={isEditing ? address : (displayUser.address || "Not set")}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                            disabled={!isEditing}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>

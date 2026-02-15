@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
@@ -23,7 +24,12 @@ const SalesInvoice = () => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
+    const [mounted, setMounted] = useState(false);
 
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     // Invoices are essentially Completed Sales Orders in this simplified ERP
     const filteredOrders = salesOrders?.filter(order =>
@@ -33,6 +39,18 @@ const SalesInvoice = () => {
         order.status === 'Completed' // Filter for Invoices/Completed
     ) || [];
 
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>,
+            container
+        );
+    };
+
     return (
         <PageLayout>
             <ExpandableSearch
@@ -40,21 +58,17 @@ const SalesInvoice = () => {
                 onChange={setSearchQuery}
                 placeholder="Search invoices..."
             />
+            <HeaderActions />
 
             {/* Floating Action Button */}
             <div className="fixed bottom-6 right-6 z-50">
                 <Button
                     onClick={() => navigate("/sell/add")}
                     size="icon"
-                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="h-14 w-14 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                     <Plus className="h-6 w-6" />
                 </Button>
-            </div>
-
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
             </div>
 
             <div className="p-4">
@@ -90,7 +104,7 @@ const SalesInvoice = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

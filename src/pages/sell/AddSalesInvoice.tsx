@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -227,12 +228,21 @@ const AddSalesInvoice = () => {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Invoice Date</Label>
-                                    <Input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} />
+                                    <FloatingLabelInput
+                                        id="invoice_date"
+                                        label="Invoice Date"
+                                        type="date"
+                                        value={orderDate}
+                                        onChange={e => setOrderDate(e.target.value)}
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Invoice No.</Label>
-                                    <Input value={orderNo} onChange={e => setOrderNo(e.target.value)} />
+                                    <FloatingLabelInput
+                                        id="invoice_no"
+                                        label="Invoice No."
+                                        value={orderNo}
+                                        onChange={e => setOrderNo(e.target.value)}
+                                    />
                                 </div>
                             </div>
 
@@ -258,8 +268,9 @@ const AddSalesInvoice = () => {
                                         <Input disabled value={currentItem.currentStock} className="bg-muted" />
                                     </div>
                                     <div className="md:col-span-2 space-y-2">
-                                        <Label>Quantity</Label>
-                                        <Input
+                                        <FloatingLabelInput
+                                            id="quantity"
+                                            label="Quantity"
                                             type="number"
                                             min="1"
                                             max={currentItem.currentStock || undefined}
@@ -268,8 +279,9 @@ const AddSalesInvoice = () => {
                                         />
                                     </div>
                                     <div className="md:col-span-2 space-y-2">
-                                        <Label>Unit Price</Label>
-                                        <Input
+                                        <FloatingLabelInput
+                                            id="unit_price"
+                                            label="Unit Price"
                                             type="number"
                                             min="0"
                                             value={currentItem.unitPrice}
@@ -366,9 +378,11 @@ const AddSalesInvoice = () => {
                                         <span>Subtotal:</span>
                                         <span className="font-semibold">₹{totalAmount.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center">
-                                        <Label className="text-base">Paid Amount:</Label>
-                                        <Input
+                                    <div className="flex justify-between items-center gap-4">
+                                        <Label className="text-base whitespace-nowrap">Paid Amount:</Label>
+                                        <FloatingLabelInput
+                                            id="paid_amount"
+                                            label="Amount"
                                             type="number"
                                             min="0"
                                             max={totalAmount}

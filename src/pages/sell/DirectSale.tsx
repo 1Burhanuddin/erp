@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -160,12 +161,23 @@ const DirectSale = () => {
 
                         <div className="grid grid-cols-4 gap-4 items-end">
                             <div className="space-y-2">
-                                <Label>Qty</Label>
-                                <Input type="number" min="1" value={currentItem.quantity} onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })} />
+                                <FloatingLabelInput
+                                    id="quantity"
+                                    label="Qty"
+                                    type="number"
+                                    min="1"
+                                    value={currentItem.quantity}
+                                    onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
+                                />
                             </div>
                             <div className="space-y-2">
-                                <Label>Price</Label>
-                                <Input type="number" value={currentItem.unitPrice} onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })} />
+                                <FloatingLabelInput
+                                    id="price"
+                                    label="Price"
+                                    type="number"
+                                    value={currentItem.unitPrice}
+                                    onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label>Tax</Label>

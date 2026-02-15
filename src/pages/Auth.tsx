@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
     Card,
@@ -89,9 +90,19 @@ const Auth = () => {
         <div className="min-h-screen flex items-center justify-center p-4 bg-background">
             <div className="w-full max-w-md space-y-8 animate-enter">
                 <div className="flex flex-col items-center text-center space-y-2">
-                    <h1 className="text-2xl font-bold tracking-tight">
+                    <div className="mb-6 flex flex-col items-center animate-fade-in">
+
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent tracking-tight">
+                            Operra
+                        </h1>
+                        <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase mt-1">
+                            Enterprise Resource Planning
+                        </p>
+                    </div>
+
+                    <h2 className="text-2xl font-semibold tracking-tight">
                         {isLogin ? "Welcome back" : "Create an account"}
-                    </h1>
+                    </h2>
                     <p className="text-sm text-muted-foreground max-w-sm">
                         {isLogin
                             ? "Enter your credentials to access your account."
@@ -112,13 +123,13 @@ const Auth = () => {
                             <div className="space-y-4">
                                 {!isLogin && (
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">Full Name</Label>
                                         <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input
+                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                            <FloatingLabelInput
                                                 id="name"
-                                                placeholder="John Doe"
+                                                label="Full Name"
                                                 className="pl-10"
+                                                labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
                                                 value={name}
                                                 onChange={(e) => setName(e.target.value)}
                                                 required={!isLogin}
@@ -128,14 +139,14 @@ const Auth = () => {
                                 )}
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
+                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                        <FloatingLabelInput
                                             id="email"
+                                            label="Email"
                                             type="email"
-                                            placeholder="m@example.com"
                                             className="pl-10"
+                                            labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             required
@@ -144,21 +155,21 @@ const Auth = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Label htmlFor="password">Password</Label>
+                                    <div className="flex items-center justify-between mb-1">
                                         {isLogin && (
-                                            <a href="#" className="text-xs text-primary hover:underline">
+                                            <a href="#" className="text-xs text-primary hover:underline ml-auto">
                                                 Forgot password?
                                             </a>
                                         )}
                                     </div>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                        <FloatingLabelInput
                                             id="password"
+                                            label="Password"
                                             type={showPassword ? "text" : "password"}
-                                            placeholder="********"
                                             className="pl-10 pr-10"
+                                            labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             required
@@ -167,7 +178,7 @@ const Auth = () => {
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground focus:outline-none"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground focus:outline-none z-10"
                                             aria-label={showPassword ? "Hide password" : "Show password"}
                                         >
                                             {showPassword ? (
@@ -181,14 +192,14 @@ const Auth = () => {
 
                                 {!isLogin && (
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmPassword">Confirm Password</Label>
                                         <div className="relative">
-                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input
+                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                            <FloatingLabelInput
                                                 id="confirmPassword"
+                                                label="Confirm Password"
                                                 type={showPassword ? "text" : "password"}
-                                                placeholder="********"
                                                 className="pl-10"
+                                                labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
                                                 value={confirmPassword}
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 required={!isLogin}

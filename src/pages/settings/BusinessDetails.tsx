@@ -2,6 +2,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Building2, ArrowLeft, Edit, X, Save, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -135,103 +136,111 @@ export default function BusinessDetails() {
                     <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="company_name" className="text-muted-foreground">Company Name</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="company_name"
+                                    label="Company Name"
                                     value={businessForm.company_name}
                                     onChange={(e) => handleChange("company_name", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="company_type" className="text-muted-foreground">Company Type</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="company_type"
+                                    label="Company Type"
                                     value={businessForm.company_type}
                                     onChange={(e) => handleChange("company_type", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
-                                    placeholder="e.g. Private Limited"
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
 
                             <div className="md:col-span-2 space-y-2">
-                                <Label htmlFor="address" className="text-muted-foreground">Address</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="address"
+                                    label="Address"
                                     value={businessForm.address}
                                     onChange={(e) => handleChange("address", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="state" className="text-muted-foreground">State</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="state"
+                                    label="State"
                                     value={businessForm.state}
                                     onChange={(e) => handleChange("state", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="phone" className="text-muted-foreground">Phone</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="phone"
+                                    label="Phone"
                                     value={businessForm.phone}
                                     onChange={(e) => handleChange("phone", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-muted-foreground">Business Email</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="email"
                                     type="email"
+                                    label="Business Email"
                                     value={businessForm.email}
                                     onChange={(e) => handleChange("email", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="website" className="text-muted-foreground">Website</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="website"
+                                    label="Website"
                                     value={businessForm.website}
                                     onChange={(e) => handleChange("website", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="gstin" className="text-muted-foreground">GSTIN</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="gstin"
+                                    label="GSTIN"
                                     value={businessForm.gstin}
                                     onChange={(e) => handleChange("gstin", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="pan_no" className="text-muted-foreground">PAN Number</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="pan_no"
+                                    label="PAN Number"
                                     value={businessForm.pan_no}
                                     onChange={(e) => handleChange("pan_no", e.target.value)}
                                     disabled={!isEditingBusiness}
                                     className={!isEditingBusiness ? "bg-muted border-none text-foreground" : ""}
+                                    labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                 />
                             </div>
                         </div>

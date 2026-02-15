@@ -3,6 +3,7 @@ import { PageLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -215,8 +216,9 @@ const EditDeliveryChallan = () => {
                             {/* Header Details */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-2">
-                                    <Label>Challan No.</Label>
-                                    <Input
+                                    <FloatingLabelInput
+                                        id="order_no"
+                                        label="Challan No."
                                         value={formData.order_no}
                                         onChange={(e) => setFormData({ ...formData, order_no: e.target.value })}
                                         required
@@ -241,12 +243,14 @@ const EditDeliveryChallan = () => {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Date</Label>
-                                    <Input
+                                    <FloatingLabelInput
+                                        id="order_date"
                                         type="date"
+                                        label="Date"
                                         value={formData.order_date}
                                         onChange={(e) => setFormData({ ...formData, order_date: e.target.value })}
                                         required
+                                        className="pt-4"
                                     />
                                 </div>
                             </div>
@@ -281,7 +285,9 @@ const EditDeliveryChallan = () => {
                                             </Select>
                                         </div>
                                         <div className="w-24">
-                                            <Input
+                                            <FloatingLabelInput
+                                                id={`qty-${item.id}`}
+                                                label="Qty"
                                                 type="number"
                                                 min="1"
                                                 value={item.quantity}
@@ -289,7 +295,9 @@ const EditDeliveryChallan = () => {
                                             />
                                         </div>
                                         <div className="w-32">
-                                            <Input
+                                            <FloatingLabelInput
+                                                id={`price-${item.id}`}
+                                                label="Price"
                                                 type="number"
                                                 min="0"
                                                 step="0.01"

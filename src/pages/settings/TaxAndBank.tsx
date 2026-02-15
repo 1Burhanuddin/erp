@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 
 import {
@@ -214,36 +215,36 @@ export default function TaxAndBank() {
                             </h3>
                             <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="gstin">GSTIN</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="gstin"
+                                        label="GSTIN"
                                         value={businessForm.gstin}
                                         onChange={(e) => handleChange("gstin", e.target.value)}
                                         disabled={!isEditingBusiness}
                                         className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
-                                        placeholder="GSTIN Number"
+                                        labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="pan_no">PAN Number</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="pan_no"
+                                        label="PAN Number"
                                         value={businessForm.pan_no}
                                         onChange={(e) => handleChange("pan_no", e.target.value)}
                                         disabled={!isEditingBusiness}
                                         className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
-                                        placeholder="PAN Number"
+                                        labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="tax_scheme">Tax Scheme</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="tax_scheme"
+                                        label="Tax Scheme"
                                         value={businessForm.tax_scheme}
                                         onChange={(e) => handleChange("tax_scheme", e.target.value)}
                                         disabled={!isEditingBusiness}
                                         className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
-                                        placeholder="Regular / Composition"
+                                        labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                     />
                                 </div>
                             </div>
@@ -257,43 +258,47 @@ export default function TaxAndBank() {
                             </h3>
                             <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="bank_name">Bank Name</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="bank_name"
+                                        label="Bank Name"
                                         value={businessForm.bank_name}
                                         onChange={(e) => handleChange("bank_name", e.target.value)}
                                         disabled={!isEditingBusiness}
                                         className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                        labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="account_no">Account Number</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="account_no"
+                                        label="Account Number"
                                         value={businessForm.account_no}
                                         onChange={(e) => handleChange("account_no", e.target.value)}
                                         disabled={!isEditingBusiness}
                                         className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                        labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="ifsc_code">IFSC Code</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="ifsc_code"
+                                        label="IFSC Code"
                                         value={businessForm.ifsc_code}
                                         onChange={(e) => handleChange("ifsc_code", e.target.value)}
                                         disabled={!isEditingBusiness}
                                         className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                        labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="branch_name">Branch</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="branch_name"
+                                        label="Branch"
                                         value={businessForm.branch_name}
                                         onChange={(e) => handleChange("branch_name", e.target.value)}
                                         disabled={!isEditingBusiness}
                                         className={!isEditingBusiness ? "bg-muted/50 border-none text-foreground disabled:opacity-100 font-medium" : ""}
+                                        labelClassName={!isEditingBusiness ? "bg-transparent" : ""}
                                     />
                                 </div>
                             </div>
@@ -398,31 +403,28 @@ export default function TaxAndBank() {
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
+                            <FloatingLabelInput
                                 id="name"
+                                label="Name"
                                 value={newTaxRate.name}
                                 onChange={(e) => setNewTaxRate({ ...newTaxRate, name: e.target.value })}
-                                placeholder="e.g. GST 18%"
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="percentage">Percentage</Label>
-                            <Input
+                            <FloatingLabelInput
                                 id="percentage"
                                 type="number"
+                                label="Percentage"
                                 value={newTaxRate.percentage}
                                 onChange={(e) => setNewTaxRate({ ...newTaxRate, percentage: e.target.value })}
-                                placeholder="18"
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="description">Description (Optional)</Label>
-                            <Input
+                            <FloatingLabelInput
                                 id="description"
+                                label="Description (Optional)"
                                 value={newTaxRate.description}
                                 onChange={(e) => setNewTaxRate({ ...newTaxRate, description: e.target.value })}
-                                placeholder="Standard rate"
                             />
                         </div>
                     </div>

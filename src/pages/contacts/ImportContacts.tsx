@@ -32,7 +32,7 @@ const ImportContacts = () => {
   const [parseErrors, setParseErrors] = useState<string[]>([]);
   const [defaultRole, setDefaultRole] = useState<string>("Customer");
   const [isPreviewing, setIsPreviewing] = useState(false);
-  
+
   const bulkImportMutation = useBulkImportContacts();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +46,7 @@ const ImportContacts = () => {
 
     setSelectedFile(file);
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       const content = e.target?.result as string;
       setCsvContent(content);

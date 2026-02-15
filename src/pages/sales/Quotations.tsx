@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,18 @@ const Quotations = () => {
 
 
 
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!mounted || !container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>,
+            container
+        );
+    };
+
     return (
         <PageLayout>
             <ExpandableSearch
@@ -44,13 +57,14 @@ const Quotations = () => {
                 onChange={setSearchQuery}
                 placeholder="Search quotations..."
             />
+            <HeaderActions />
 
             {/* Floating Action Button */}
             <div className="fixed bottom-6 right-6 z-50">
                 <Button
                     onClick={() => navigate("/sales/quotations/add")}
                     size="icon"
-                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="h-14 w-14 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                     <Plus className="h-6 w-6" />
                 </Button>
@@ -91,7 +105,7 @@ const Quotations = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

@@ -100,7 +100,7 @@ export default function EmployeeDetails() {
         <PageLayout>
             <div className="p-4 md:p-6 space-y-6">
                 {/* Header Profile Card */}
-                <Card className="rounded-3xl border-0 shadow-sm overflow-hidden bg-card">
+                <Card className="rounded-xl border-0 shadow-sm overflow-hidden bg-card">
                     <div className="h-32 bg-gradient-to-r from-primary/10 to-primary/5 relative">
                         <div className="absolute top-4 right-4">
                             <Button

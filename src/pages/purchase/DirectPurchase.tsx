@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -197,8 +198,12 @@ const DirectPurchase = () => {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label>Order No.</Label>
-                                <Input value={orderNo} onChange={e => setOrderNo(e.target.value)} />
+                                <FloatingLabelInput
+                                    id="order_no"
+                                    label="Order No."
+                                    value={orderNo}
+                                    onChange={e => setOrderNo(e.target.value)}
+                                />
                             </div>
                         </div>
 
@@ -221,12 +226,23 @@ const DirectPurchase = () => {
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
                                     <div className="space-y-2">
-                                        <Label>Qty</Label>
-                                        <Input type="number" min="1" value={currentItem.quantity} onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })} />
+                                        <FloatingLabelInput
+                                            id="quantity"
+                                            label="Qty"
+                                            type="number"
+                                            min="1"
+                                            value={currentItem.quantity}
+                                            onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
+                                        />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Cost</Label>
-                                        <Input type="number" value={currentItem.unitPrice} onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })} />
+                                        <FloatingLabelInput
+                                            id="cost"
+                                            label="Cost"
+                                            type="number"
+                                            value={currentItem.unitPrice}
+                                            onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
+                                        />
                                     </div>
                                     <div className="space-y-2 col-span-2 md:col-span-1">
                                         <Button className="w-full" onClick={addItem}>Add</Button>

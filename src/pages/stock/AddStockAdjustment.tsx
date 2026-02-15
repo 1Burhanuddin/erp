@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -76,12 +77,22 @@ const AddStockAdjustment = () => {
                     <CardContent className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Reference No</Label>
-                                <Input value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)} />
+                                <FloatingLabelInput
+                                    id="reference_no"
+                                    label="Reference No"
+                                    value={referenceNo}
+                                    onChange={(e) => setReferenceNo(e.target.value)}
+                                />
                             </div>
                             <div className="space-y-2">
-                                <Label>Date</Label>
-                                <Input type="date" value={adjustmentDate} onChange={(e) => setAdjustmentDate(e.target.value)} />
+                                <FloatingLabelInput
+                                    id="adjustment_date"
+                                    type="date"
+                                    label="Date"
+                                    value={adjustmentDate}
+                                    onChange={(e) => setAdjustmentDate(e.target.value)}
+                                    className="pt-4"
+                                />
                             </div>
                         </div>
 
@@ -131,8 +142,9 @@ const AddStockAdjustment = () => {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Quantity</Label>
-                                    <Input
+                                    <FloatingLabelInput
+                                        id="quantity"
+                                        label="Quantity"
                                         type="number"
                                         min="1"
                                         value={quantity}

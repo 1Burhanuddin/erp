@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import {
     Select,
     SelectContent,
@@ -53,11 +54,13 @@ const OrderItemsSelector = ({ orderId, onCheck, onQtyChange, selectedItems }: an
                         <TableCell>{item.quantity}</TableCell>
                         <TableCell>
                             {isChecked && (
-                                <Input
+                                <FloatingLabelInput
+                                    id={`return-qty-${item.id}`}
+                                    label="Qty"
                                     type="number"
                                     min="1"
                                     max={item.quantity}
-                                    className="w-20 h-8"
+                                    className="w-20 pt-4"
                                     value={returnQty}
                                     onChange={(e) => onQtyChange(item.id, Number(e.target.value))}
                                 />

@@ -182,7 +182,7 @@ export default function LiveStatus() {
                         )}
                     </div>
                 ) : (
-                    <Card className="rounded-3xl border-0 shadow-sm overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden mb-8">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -232,7 +232,7 @@ export default function LiveStatus() {
                                 )}
                             </TableBody>
                         </Table>
-                    </Card>
+                    </div>
                 )}
             </div>
         </PageLayout>

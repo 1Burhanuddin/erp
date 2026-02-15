@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { DataViewToggle, DataCard } from "@/components/shared";
 import { useDeliveryChallans } from "@/api/sales";
@@ -35,6 +36,18 @@ const DeliveryChallans = () => {
         return () => setMounted(false);
     }, []);
 
+    const HeaderActions = () => {
+        const container = document.getElementById('header-actions');
+        if (!container) return null;
+
+        return createPortal(
+            <div className="flex items-center gap-2">
+                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            </div>,
+            container
+        );
+    };
+
     return (
         <PageLayout>
             <ExpandableSearch
@@ -42,21 +55,17 @@ const DeliveryChallans = () => {
                 onChange={setSearchQuery}
                 placeholder="Search challans..."
             />
+            <HeaderActions />
 
             {/* Floating Action Button */}
             <div className="fixed bottom-6 right-6 z-50">
                 <Button
                     onClick={() => navigate("/sales/challans/add")}
                     size="icon"
-                    className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="h-14 w-14 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                     <Plus className="h-6 w-6" />
                 </Button>
-            </div>
-
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
             </div>
 
             <div className="p-4">
@@ -92,7 +101,7 @@ const DeliveryChallans = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="rounded-3xl border-0 shadow-sm bg-card overflow-hidden">
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow>

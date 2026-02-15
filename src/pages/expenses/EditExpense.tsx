@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useExpense, useUpdateExpense, useDeleteExpense, useExpenseCategories } from "@/api/expenses";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -144,9 +145,9 @@ const EditExpense = () => {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="date">Date *</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="date"
+                                        label="Date *"
                                         type="date"
                                         value={formData.expense_date}
                                         onChange={(e) => setFormData({ ...formData, expense_date: e.target.value })}
@@ -154,12 +155,11 @@ const EditExpense = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="amount">Amount (₹) *</Label>
-                                    <Input
+                                    <FloatingLabelInput
                                         id="amount"
+                                        label="Amount (₹) *"
                                         type="number"
                                         step="0.01"
-                                        placeholder="0.00"
                                         value={formData.amount}
                                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                                         required
@@ -168,10 +168,9 @@ const EditExpense = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="description">Description *</Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="description"
-                                    placeholder="e.g. Office Stationary"
+                                    label="Description *"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     required

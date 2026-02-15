@@ -3,7 +3,8 @@ import { PageLayout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useCreateUnit } from "@/api/products";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -55,12 +56,11 @@ const AddUnit = () => {
                     <CardContent>
                         <div className="grid gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                                <Input
+                                <FloatingLabelInput
                                     id="name"
+                                    label="Name *"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="e.g., Kg, Pcs, Box"
                                 />
                             </div>
                             <div className="flex justify-end gap-2 mt-4">

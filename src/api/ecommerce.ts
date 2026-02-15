@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
+import { isERPDomain } from "@/config/domains";
 
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 export type Category = Database["public"]["Tables"]["product_categories"]["Row"];
@@ -212,7 +213,7 @@ export const useStoreDetails = (slug?: string) => {
 
             if (slug) {
                 query = query.eq("domain", slug);
-            } else if (hostname !== 'localhost' && !hostname.includes('erpsoft.vercel.app') && !hostname.includes('operra.in')) {
+            } else if (hostname !== 'localhost' && !isERPDomain(hostname)) {
                 // If on a custom domain, resolve by hostname
                 query = query.eq("domain", hostname);
             } else {
@@ -224,7 +225,7 @@ export const useStoreDetails = (slug?: string) => {
             // Fallback: If hostname resolution fails on a custom domain, 
             // try to fetch the first store instead of failing completely.
             // This handles cases where the 'domain' column isn't set up yet.
-            if (error && !slug && hostname !== 'localhost' && !hostname.includes('erpsoft.vercel.app') && !hostname.includes('operra.in')) {
+            if (error && !slug && hostname !== 'localhost' && !isERPDomain(hostname)) {
                 const { data: fallbackData, error: fallbackError } = await supabase
                     .from("stores")
                     .select("id, name, address, phone, email, domain")

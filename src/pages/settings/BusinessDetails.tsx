@@ -1,7 +1,6 @@
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Building2, ArrowLeft, Edit, X, Save, Loader2 } from "lucide-react";

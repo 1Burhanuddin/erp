@@ -156,7 +156,7 @@ export default function EditStore() {
                                     </p>
                                     <div className="rounded-lg border overflow-hidden">
                                         <LocationPicker
-                                            value={formData.latitude && formData.longitude ? { lat: formData.latitude, lng: formData.longitude } : undefined}
+                                            value={formData.latitude != null && formData.longitude != null ? { lat: formData.latitude, lng: formData.longitude } : undefined}
                                             onChange={(pos) => setFormData({ ...formData, latitude: pos.lat, longitude: pos.lng })}
                                         />
                                     </div>

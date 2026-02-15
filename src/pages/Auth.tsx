@@ -200,8 +200,8 @@ const Auth = () => {
                                     </TabsList>
 
                                     <motion.div
+                                        layout
                                         className="relative overflow-hidden"
-                                        animate={{ height: "auto" }}
                                         transition={{ duration: 0.3, ease: "easeInOut" }}
                                     >
                                         <AnimatePresence mode="wait">
@@ -300,7 +300,7 @@ const Auth = () => {
 
                             <CardFooter className="flex flex-col gap-4 px-8 pb-8">
                                 <Button
-                                    className="w-full font-semibold h-12 text-base bg-[#8B6B9E] hover:bg-[#7A5A8D] dark:bg-[#9B7BAE] dark:hover:bg-[#8A6A9D]"
+                                    className="w-full font-semibold h-12 text-base bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80"
                                     type="submit"
                                     disabled={loading}
                                 >

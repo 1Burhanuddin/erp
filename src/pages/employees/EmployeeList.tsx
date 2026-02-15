@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DataCard, DataViewToggle } from "@/components/shared";
+import { DataCard, DataViewToggle, ResponsivePageActions } from "@/components/shared";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteEmployee } from "@/api/employees";
@@ -72,24 +72,22 @@ const EmployeeList = () => {
 
     return (
         <PageLayout>
-
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
-            <Button
-                onClick={() => navigate("/employees/add")}
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                size="lg"
-            >
-                <Plus className="mr-2 h-5 w-5" />
-                <span className="font-medium text-base">Add Employee</span>
-            </Button>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search employees..."
-            />
-
-
-
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search employees..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/employees/add")}
+                        addLabel="Add Employee"
+                    />
+                </div>
+            </div>
 
             <div className="space-y-4">
                 {/* View Tabs */}
@@ -124,7 +122,6 @@ const EmployeeList = () => {
                                             {showAllStores && <TableHead>Store</TableHead>}
                                             <TableHead>Phone</TableHead>
                                             <TableHead>Status</TableHead>
-
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -155,7 +152,6 @@ const EmployeeList = () => {
                                                         {emp.status}
                                                     </Badge>
                                                 </TableCell>
-
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -173,8 +169,6 @@ const EmployeeList = () => {
                                         }}
                                         hover={emp.role !== 'admin'}
                                     >
-
-
                                         <div className="flex flex-row items-center justify-between space-y-0 pb-2 mb-2">
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-12 w-12 border-2 border-primary/10">
@@ -186,7 +180,6 @@ const EmployeeList = () => {
                                                     {emp.full_name}
                                                 </div>
                                             </div>
-                                            {/* <User className="h-5 w-5 text-muted-foreground" /> */}
                                         </div>
                                         <div>
                                             <div className="flex flex-col gap-1.5 pl-1">

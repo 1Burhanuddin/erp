@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout } from "@/components/layout";
-import { DataViewToggle, DataCard } from "@/components/shared";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Plus } from "lucide-react";
@@ -38,36 +38,27 @@ const Quotations = () => {
 
 
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>,
-            container
-        );
-    };
+
+    // ...
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search quotations..."
-            />
-            <HeaderActions />
-
-            {/* Floating Action Button */}
-            <div className="fixed bottom-6 right-6 z-50">
-                <Button
-                    onClick={() => navigate("/sales/quotations/add")}
-                    size="icon"
-                    className="h-14 w-14 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                    <Plus className="h-6 w-6" />
-                </Button>
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search quotations..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/sales/quotations/add")}
+                        addLabel="Add Quotation"
+                    />
+                </div>
             </div>
 
 

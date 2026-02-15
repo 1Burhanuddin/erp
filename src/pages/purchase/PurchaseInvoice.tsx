@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { usePurchaseOrders } from "@/api/purchase";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { DataCard, DataViewToggle } from "@/components/shared";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 import {
     Table,
     TableBody,
@@ -49,30 +49,34 @@ const PurchaseInvoice = () => {
         }
     };
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-                <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Filter</span>
-                </Button>
-            </div>,
-            container
-        );
-    };
+
+    // ...
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={search}
-                onChange={setSearch}
-                placeholder="Search invoices..."
-            />
-            <HeaderActions />
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={search}
+                        onChange={setSearch}
+                        placeholder="Search invoices..."
+                        className="w-full sm:w-auto"
+                    />
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                        <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4">
+                            <Filter className="h-4 w-4 mr-2" />
+                            <span className="hidden sm:inline">Filter</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/purchase/invoice/add")} // Assuming add route exists, or maybe it doesn't? checking...
+                            addLabel="Create Invoice"
+                        />
+                    </div>
+                </div>
+            </div>
 
             {viewMode === 'card' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">

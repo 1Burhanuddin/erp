@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard } from "@/components/shared";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { Plus } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -39,36 +38,27 @@ const SalesInvoice = () => {
         order.status === 'Completed' // Filter for Invoices/Completed
     ) || [];
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!container) return null;
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>,
-            container
-        );
-    };
+
+    // ...
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search invoices..."
-            />
-            <HeaderActions />
-
-            {/* Floating Action Button */}
-            <div className="fixed bottom-6 right-6 z-50">
-                <Button
-                    onClick={() => navigate("/sell/add")}
-                    size="icon"
-                    className="h-14 w-14 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                    <Plus className="h-6 w-6" />
-                </Button>
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search invoices..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/sell/invoice/add")}
+                        addLabel="Create Invoice"
+                    />
+                </div>
             </div>
 
             <div className="p-4">

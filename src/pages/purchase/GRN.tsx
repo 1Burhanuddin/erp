@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataCard, DataViewToggle } from "@/components/shared";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 import { usePurchaseOrders, useConvertPOToGRN } from "@/api/purchase";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
@@ -150,24 +149,25 @@ const GRN = () => {
         );
     };
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />,
-            container
-        );
-    };
+
+    // ...
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search orders..."
-            />
-            <HeaderActions />
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search orders..."
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                    />
+                </div>
+            </div>
 
             <div className="p-4 space-y-6">
                 <Tabs defaultValue="pending" className="w-full">

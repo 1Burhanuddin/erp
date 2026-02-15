@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+
 import { PageLayout, PageHeader } from "@/components/layout";
 import { useContacts } from "@/api/contacts";
 import { Button } from "@/components/ui/button";
-import { DataCard, DataViewToggle, SearchInput } from "@/components/shared";
+import { DataCard, DataViewToggle, SearchInput, ResponsivePageActions } from "@/components/shared";
 import { Plus, Mail, Phone, MapPin, Upload, Download } from "lucide-react";
 import {
     Table,
@@ -86,48 +86,41 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={`Search ${role?.toLowerCase()}s...`}
-            />
-            {mounted && document.getElementById('header-actions') && createPortal(
-                <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4">
-                                <Download className="h-4 w-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Export</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleExportCSV}>
-                                Export as CSV
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button variant="outline" size="sm" className="h-9 px-2 sm:px-4" onClick={() => navigate("/contacts/import")}>
-                        <Upload className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Import</span>
-                    </Button>
-                </div>,
-                document.getElementById('header-actions')!
-            )}
-
-
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
-            <Button
-                onClick={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                size="lg"
-            >
-                <Plus className="mr-2 h-5 w-5" />
-                <span className="font-medium text-base">Add {role}</span>
-            </Button>
-
-
-
-
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-end">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder={`Search ${role?.toLowerCase()}s...`}
+                        className="w-full sm:w-auto"
+                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/contacts/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate(`/contacts/${role === 'Supplier' ? 'suppliers' : 'customers'}/add`)}
+                            addLabel={`Add ${role}`}
+                        />
+                    </div>
+                </div>
+            </div>
 
             <div className="p-4">
                 {viewMode === 'card' ? (
@@ -244,7 +237,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                     </div>
                 )}
             </div>
-        </PageLayout>
+        </PageLayout >
     );
 };
 

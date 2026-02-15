@@ -15,8 +15,7 @@ import {
 } from "@/components/ui/table";
 import { useStockAdjustments } from "@/api/inventory";
 import { format } from "date-fns";
-import { DataViewToggle } from "@/components/shared/DataViewToggle";
-import { DataCard } from "@/components/shared";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 
 const StockAdjustment = () => {
     const navigate = useNavigate();
@@ -40,20 +39,22 @@ const StockAdjustment = () => {
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search adjustments..."
-            />
-            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="floating" />
-            <Button
-                onClick={() => navigate("/stock/adjustment/add")}
-                className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                size="lg"
-            >
-                <Plus className="mr-2 h-5 w-5" />
-                <span className="font-medium text-base">New Adjustment</span>
-            </Button>
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search adjustments..."
+                        className="w-full sm:w-auto"
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/stock/adjustment/add")}
+                        addLabel="New Adjustment"
+                    />
+                </div>
+            </div>
 
             {viewMode === 'card' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">

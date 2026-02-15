@@ -6,7 +6,7 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { usePurchaseReturns } from "@/api/purchaseReturns";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { DataCard, DataViewToggle } from "@/components/shared";
+import { DataCard, ResponsivePageActions } from "@/components/shared";
 import {
     Table,
     TableBody,
@@ -36,35 +36,25 @@ const PurchaseReturn = () => {
         return () => setMounted(false);
     }, []);
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>,
-            container
-        );
-    };
+
+    // ...
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-            />
-            <HeaderActions />
-
-            {/* Floating Action Button */}
-            <div className="fixed bottom-6 right-6 z-50">
-                <Button
-                    onClick={() => navigate("/purchase/return/add")}
-                    size="icon"
-                    className="h-14 w-14 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                    <Plus className="h-6 w-6" />
-                </Button>
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                    />
+                    <ResponsivePageActions
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onAdd={() => navigate("/purchase/return/add")}
+                        addLabel="Create Return"
+                    />
+                </div>
             </div>
 
             <div className="p-4">

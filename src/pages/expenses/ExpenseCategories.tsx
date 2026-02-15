@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import {
     Table,
     TableBody,
@@ -21,8 +21,17 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useExpenseCategories, useCreateExpenseCategory, useUpdateExpenseCategory, useDeleteExpenseCategory } from "@/api/expenses";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Upload, Download } from "lucide-react";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
+import { DataCard, DataViewToggle, ResponsivePageActions } from "@/components/shared";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -45,6 +54,7 @@ const ExpenseCategories = () => {
     const [editCategory, setEditCategory] = useState<any>(null);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
 
     const [formData, setFormData] = useState({ name: "", description: "" });
     const [mounted, setMounted] = useState(false);
@@ -92,7 +102,22 @@ const ExpenseCategories = () => {
         cat.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const handleExportCSV = () => {
+        if (!filteredCategories || filteredCategories.length === 0) {
+            toast.error("No categories to export");
+            return;
+        }
 
+        downloadCSV(
+            filteredCategories,
+            ["Name", "Description"],
+            (c: any) => [
+                c.name || "",
+                c.description || ""
+            ],
+            "expense_categories_export.csv"
+        );
+    };
 
     if (isLoading) {
         return (
@@ -106,43 +131,59 @@ const ExpenseCategories = () => {
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search categories..."
-            />
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search categories..."
+                        className="w-full sm:w-auto"
+                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => setIsCreateOpen(true)}
+                            addLabel="Add Category"
+                        />
+                    </div>
+                </div>
+            </div>
+
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogTrigger asChild>
-                    <Button
-                        className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-                        size="lg"
-                    >
-                        <Plus className="mr-2 h-5 w-5" />
-                        <span className="font-medium text-base">Add Category</span>
-                    </Button>
-                </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Add Expense Category</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleCreate} className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
+                        <div className="space-y-1.5">
+                            <FloatingLabelInput
                                 id="name"
+                                label="Name"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="e.g. Rent, Utilities"
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Description (Optional)</Label>
-                            <Input
+                        <div className="space-y-1.5">
+                            <FloatingLabelInput
                                 id="description"
+                                label="Description (Optional)"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="Additional details..."
                             />
                         </div>
                         <DialogFooter>
@@ -155,36 +196,57 @@ const ExpenseCategories = () => {
             </Dialog>
 
             <div className="p-2 md:p-6">
-                <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Description</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredCategories.length === 0 ? (
+                {viewMode === 'card' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredCategories.length === 0 ? (
+                            <div className="col-span-full text-center py-8 text-muted-foreground">
+                                No categories found.
+                            </div>
+                        ) : (
+                            filteredCategories.map((category: any) => (
+                                <DataCard key={category.id} onClick={() => openEdit(category)} className="cursor-pointer hover:border-primary/50 transition-colors">
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="font-semibold text-lg">{category.name}</h3>
+                                        {category.description && (
+                                            <p className="text-sm text-muted-foreground">{category.description}</p>
+                                        )}
+                                    </div>
+                                </DataCard>
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                                        No categories found.
-                                    </TableCell>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Description</TableHead>
                                 </TableRow>
-                            ) : (
-                                filteredCategories.map((category: any) => (
-                                    <TableRow
-                                        key={category.id}
-                                        onClick={() => openEdit(category)}
-                                        className="cursor-pointer hover:bg-muted/50"
-                                    >
-                                        <TableCell className="font-medium">{category.name}</TableCell>
-                                        <TableCell>{category.description || "-"}</TableCell>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredCategories.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
+                                            No categories found.
+                                        </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                                ) : (
+                                    filteredCategories.map((category: any) => (
+                                        <TableRow
+                                            key={category.id}
+                                            onClick={() => openEdit(category)}
+                                            className="cursor-pointer hover:bg-muted/50"
+                                        >
+                                            <TableCell className="font-medium">{category.name}</TableCell>
+                                            <TableCell>{category.description || "-"}</TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
             </div>
 
             {/* Edit Dialog */}
@@ -194,19 +256,19 @@ const ExpenseCategories = () => {
                         <DialogTitle>Edit Category</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleUpdate} className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-name">Name</Label>
-                            <Input
+                        <div className="space-y-1.5">
+                            <FloatingLabelInput
                                 id="edit-name"
+                                label="Name"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-description">Description</Label>
-                            <Input
+                        <div className="space-y-1.5">
+                            <FloatingLabelInput
                                 id="edit-description"
+                                label="Description"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             />

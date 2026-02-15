@@ -1,14 +1,9 @@
-
 import { useState } from "react";
-import { createPortal } from "react-dom";
-
-import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard } from "@/components/shared";
+import { ListingLayout } from "@/components/layout/ListingLayout";
+import { DataCard } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
 import { Button } from "@/components/ui/button";
-import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { Plus } from "lucide-react";
-import { ResponsivePageActions } from "@/components/shared";
+import { Plus, ShoppingCart, Upload, Download } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -20,6 +15,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { PageLayout } from "@/components/layout";
 
 const SalesOrder = () => {
     const { data: salesOrders, isLoading } = useSalesOrders();
@@ -27,7 +31,6 @@ const SalesOrder = () => {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [searchQuery, setSearchQuery] = useState('');
-
 
     const filteredOrders = salesOrders?.filter(order =>
         // In this system, 'Pending' = Sales Order
@@ -37,26 +40,64 @@ const SalesOrder = () => {
             order.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
     ) || [];
 
+    const handleExportCSV = () => {
+        if (!filteredOrders || filteredOrders.length === 0) {
+            toast.error("No orders to export");
+            return;
+        }
+
+        downloadCSV(
+            filteredOrders,
+            ["Order No", "Customer", "Date", "Status", "Total Amount"],
+            (order: any) => [
+                order.order_no || "",
+                order.customer?.name || "",
+                order.order_date ? format(new Date(order.order_date), "yyyy-MM-dd") : "",
+                order.status || "",
+                order.total_amount?.toString() || "0"
+            ],
+            "sales_orders_export.csv"
+        );
+    };
+
+    const headerActions = (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-2 sm:px-4">
+                        <Download className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Export</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                        Export as CSV
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/sell/order/import")}>
+                <Upload className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Import</span>
+            </Button>
+        </>
+    );
+
     return (
         <PageLayout>
-            <div className="flex flex-col gap-4 mb-4">
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                    <ExpandableSearch
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search sales orders..."
-                        renderInline={true}
-                        className="w-full sm:w-auto"
-                    />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/sell/order/add")}
-                        addLabel="Add Order"
-                    />
-                </div>
-            </div>
-            <div className="p-4">
+            <ListingLayout
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search sales orders..."
+                onAdd={() => navigate("/sell/order/add")}
+                addLabel="Add Order"
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                headerActions={headerActions}
+                tabs={[
+                    { id: 'all', label: 'All Orders', icon: ShoppingCart, count: filteredOrders.length }
+                ]}
+                activeTab="all"
+            >
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
@@ -67,7 +108,7 @@ const SalesOrder = () => {
                             <div className="col-span-full text-center py-8 text-muted-foreground">No pending sales orders found.</div>
                         ) : (
                             filteredOrders?.map((sale: any) => (
-                                <DataCard key={sale.id} onClick={() => { }} className="transition-colors">
+                                <DataCard key={sale.id} onClick={() => { }} className="transition-colors cursor-pointer hover:border-primary/50">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-foreground font-mono">{sale.order_no}</h3>
@@ -122,7 +163,8 @@ const SalesOrder = () => {
                                     filteredOrders?.map((sale: any) => (
                                         <TableRow
                                             key={sale.id}
-                                            className="hover:bg-muted/50"
+                                            className="hover:bg-muted/50 cursor-pointer"
+                                            onClick={() => { }}
                                         >
                                             <TableCell className="font-mono">{sale.order_no}</TableCell>
                                             <TableCell>{sale.customer?.name || "Unknown"}</TableCell>
@@ -142,7 +184,7 @@ const SalesOrder = () => {
                         </Table>
                     </div>
                 )}
-            </div>
+            </ListingLayout>
         </PageLayout >
     );
 };

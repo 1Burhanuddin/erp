@@ -18,6 +18,16 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const SalesInvoice = () => {
     const { data: salesOrders, isLoading } = useSalesOrders();
     const navigate = useNavigate();
@@ -38,6 +48,26 @@ const SalesInvoice = () => {
         order.status === 'Completed' // Filter for Invoices/Completed
     ) || [];
 
+    const handleExportCSV = () => {
+        if (!filteredOrders || filteredOrders.length === 0) {
+            toast.error("No invoices to export");
+            return;
+        }
+
+        downloadCSV(
+            filteredOrders,
+            ["Invoice No", "Customer", "Date", "Payment", "Total Amount"],
+            (order: any) => [
+                order.order_no || "",
+                order.customer?.name || "",
+                order.order_date ? format(new Date(order.order_date), "yyyy-MM-dd") : "",
+                order.payment_status || "",
+                order.total_amount?.toString() || "0"
+            ],
+            "sales_invoices_export.csv"
+        );
+    };
+
 
 
     // ...
@@ -53,12 +83,31 @@ const SalesInvoice = () => {
                         renderInline={true}
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/sell/invoice/add")}
-                        addLabel="Create Invoice"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/sell/invoice/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/sell/invoice/add")}
+                            addLabel="Create Invoice"
+                        />
+                    </div>
                 </div>
             </div>
 

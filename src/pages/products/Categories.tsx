@@ -13,9 +13,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate } from "react-router-dom";
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Categories = () => {
     const { data: rawCategories, isLoading } = useCategories();
@@ -26,7 +32,24 @@ const Categories = () => {
 
     const categories = rawCategories?.filter(c =>
         !searchQuery.trim() || c.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ) || [];
+
+    const handleExportCSV = () => {
+        if (!categories || categories.length === 0) {
+            toast.error("No categories to export");
+            return;
+        }
+
+        downloadCSV(
+            categories,
+            ["Name", "Description"],
+            (category: any) => [
+                category.name || "",
+                category.description || ""
+            ],
+            "categories_export.csv"
+        );
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -43,12 +66,31 @@ const Categories = () => {
                         placeholder="Search categories..."
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/products/categories/add")}
-                        addLabel="Add Category"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/products/categories/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/products/categories/add")}
+                            addLabel="Add Category"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -73,8 +115,7 @@ const Categories = () => {
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold">{category.name}</h3>
-                                        </div>
-                                    </div>
+                                        </div>                </div>
                                     <p className="text-sm text-muted-foreground line-clamp-3">
                                         {category.description || "No description"}
                                     </p>

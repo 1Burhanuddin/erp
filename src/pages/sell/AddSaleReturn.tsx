@@ -4,7 +4,6 @@ import { PageLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
@@ -126,9 +125,9 @@ const AddSaleReturn = () => {
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>Select Invoice / Order</Label>
                                     <Select value={selectedSaleId} onValueChange={setSelectedSaleId}>
                                         <SelectTrigger>
@@ -143,7 +142,7 @@ const AddSaleReturn = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="return_date"
                                         label="Return Date"
@@ -154,7 +153,7 @@ const AddSaleReturn = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <Label>Reason</Label>
                                 <Select value={reason} onValueChange={setReason}>
                                     <SelectTrigger>
@@ -173,7 +172,7 @@ const AddSaleReturn = () => {
                             {selectedSaleId && (
                                 <div className="border rounded-md p-4">
                                     <h4 className="mb-4 font-medium">Select Items to Return</h4>
-                                    <div className="space-y-4">
+                                    <div className="space-y-2">
                                         {returnItems.map((item, index) => (
                                             <div key={index} className="flex items-center gap-4 p-2 bg-slate-50 rounded border">
                                                 <Checkbox

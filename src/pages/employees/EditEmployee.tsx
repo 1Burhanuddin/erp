@@ -131,7 +131,7 @@ export default function EditEmployee() {
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="full_name"
                                         label="Full Name *"
@@ -140,7 +140,7 @@ export default function EditEmployee() {
                                         onChange={e => setFormData({ ...formData, full_name: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="phone"
                                         label="Phone *"
@@ -149,7 +149,7 @@ export default function EditEmployee() {
                                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label htmlFor="role">Role</Label>
                                     <Select
                                         value={formData.role}
@@ -164,7 +164,7 @@ export default function EditEmployee() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label htmlFor="status">Status</Label>
                                     <Select
                                         value={formData.status}
@@ -179,7 +179,7 @@ export default function EditEmployee() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="shift_start"
                                         label="Shift Start Time"
@@ -188,7 +188,7 @@ export default function EditEmployee() {
                                         onChange={e => setFormData({ ...formData, shift_start: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2 md:col-span-2">
+                                <div className="space-y-1.5 md:col-span-2">
                                     <FloatingLabelInput
                                         id="address"
                                         label="Address"

@@ -19,6 +19,15 @@ import { CheckCircle2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const GRN = () => {
     const { data: allOrders, isLoading } = usePurchaseOrders();
     const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +39,26 @@ const GRN = () => {
         o.order_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
         o.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     ) || [];
+
+    const handleExportCSV = () => {
+        if (!filteredAll || filteredAll.length === 0) {
+            toast.error("No orders to export");
+            return;
+        }
+
+        downloadCSV(
+            filteredAll,
+            ["PO No", "Supplier", "Date", "Amount", "Status"],
+            (o: any) => [
+                o.order_no || "",
+                o.supplier?.name || "",
+                o.order_date ? format(new Date(o.order_date), "yyyy-MM-dd") : "",
+                o.total_amount?.toString() || "0",
+                o.status || ""
+            ],
+            "grn_export.csv"
+        );
+    };
 
     const pendingOrders = filteredAll.filter((o: any) => o.status === 'Pending');
     const receivedOrders = filteredAll.filter((o: any) => o.status === 'Received');
@@ -156,10 +185,25 @@ const GRN = () => {
                         onChange={setSearchQuery}
                         placeholder="Search orders..."
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                        />
+                    </div>
                 </div>
             </div>
 

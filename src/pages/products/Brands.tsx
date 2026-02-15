@@ -13,9 +13,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate } from "react-router-dom";
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Brands = () => {
     const { data: rawBrands, isLoading } = useBrands();
@@ -26,7 +32,21 @@ const Brands = () => {
 
     const brands = rawBrands?.filter(b =>
         !searchQuery.trim() || b.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ) || [];
+
+    const handleExportCSV = () => {
+        if (!brands || brands.length === 0) {
+            toast.error("No brands to export");
+            return;
+        }
+
+        downloadCSV(
+            brands,
+            ["Name"],
+            (brand: any) => [brand.name || ""],
+            "brands_export.csv"
+        );
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -43,12 +63,31 @@ const Brands = () => {
                         placeholder="Search brands..."
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/products/brands/add")}
-                        addLabel="Add Brand"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/products/brands/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/products/brands/add")}
+                            addLabel="Add Brand"
+                        />
+                    </div>
                 </div>
             </div>
 

@@ -18,6 +18,16 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const ExpensesList = () => {
     const { data: rawExpenses, isLoading, error } = useExpenses();
     const navigate = useNavigate();
@@ -29,7 +39,27 @@ const ExpensesList = () => {
         !searchQuery.trim() ||
         e.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         e.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ) || [];
+
+    const handleExportCSV = () => {
+        if (!expenses || expenses.length === 0) {
+            toast.error("No expenses to export");
+            return;
+        }
+
+        downloadCSV(
+            expenses,
+            ["Date", "Description", "Category", "Payment Method", "Amount"],
+            (e: any) => [
+                e.expense_date ? format(new Date(e.expense_date), "yyyy-MM-dd") : "",
+                e.description || "",
+                e.category?.name || "",
+                e.payment_method || "",
+                e.amount?.toString() || "0"
+            ],
+            "expenses_export.csv"
+        );
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -54,12 +84,31 @@ const ExpensesList = () => {
                         placeholder="Search expenses..."
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/expenses/add")}
-                        addLabel="Add Expense"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/expenses/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/expenses/add")}
+                            addLabel="Add Expense"
+                        />
+                    </div>
                 </div>
             </div>
 

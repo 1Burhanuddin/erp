@@ -5,19 +5,14 @@ import { DataViewToggle, DataCard } from "@/components/shared";
 import { useProducts } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { Plus } from "lucide-react";
-import { ResponsivePageActions } from "@/components/shared";
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { useNavigate } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ServicesList = () => {
     const { data: products, isLoading } = useProducts();
@@ -47,6 +42,25 @@ const ServicesList = () => {
         );
     }) || [];
 
+    const handleExportCSV = () => {
+        if (!filteredServices || filteredServices.length === 0) {
+            toast.error("No services to export");
+            return;
+        }
+
+        downloadCSV(
+            filteredServices,
+            ["Name", "Code", "Description", "Service Charge"],
+            (service: any) => [
+                service.name || "",
+                service.sku || "",
+                service.description || "",
+                service.sale_price?.toString() || ""
+            ],
+            "services_export.csv"
+        );
+    };
+
 
 
     // ...
@@ -62,12 +76,31 @@ const ServicesList = () => {
                         renderInline={true}
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/services/add")}
-                        addLabel="Add Service"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/services/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/services/add")}
+                            addLabel="Add Service"
+                        />
+                    </div>
                 </div>
             </div>
 

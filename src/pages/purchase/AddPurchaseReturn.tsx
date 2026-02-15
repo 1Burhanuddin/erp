@@ -5,7 +5,6 @@ import { usePurchaseOrders, usePurchaseOrder } from "@/api/purchase";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import {
     Select,
@@ -146,8 +145,8 @@ const AddPurchaseReturn = () => {
 
             <div className="grid gap-6 max-w-4xl">
                 <Card>
-                    <CardContent className="p-6 space-y-6">
-                        <div className="space-y-2">
+                    <CardContent className="p-6 space-y-4">
+                        <div className="space-y-1.5">
                             <Label>Select Purchase Order</Label>
                             <Select value={selectedOrderId} onValueChange={handleOrderSelect}>
                                 <SelectTrigger>
@@ -187,7 +186,7 @@ const AddPurchaseReturn = () => {
                             </div>
                         )}
 
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <Label>Reason for Return</Label>
                             <Textarea
                                 value={reason}

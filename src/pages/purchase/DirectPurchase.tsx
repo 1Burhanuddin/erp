@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
@@ -179,7 +178,7 @@ const DirectPurchase = () => {
                 <div className="lg:col-span-2 space-y-4">
                     <div className="bg-card border rounded-xl shadow-sm p-3 md:p-6 space-y-4 md:space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <Label>Supplier <span className="text-destructive">*</span></Label>
                                 <div className="flex gap-2">
                                     <Select value={supplierId} onValueChange={setSupplierId}>
@@ -197,7 +196,7 @@ const DirectPurchase = () => {
                                     </Button>
                                 </div>
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <FloatingLabelInput
                                     id="order_no"
                                     label="Order No."
@@ -210,7 +209,7 @@ const DirectPurchase = () => {
                         <div className="border rounded-xl p-3 md:p-4 bg-muted/20">
                             <h3 className="font-semibold mb-3 text-base md:text-lg">Add Items</h3>
                             <div className="grid grid-cols-1 gap-3">
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>Product <span className="text-destructive">*</span></Label>
                                     <div className="flex gap-2">
                                         <Select value={currentItem.productId} onValueChange={handleProductChange}>
@@ -225,7 +224,7 @@ const DirectPurchase = () => {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5">
                                         <FloatingLabelInput
                                             id="quantity"
                                             label="Qty"
@@ -235,7 +234,7 @@ const DirectPurchase = () => {
                                             onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
                                         />
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5">
                                         <FloatingLabelInput
                                             id="cost"
                                             label="Cost"
@@ -244,7 +243,7 @@ const DirectPurchase = () => {
                                             onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
                                         />
                                     </div>
-                                    <div className="space-y-2 col-span-2 md:col-span-1">
+                                    <div className="space-y-1.5 col-span-2 md:col-span-1">
                                         <Button className="w-full" onClick={addItem}>Add</Button>
                                     </div>
                                 </div>

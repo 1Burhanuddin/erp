@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
@@ -149,9 +148,9 @@ const AddQuotation = () => {
                         <CardDescription>Create a new sales quotation</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-8">
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             {/* Header Details */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                     <FloatingLabelInput
                                         id="order_no"
@@ -161,7 +160,7 @@ const AddQuotation = () => {
                                         required
                                     />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>Customer</Label>
                                     <Select
                                         value={formData.customer_id}
@@ -179,7 +178,7 @@ const AddQuotation = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="order_date"
                                         type="date"
@@ -261,10 +260,12 @@ const AddQuotation = () => {
                                             </Select>
                                         </div>
                                         <div className="w-32">
-                                            <Input
+                                            <FloatingLabelInput
+                                                id={`subtotal-${item.id}`}
+                                                label="Total"
                                                 value={item.subtotal.toFixed(2)}
                                                 readOnly
-                                                className="bg-muted"
+                                                className="bg-muted pt-4"
                                             />
                                         </div>
                                         <div className="w-10 pb-1">

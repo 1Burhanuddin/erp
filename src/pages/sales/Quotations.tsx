@@ -18,6 +18,16 @@ import {
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const Quotations = () => {
     const navigate = useNavigate();
     const { data: rawQuotations, isLoading } = useQuotations();
@@ -29,7 +39,27 @@ const Quotations = () => {
         !searchQuery.trim() ||
         q.quotation_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ) || [];
+
+    const handleExportCSV = () => {
+        if (!quotations || quotations.length === 0) {
+            toast.error("No quotations to export");
+            return;
+        }
+
+        downloadCSV(
+            quotations,
+            ["Date", "Quotation #", "Customer", "Total Amount", "Status"],
+            (q: any) => [
+                q.order_date ? format(new Date(q.order_date), "yyyy-MM-dd") : "",
+                q.quotation_no || "",
+                q.customer?.name || "",
+                q.total_amount?.toString() || "0",
+                q.status || ""
+            ],
+            "quotations_export.csv"
+        );
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -52,12 +82,31 @@ const Quotations = () => {
                         placeholder="Search quotations..."
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/sales/quotations/add")}
-                        addLabel="Add Quotation"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/sales/quotations/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/sales/quotations/add")}
+                            addLabel="Add Quotation"
+                        />
+                    </div>
                 </div>
             </div>
 

@@ -3,7 +3,6 @@ import { PageLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -211,10 +210,10 @@ const AddSalesInvoice = () => {
                         <CardDescription>Create a new invoice for a customer</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {/* Header Section */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                <div className="space-y-2 col-span-1 md:col-span-1">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="space-y-1.5 col-span-1 md:col-span-1">
                                     <Label>Customer *</Label>
                                     <Select value={customerId} onValueChange={setCustomerId}>
                                         <SelectTrigger>
@@ -237,7 +236,7 @@ const AddSalesInvoice = () => {
                                         onChange={e => setOrderDate(e.target.value)}
                                     />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="invoice_no"
                                         label="Invoice No."
@@ -251,7 +250,7 @@ const AddSalesInvoice = () => {
                             <div className="border p-4 rounded-md bg-muted/20">
                                 <h3 className="font-semibold mb-3">Add Product items</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                                    <div className="md:col-span-4 space-y-2">
+                                    <div className="md:col-span-4 space-y-1.5">
                                         <Label>Product</Label>
                                         <Select value={currentItem.productId} onValueChange={handleProductChange}>
                                             <SelectTrigger>
@@ -264,11 +263,17 @@ const AddSalesInvoice = () => {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="md:col-span-2 space-y-2">
+                                    <div className="md:col-span-2 space-y-1.5">
                                         <Label>Stock</Label>
-                                        <Input disabled value={currentItem.currentStock} className="bg-muted" />
+                                        <FloatingLabelInput
+                                            id="stock"
+                                            label="Stock"
+                                            disabled
+                                            value={currentItem.currentStock}
+                                            className="bg-muted"
+                                        />
                                     </div>
-                                    <div className="md:col-span-2 space-y-2">
+                                    <div className="md:col-span-2 space-y-1.5">
                                         <FloatingLabelInput
                                             id="quantity"
                                             label="Quantity"
@@ -279,7 +284,7 @@ const AddSalesInvoice = () => {
                                             onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
                                         />
                                     </div>
-                                    <div className="md:col-span-2 space-y-2">
+                                    <div className="md:col-span-2 space-y-1.5">
                                         <FloatingLabelInput
                                             id="unit_price"
                                             label="Unit Price"
@@ -289,7 +294,7 @@ const AddSalesInvoice = () => {
                                             onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
                                         />
                                     </div>
-                                    <div className="md:col-span-2 space-y-2">
+                                    <div className="md:col-span-2 space-y-1.5">
                                         <Label>Tax Rate</Label>
                                         <Select
                                             value={currentItem.taxRateId}

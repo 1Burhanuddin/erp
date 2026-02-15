@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { PageLayout } from "@/components/layout";
 import { useEmployees, useUpdateTask } from "@/api/employees"; // Need update/delete hooks
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -145,18 +145,18 @@ export default function EditTask() {
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="title">Task Title</Label>
-                                    <Input
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <FloatingLabelInput
                                         id="title"
+                                        label="Task Title"
                                         required
                                         value={formData.title}
                                         onChange={e => setFormData({ ...formData, title: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2 md:col-span-2">
+                                <div className="space-y-1.5 md:col-span-2">
                                     <Label htmlFor="description">Description</Label>
                                     <Textarea
                                         id="description"
@@ -165,7 +165,7 @@ export default function EditTask() {
                                     />
                                 </div>
 
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label htmlFor="employee_id">Assign To</Label>
                                     <Select
                                         value={formData.employee_id}
@@ -182,7 +182,7 @@ export default function EditTask() {
                                     </Select>
                                 </div>
 
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label htmlFor="status">Status</Label>
                                     <Select
                                         value={formData.status}
@@ -201,46 +201,46 @@ export default function EditTask() {
                                     </Select>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="customer_name">Customer Name</Label>
-                                    <Input
+                                <div className="space-y-1.5">
+                                    <FloatingLabelInput
                                         id="customer_name"
+                                        label="Customer Name"
                                         value={formData.customer_name}
                                         onChange={e => setFormData({ ...formData, customer_name: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="customer_phone">Customer Phone</Label>
-                                    <Input
+                                <div className="space-y-1.5">
+                                    <FloatingLabelInput
                                         id="customer_phone"
+                                        label="Customer Phone"
                                         value={formData.customer_phone}
                                         onChange={e => setFormData({ ...formData, customer_phone: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="customer_address">Customer Address</Label>
-                                    <Input
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <FloatingLabelInput
                                         id="customer_address"
+                                        label="Customer Address"
                                         value={formData.customer_address}
                                         onChange={e => setFormData({ ...formData, customer_address: e.target.value })}
                                     />
                                 </div>
 
-                                <div className="space-y-2 bg-muted/30 p-3 rounded-lg border">
-                                    <Label htmlFor="payment_amount">Amount to Collect (₹)</Label>
-                                    <Input
+                                <div className="space-y-1.5 bg-muted/30 p-3 rounded-lg border">
+                                    <FloatingLabelInput
                                         id="payment_amount"
                                         type="number"
+                                        label="Amount to Collect (₹)"
                                         min="0"
                                         value={formData.payment_amount}
                                         onChange={e => setFormData({ ...formData, payment_amount: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2 bg-muted/30 p-3 rounded-lg border">
-                                    <Label htmlFor="amount_collected">Amount Collected (₹)</Label>
-                                    <Input
+                                <div className="space-y-1.5 bg-muted/30 p-3 rounded-lg border">
+                                    <FloatingLabelInput
                                         id="amount_collected"
                                         type="number"
+                                        label="Amount Collected (₹)"
                                         min="0"
                                         value={formData.amount_collected}
                                         onChange={e => setFormData({ ...formData, amount_collected: e.target.value })}

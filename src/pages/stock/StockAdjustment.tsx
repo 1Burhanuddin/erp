@@ -17,6 +17,16 @@ import { useStockAdjustments } from "@/api/inventory";
 import { format } from "date-fns";
 import { DataCard, ResponsivePageActions } from "@/components/shared";
 
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const StockAdjustment = () => {
     const navigate = useNavigate();
     const { data: rawAdjustments, isLoading } = useStockAdjustments();
@@ -28,7 +38,26 @@ const StockAdjustment = () => {
         !searchQuery.trim() ||
         adj.reference_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
         adj.reason?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ) || [];
+
+    const handleExportCSV = () => {
+        if (!adjustments || adjustments.length === 0) {
+            toast.error("No adjustments to export");
+            return;
+        }
+
+        downloadCSV(
+            adjustments,
+            ["Date", "Ref No", "Reason", "Items Count"],
+            (adj: any) => [
+                adj.adjustment_date ? format(new Date(adj.adjustment_date), "yyyy-MM-dd") : "",
+                adj.reference_no || "",
+                adj.reason || "",
+                adj.items?.length?.toString() || "0"
+            ],
+            "stock_adjustments_export.csv"
+        );
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -47,12 +76,31 @@ const StockAdjustment = () => {
                         placeholder="Search adjustments..."
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/stock/adjustment/add")}
-                        addLabel="New Adjustment"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/stock/adjustment/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/stock/adjustment/add")}
+                            addLabel="New Adjustment"
+                        />
+                    </div>
                 </div>
             </div>
 

@@ -346,9 +346,9 @@ export const ProductForm = ({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-4xl">
             {!fixedType && (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     <Label>Product Type</Label>
                     <div className="flex gap-4">
                         <label className="flex items-center gap-2 cursor-pointer border p-3 rounded-lg hover:bg-muted/50 transition-colors has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
@@ -383,8 +383,8 @@ export const ProductForm = ({
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
                     <FloatingLabelInput
                         id="name"
                         label={<>{formData.type === "Service" ? "Service Name" : "Product Name"} <span className="text-destructive">*</span></>}
@@ -395,7 +395,7 @@ export const ProductForm = ({
                         placeholder={formData.type === "Service" ? "e.g. Repair" : "e.g. Wireless Mouse"}
                     />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     <div className="flex gap-2">
                         <FloatingLabelInput
                             id="sku"
@@ -418,8 +418,8 @@ export const ProductForm = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
                     <FloatingLabelInput
                         label="HSN/SAC Code"
                         value={formData.hsn_code}
@@ -438,8 +438,8 @@ export const ProductForm = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
                     <Label>Category</Label>
                     <div className="flex gap-2">
                         <Select
@@ -465,7 +465,7 @@ export const ProductForm = ({
                     </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     <Label>Sub Category</Label>
                     <div className="flex gap-2">
                         <Select
@@ -501,7 +501,7 @@ export const ProductForm = ({
                 {
                     formData.type === "Product" && (
                         <>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <Label>Brand</Label>
                                 <div className="flex gap-2">
                                     <Select
@@ -527,7 +527,7 @@ export const ProductForm = ({
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <Label>Unit</Label>
                                 <div className="flex gap-2">
                                     <Select
@@ -557,8 +557,8 @@ export const ProductForm = ({
                 }
             </div >
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
                     <FloatingLabelInput
                         id="purchase_price"
                         type="number"
@@ -571,7 +571,7 @@ export const ProductForm = ({
                         }
                     />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     <FloatingLabelInput
                         id="sale_price"
                         type="number"
@@ -585,7 +585,7 @@ export const ProductForm = ({
                     />
                 </div>
                 {formData.type === "Product" && (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                         <FloatingLabelInput
                             id="alert_quantity"
                             type="number"
@@ -600,7 +600,7 @@ export const ProductForm = ({
                 )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                     id="description"
@@ -628,7 +628,7 @@ export const ProductForm = ({
 
                 {formData.is_online && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                        <div className="col-span-1 md:col-span-2 space-y-2">
+                        <div className="col-span-1 md:col-span-2 space-y-1.5">
                             <Label>Available on Stores <span className="text-destructive">*</span></Label>
                             <div className="flex flex-wrap gap-2">
                                 <StoreSelector
@@ -638,7 +638,7 @@ export const ProductForm = ({
                             </div>
                             <p className="text-xs text-muted-foreground">Select which stores this product appears on.</p>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <Label htmlFor="condition">Type <span className="text-destructive">*</span></Label>
                             <Select
                                 value={formData.condition}
@@ -655,7 +655,7 @@ export const ProductForm = ({
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <FloatingLabelInput
                                 id="online_price"
                                 type="number"
@@ -667,7 +667,7 @@ export const ProductForm = ({
                                 placeholder={formData.sale_price || "Same as Sale Price"}
                             />
                         </div>
-                        <div className="col-span-1 md:col-span-2 space-y-2">
+                        <div className="col-span-1 md:col-span-2 space-y-1.5">
                             <Label htmlFor="features">Features (One per line)</Label>
                             <Textarea
                                 id="features"
@@ -677,7 +677,7 @@ export const ProductForm = ({
                                 rows={4}
                             />
                         </div>
-                        <div className="col-span-1 md:col-span-2 space-y-2">
+                        <div className="col-span-1 md:col-span-2 space-y-1.5">
                             <Label>Product Image</Label>
                             <div className="flex items-center gap-4">
                                 {formData.image_url && (

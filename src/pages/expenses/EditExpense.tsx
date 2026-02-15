@@ -142,9 +142,9 @@ const EditExpense = () => {
                         </AlertDialog>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="date"
                                         label="Date *"
@@ -154,7 +154,7 @@ const EditExpense = () => {
                                         required
                                     />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="amount"
                                         label="Amount (₹) *"
@@ -167,7 +167,7 @@ const EditExpense = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <FloatingLabelInput
                                     id="description"
                                     label="Description *"
@@ -177,8 +177,8 @@ const EditExpense = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
                                     <Label htmlFor="category">Category *</Label>
                                     <Select
                                         value={formData.category_id}
@@ -196,7 +196,7 @@ const EditExpense = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label htmlFor="payment_method">Payment Method</Label>
                                     <Select
                                         value={formData.payment_method}

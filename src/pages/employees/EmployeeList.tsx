@@ -40,6 +40,16 @@ import { format } from "date-fns";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const EmployeeList = () => {
     const navigate = useNavigate();
     const deleteEmployeeMutation = useDeleteEmployee();
@@ -67,6 +77,26 @@ const EmployeeList = () => {
         }
     };
 
+    const handleExportCSV = () => {
+        if (!filteredEmployees || filteredEmployees.length === 0) {
+            toast.error("No employees to export");
+            return;
+        }
+
+        downloadCSV(
+            filteredEmployees,
+            ["Name", "Role", "Store", "Phone", "Status"],
+            (emp: any) => [
+                emp.full_name || "",
+                emp.role || "",
+                emp.store?.name || "",
+                emp.phone || "",
+                emp.status || ""
+            ],
+            "employees_export.csv"
+        );
+    };
+
     // Portal actions to the header
 
 
@@ -80,12 +110,31 @@ const EmployeeList = () => {
                         placeholder="Search employees..."
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/employees/add")}
-                        addLabel="Add Employee"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/employees/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/employees/add")}
+                            addLabel="Add Employee"
+                        />
+                    </div>
                 </div>
             </div>
 

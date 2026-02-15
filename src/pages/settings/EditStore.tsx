@@ -102,12 +102,12 @@ export default function EditStore() {
                         <CardTitle>Store Details</CardTitle>
                         <CardDescription>Update the basic information for your store.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4">
                         <div className="space-y-4">
 
 
                             <div className="space-y-4">
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <div className="relative">
                                         <Store className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                                         <FloatingLabelInput

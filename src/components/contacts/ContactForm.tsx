@@ -51,9 +51,9 @@ export const ContactForm = ({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-4xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
                     <FloatingLabelInput
                         id="name"
                         label={<>Name <span className="text-destructive">*</span></>}
@@ -63,7 +63,7 @@ export const ContactForm = ({
                         placeholder="John Doe"
                     />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     <FloatingLabelInput
                         id="company"
                         label="Company"
@@ -74,8 +74,8 @@ export const ContactForm = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
                     <FloatingLabelInput
                         id="email"
                         type="email"
@@ -85,7 +85,7 @@ export const ContactForm = ({
                         placeholder="john@example.com"
                     />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     <FloatingLabelInput
                         id="phone"
                         label="Phone"
@@ -96,7 +96,7 @@ export const ContactForm = ({
                 </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
                 <FloatingLabelInput
                     id="gstin"
                     label="GSTIN (Tax ID)"
@@ -106,7 +106,7 @@ export const ContactForm = ({
                 />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
                 <FloatingLabelInput
                     id="state"
                     label="State (Place of Supply)"
@@ -116,7 +116,7 @@ export const ContactForm = ({
                 />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
                 <Label htmlFor="address">Address</Label>
                 <Textarea
                     id="address"

@@ -3,7 +3,7 @@ import { PageLayout } from "@/components/layout";
 import { useCreateTask, useEmployees } from "@/api/employees";
 import { useProducts } from "@/api/products";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -154,9 +154,9 @@ export default function AddTask() {
                         <CardDescription>Assign a job to an employee</CardDescription>
                     </CardHeader>
                     <CardContent className="px-4 overflow-hidden">
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2 md:col-span-2">
+                        <form onSubmit={handleSubmit} className="space-y-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="space-y-1.5 md:col-span-2">
                                     <Label htmlFor="service">Select Service <span className="text-destructive">*</span></Label>
                                     <div className="flex gap-2">
                                         <Select
@@ -196,7 +196,7 @@ export default function AddTask() {
                                     </div>
                                     {/* Hidden title input or just rely on service name */}
                                 </div>
-                                <div className="space-y-2 md:col-span-2">
+                                <div className="space-y-1.5 md:col-span-2">
                                     <Label htmlFor="description">Description</Label>
                                     <Textarea
                                         id="description"
@@ -302,28 +302,28 @@ export default function AddTask() {
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="customer_phone">Customer Phone</Label>
-                                    <Input
+                                <div className="space-y-1.5">
+                                    <FloatingLabelInput
                                         id="customer_phone"
+                                        label="Customer Phone"
                                         value={formData.customer_phone}
                                         onChange={e => setFormData({ ...formData, customer_phone: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="customer_address">Customer Address</Label>
-                                    <Input
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <FloatingLabelInput
                                         id="customer_address"
+                                        label="Customer Address"
                                         value={formData.customer_address}
                                         onChange={e => setFormData({ ...formData, customer_address: e.target.value })}
                                     />
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="payment_amount">Amount to Collect (₹)</Label>
-                                    <Input
+                                <div className="space-y-1.5">
+                                    <FloatingLabelInput
                                         id="payment_amount"
                                         type="number"
+                                        label="Amount to Collect (₹)"
                                         min="0"
                                         value={formData.payment_amount}
                                         onChange={e => setFormData({ ...formData, payment_amount: e.target.value })}

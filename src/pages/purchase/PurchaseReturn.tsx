@@ -17,6 +17,16 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns";
 
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const PurchaseReturn = () => {
     const navigate = useNavigate();
     const { data: rawReturns, isLoading } = usePurchaseReturns();
@@ -29,7 +39,27 @@ const PurchaseReturn = () => {
         r.purchase?.order_no?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.purchase?.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.reason?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ) || [];
+
+    const handleExportCSV = () => {
+        if (!returns || returns.length === 0) {
+            toast.error("No returns to export");
+            return;
+        }
+
+        downloadCSV(
+            returns,
+            ["Date", "PO Reference", "Supplier", "Reason", "Refund Amount"],
+            (r: any) => [
+                r.return_date ? format(new Date(r.return_date), "yyyy-MM-dd") : "",
+                r.purchase?.order_no || "",
+                r.purchase?.supplier?.name || "",
+                r.reason || "",
+                r.total_refund_amount?.toString() || "0"
+            ],
+            "purchase_returns_export.csv"
+        );
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -49,12 +79,31 @@ const PurchaseReturn = () => {
                         onChange={setSearchQuery}
                         renderInline={true}
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/purchase/return/add")}
-                        addLabel="Create Return"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/purchase/return/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/purchase/return/add")}
+                            addLabel="Create Return"
+                        />
+                    </div>
                 </div>
             </div>
 

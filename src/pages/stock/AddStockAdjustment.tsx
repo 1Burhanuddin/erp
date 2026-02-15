@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
@@ -74,9 +73,9 @@ const AddStockAdjustment = () => {
                         <CardTitle>New Stock Adjustment</CardTitle>
                         <CardDescription>Create a new stock adjustment record</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <FloatingLabelInput
                                     id="reference_no"
                                     label="Reference No"
@@ -84,7 +83,7 @@ const AddStockAdjustment = () => {
                                     onChange={(e) => setReferenceNo(e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <FloatingLabelInput
                                     id="adjustment_date"
                                     type="date"
@@ -96,7 +95,7 @@ const AddStockAdjustment = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <Label>Reason</Label>
                             <Select value={reason} onValueChange={setReason}>
                                 <SelectTrigger>
@@ -113,7 +112,7 @@ const AddStockAdjustment = () => {
 
                         <div className="p-4 border rounded-lg bg-slate-50 space-y-4">
                             <h4 className="font-medium text-sm">Adjustment Item</h4>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 <Label>Product</Label>
                                 <Select value={selectedProduct} onValueChange={setSelectedProduct}>
                                     <SelectTrigger>
@@ -129,7 +128,7 @@ const AddStockAdjustment = () => {
                                 </Select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>Type</Label>
                                     <Select value={type} onValueChange={(v: any) => setType(v as any)}>
                                         <SelectTrigger>
@@ -141,7 +140,7 @@ const AddStockAdjustment = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <FloatingLabelInput
                                         id="quantity"
                                         label="Quantity"
@@ -154,7 +153,7 @@ const AddStockAdjustment = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <Label>Notes</Label>
                             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes..." />
                         </div>

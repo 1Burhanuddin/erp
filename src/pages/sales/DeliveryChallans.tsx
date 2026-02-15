@@ -18,6 +18,16 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
+import { Upload, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvParser";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const DeliveryChallans = () => {
     const { data: rawChallans, isLoading } = useDeliveryChallans();
     const navigate = useNavigate();
@@ -29,7 +39,27 @@ const DeliveryChallans = () => {
         !searchQuery.trim() ||
         c.order_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ) || [];
+
+    const handleExportCSV = () => {
+        if (!challans || challans.length === 0) {
+            toast.error("No challans to export");
+            return;
+        }
+
+        downloadCSV(
+            challans,
+            ["Date", "Challan #", "Customer", "Total Amount", "Status"],
+            (c: any) => [
+                c.order_date ? format(new Date(c.order_date), "yyyy-MM-dd") : "",
+                c.order_no || "",
+                c.customer?.name || "",
+                c.total_amount?.toString() || "0",
+                c.status || ""
+            ],
+            "challans_export.csv"
+        );
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -50,12 +80,31 @@ const DeliveryChallans = () => {
                         placeholder="Search challans..."
                         className="w-full sm:w-auto"
                     />
-                    <ResponsivePageActions
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        onAdd={() => navigate("/sales/challans/add")}
-                        addLabel="Add Challan"
-                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/sales/challans/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/sales/challans/add")}
+                            addLabel="Add Challan"
+                        />
+                    </div>
                 </div>
             </div>
 

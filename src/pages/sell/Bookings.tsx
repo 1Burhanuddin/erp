@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard } from "@/components/shared";
+import { DataViewToggle, DataCard, ResponsivePageActions } from "@/components/shared";
 import { useBookings, useUpdateBooking, useDeleteBooking, Booking } from "@/api/bookings";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { Plus, Calendar, Clock, MapPin, Phone, Mail } from "lucide-react";
+import { Plus, Calendar, Clock, MapPin, Phone, Mail, Upload, Download } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -25,6 +25,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { downloadCSV } from "@/lib/csvParser";
 
 import {
     AlertDialog,
@@ -93,29 +94,62 @@ const Bookings = () => {
         }
     };
 
-    const HeaderActions = () => {
-        const container = document.getElementById('header-actions');
-        if (!mounted || !container) return null;
+    const handleExportCSV = () => {
+        if (!filteredBookings || filteredBookings.length === 0) {
+            toast.error("No bookings to export");
+            return;
+        }
 
-        return createPortal(
-            <div className="flex items-center gap-2">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
-            </div>,
-            container
+        downloadCSV(
+            filteredBookings,
+            ["Customer", "Service", "Date", "Time", "Status"],
+            (b: any) => [
+                b.customer_name || "",
+                b.service_type || "",
+                b.preferred_date ? format(new Date(b.preferred_date), "yyyy-MM-dd") : "",
+                b.preferred_time || "",
+                b.status || ""
+            ],
+            "bookings_export.csv"
         );
     };
 
     return (
         <PageLayout>
-            <ExpandableSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search bookings..."
-            />
-            <HeaderActions />
-
-            <div className="sm:hidden mb-4">
-                <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+            <div className="flex flex-col gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <ExpandableSearch
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search bookings..."
+                        className="w-full sm:w-auto"
+                    />
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-10 px-2 sm:px-4">
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Export</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/sell/bookings/import")}>
+                            <Upload className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Import</span>
+                        </Button>
+                        <ResponsivePageActions
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            onAdd={() => navigate("/sell/bookings/add")}
+                            addLabel="Add Booking"
+                        />
+                    </div>
+                </div>
             </div>
 
             <div className="p-4">

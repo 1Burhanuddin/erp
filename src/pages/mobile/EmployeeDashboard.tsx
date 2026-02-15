@@ -158,7 +158,7 @@ export default function EmployeeDashboard() {
                         <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                             Your Workflow
                         </h2>
-                        <p className="text-slate-500 font-medium">
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">
                             {format(currentTime, "EEEE, d MMM yyyy")}
                         </p>
                     </div>
@@ -259,7 +259,7 @@ export default function EmployeeDashboard() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
                                                     <span className={`w-2 h-2 rounded-full ${locationStatus === 'valid' ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
-                                                    <span className="text-sm font-medium opacity-90">{statusMessage}</span>
+                                                    <span className="text-sm font-medium opacity-90 text-slate-700 dark:text-slate-200">{statusMessage}</span>
                                                 </div>
                                                 <Button
                                                     size="icon"
@@ -288,26 +288,26 @@ export default function EmployeeDashboard() {
                     <div>
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Up Next</h3>
-                            <Button variant="link" className="text-blue-600 p-0 h-auto font-semibold">See All</Button>
+                            <Button variant="link" className="text-blue-600 dark:text-blue-400 p-0 h-auto font-semibold">See All</Button>
                         </div>
 
-                        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-2 shadow-sm border border-slate-100 dark:border-slate-800">
+                        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-3 shadow-sm border border-slate-100 dark:border-slate-800">
                             {tasks?.filter(t => t.status === 'pending').slice(0, 1).map((task) => (
-                                <div key={task.id} className="p-4 flex gap-4 items-center">
+                                <div key={task.id} className="flex gap-4 items-center cursor-pointer p-2 rounded-2xl transition-colors" onClick={() => navigate('/mobile/tasks')}>
                                     <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center">
                                         <CalendarDays className="w-8 h-8 text-slate-400" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-bold text-slate-900 dark:text-white truncate">{task.title}</h4>
-                                        <p className="text-sm text-slate-500 truncate mt-1">Due today by 5:00 PM</p>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">Due today by 5:00 PM</p>
                                         <div className="flex gap-2 mt-2">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-orange-50 text-orange-600 text-[10px] font-bold uppercase tracking-wide">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300 text-[10px] font-bold uppercase tracking-wide">
                                                 Priority
                                             </span>
                                         </div>
                                     </div>
-                                    <Button size="icon" variant="ghost" className="rounded-full text-slate-400">
-                                        <ChevronRight className="w-5 h-5" />
+                                    <Button size="icon" variant="ghost" className="rounded-full text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        <ChevronRight className="w-6 h-6" />
                                     </Button>
                                 </div>
                             ))}

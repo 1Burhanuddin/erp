@@ -199,7 +199,7 @@ export default function MyTasks() {
                                 placeholder="Search tasks..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 h-11 rounded-2xl bg-white dark:bg-slate-800 border-0 shadow-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+                                className="pl-10 h-11 rounded-2xl bg-white dark:bg-slate-800 border-0 shadow-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             />
                         </div>
 
@@ -227,11 +227,11 @@ export default function MyTasks() {
                                 className="space-y-4"
                             >
                                 {activeTasks.length === 0 ? (
-                                    <div className="text-center py-20 opacity-50">
-                                        <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <CheckCircle2 className="w-10 h-10 text-slate-400" />
+                                    <div className="text-center py-20 opacity-50 dark:opacity-40">
+                                        <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <CheckCircle2 className="w-10 h-10 text-slate-400 dark:text-slate-500" />
                                         </div>
-                                        <p className="font-semibold">All caught up!</p>
+                                        <p className="font-semibold text-slate-600 dark:text-slate-400">All caught up!</p>
                                     </div>
                                 ) : (
                                     activeTasks.map(task => (
@@ -281,9 +281,10 @@ function TaskCard({ task, onStatusChange, isUpdating, reachedSite, onMarkReached
             <CardContent className="p-5 space-y-4">
                 <div className="flex justify-between items-start">
                     <div>
-                        <Badge variant="outline" className={`mb-2 capitalize border-0 px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider ${task.status === 'in_progress' ? 'bg-blue-50 text-blue-600' :
-                            task.status === 'accepted' ? 'bg-orange-50 text-orange-600' :
-                                'bg-slate-100 text-slate-600'
+                        <Badge variant="outline" className={`mb-2 capitalize border-0 px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider ${task.status === 'in_progress' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300' :
+                            task.status === 'accepted' ? 'bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300' :
+                                task.status === 'pending' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300' :
+                                    'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                             }`}>
                             {task.status.replace('_', ' ')}
                         </Badge>
@@ -305,7 +306,7 @@ function TaskCard({ task, onStatusChange, isUpdating, reachedSite, onMarkReached
                 <div className="pt-2">
                     {task.status === 'pending' && (
                         <Button
-                            className="w-full bg-slate-900 text-white hover:bg-slate-800 h-12 rounded-xl font-bold"
+                            className="w-full bg-slate-900 text-white hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white h-12 rounded-xl font-bold"
                             onClick={() => onStatusChange(task.id, 'accepted')}
                             disabled={isUpdating}
                         >
@@ -318,7 +319,7 @@ function TaskCard({ task, onStatusChange, isUpdating, reachedSite, onMarkReached
                         <div className="grid grid-cols-[1fr,1.5fr] gap-3">
                             {!reachedSite ? (
                                 <>
-                                    <Button variant="outline" className="h-12 rounded-xl border-slate-200" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(task.customer_address || "")}`)}>
+                                    <Button variant="outline" className="h-12 rounded-xl border-slate-200 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(task.customer_address || "")}`)}>
                                         <Navigation className="w-4 h-4 mr-2" /> Map
                                     </Button>
                                     <Button className="h-12 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-500/20" onClick={onMarkReached}>
@@ -345,28 +346,28 @@ function TaskCard({ task, onStatusChange, isUpdating, reachedSite, onMarkReached
                                     Complete Task
                                 </Button>
                             ) : (
-                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                    <h4 className="font-bold text-sm text-slate-900">Completion Details</h4>
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">Completion Details</h4>
 
                                     <div className="space-y-3">
                                         <div className="space-y-1">
-                                            <Label className="text-xs">Amount Collected</Label>
+                                            <Label className="text-xs dark:text-slate-300">Amount Collected</Label>
                                             <div className="relative">
                                                 <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                                 <Input
                                                     type="number"
                                                     value={amountCollected}
                                                     onChange={(e) => setAmountCollected(e.target.value)}
-                                                    className="pl-9 bg-white rounded-xl"
+                                                    className="pl-9 bg-white dark:bg-slate-900 dark:text-white dark:border-slate-700 rounded-xl"
                                                     placeholder="0.00"
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="space-y-1">
-                                            <Label className="text-xs">Payment Mode</Label>
+                                            <Label className="text-xs dark:text-slate-300">Payment Mode</Label>
                                             <Select value={paymentMode} onValueChange={(v: any) => setPaymentMode(v)}>
-                                                <SelectTrigger className="bg-white rounded-xl">
+                                                <SelectTrigger className="bg-white dark:bg-slate-900 dark:text-white dark:border-slate-700 rounded-xl">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -378,8 +379,8 @@ function TaskCard({ task, onStatusChange, isUpdating, reachedSite, onMarkReached
                                     </div>
 
                                     <div className="flex gap-2 pt-2">
-                                        <Button variant="ghost" className="flex-1 rounded-xl" onClick={() => setSelectedTask(null)} disabled={isUpdating}>Cancel</Button>
-                                        <Button className="flex-1 bg-slate-900 text-white rounded-xl font-bold" onClick={onComplete} disabled={isUpdating}>
+                                        <Button variant="ghost" className="flex-1 rounded-xl dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => setSelectedTask(null)} disabled={isUpdating}>Cancel</Button>
+                                        <Button className="flex-1 bg-slate-900 text-white rounded-xl font-bold dark:bg-blue-600 dark:hover:bg-blue-700" onClick={onComplete} disabled={isUpdating}>
                                             {isUpdating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null} Submit
                                         </Button>
                                     </div>
@@ -394,7 +395,7 @@ function TaskCard({ task, onStatusChange, isUpdating, reachedSite, onMarkReached
 }
 
 function HistorySection({ tasks }: { tasks: any[] }) {
-    if (tasks.length === 0) return <div className="text-center text-slate-400 py-10">No history available</div>;
+    if (tasks.length === 0) return <div className="text-center text-slate-400 dark:text-slate-500 py-10">No history available</div>;
 
     return (
         <div className="space-y-4">
@@ -402,22 +403,22 @@ function HistorySection({ tasks }: { tasks: any[] }) {
                 <div key={task.id} className="flex gap-4 relative">
                     {/* Timeline Line */}
                     <div className="w-12 flex flex-col items-center">
-                        <div className="text-[10px] font-bold text-slate-400 mb-1">
+                        <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">
                             {format(parseISO(task.completed_at), "h:mm a")}
                         </div>
-                        <div className="w-3 h-3 rounded-full bg-slate-300 z-10"></div>
-                        {i !== tasks.length - 1 && <div className="w-0.5 h-full bg-slate-200 -mt-1 absolute top-5 bottom-[-20px]"></div>}
+                        <div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-700 z-10"></div>
+                        {i !== tasks.length - 1 && <div className="w-0.5 h-full bg-slate-200 dark:bg-slate-800 -mt-1 absolute top-5 bottom-[-20px]"></div>}
                     </div>
 
                     <Card className="flex-1 mb-4 border-0 shadow-sm bg-white dark:bg-slate-900 rounded-2xl">
                         <CardContent className="p-4">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h4 className="font-bold text-slate-900 text-sm">{task.title}</h4>
-                                    <p className="text-xs text-slate-500 mt-0.5">{task.customer_name}</p>
+                                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{task.title}</h4>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{task.customer_name}</p>
                                 </div>
                                 {task.amount_collected && (
-                                    <Badge variant="secondary" className="bg-green-50 text-green-700 border-0 font-bold">
+                                    <Badge variant="secondary" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 border-0 font-bold">
                                         ₹{task.amount_collected}
                                     </Badge>
                                 )}

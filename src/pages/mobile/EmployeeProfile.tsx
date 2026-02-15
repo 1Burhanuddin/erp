@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,6 +32,7 @@ export default function EmployeeProfile() {
     const [isSaving, setIsSaving] = useState(false);
     const queryClient = useQueryClient();
     const { signOut } = useAuth();
+    const { theme, setTheme, color, setColor } = useTheme();
     const navigate = useNavigate();
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -97,7 +100,7 @@ export default function EmployeeProfile() {
                     <div className="flex flex-col items-center text-center space-y-4">
                         <div className="relative">
                             <Avatar className="h-28 w-28 border-4 border-slate-50 dark:border-slate-800 shadow-xl">
-                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-3xl font-bold">
+                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-3xl font-bold dark:text-white">
                                     {employee.full_name?.charAt(0) || "U"}
                                 </AvatarFallback>
                             </Avatar>
@@ -112,7 +115,7 @@ export default function EmployeeProfile() {
 
                         <div className="space-y-1">
                             <h1 className="text-2xl font-black text-slate-900 dark:text-white">{employee.full_name}</h1>
-                            <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">{employee.role}</p>
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">{employee.role}</p>
                         </div>
 
                         <div className="flex gap-2 mt-2">
@@ -132,8 +135,8 @@ export default function EmployeeProfile() {
                                 <Store className="w-24 h-24 transform translate-x-8 -translate-y-8" />
                             </div>
                             <div className="relative z-10">
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Assigned Store</p>
-                                <h3 className="text-xl font-bold leading-tight mb-1">{employee.store.name}</h3>
+                                <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Assigned Store</p>
+                                <h3 className="text-xl font-bold leading-tight mb-1 text-white">{employee.store.name}</h3>
                                 {employee.store.address && <p className="text-slate-400 text-sm">{employee.store.address}</p>}
                             </div>
                         </div>
@@ -151,15 +154,15 @@ export default function EmployeeProfile() {
                                 <h3 className="font-bold text-lg mb-2">Edit Contact Info</h3>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label>Phone Number</Label>
-                                        <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl h-11 bg-slate-50 border-0" />
+                                        <Label className="dark:text-white">Phone Number</Label>
+                                        <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl h-11 bg-slate-50 dark:bg-slate-800 dark:text-white border-0" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Address</Label>
-                                        <Input value={address} onChange={(e) => setAddress(e.target.value)} className="rounded-xl h-11 bg-slate-50 border-0" />
+                                        <Label className="dark:text-white">Address</Label>
+                                        <Input value={address} onChange={(e) => setAddress(e.target.value)} className="rounded-xl h-11 bg-slate-50 dark:bg-slate-800 dark:text-white border-0" />
                                     </div>
                                     <div className="flex gap-3 pt-2">
-                                        <Button variant="ghost" className="flex-1 rounded-xl" onClick={() => setIsEditing(false)}>Cancel</Button>
+                                        <Button variant="ghost" className="flex-1 rounded-xl dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => setIsEditing(false)}>Cancel</Button>
                                         <Button className="flex-1 bg-blue-600 text-white hover:bg-blue-700 rounded-xl" onClick={handleSave} disabled={isSaving}>
                                             {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save
                                         </Button>
@@ -179,6 +182,53 @@ export default function EmployeeProfile() {
                                 <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm overflow-hidden">
                                     <InfoRow icon={<Calendar className="w-5 h-5" />} label="Joined" value={format(new Date(employee.joining_date), "PP")} />
                                     <InfoRow icon={<Clock className="w-5 h-5" />} label="Shift Start" value={employee.shift_start || "09:00 AM"} noBorder />
+                                </div>
+
+                                <h3 className="font-bold text-lg text-slate-900 dark:text-white ml-2 mt-6">Appearance</h3>
+                                <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm overflow-hidden p-5 space-y-5">
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Interface Theme</Label>
+                                        <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl w-full">
+                                            {["light", "dark", "system"].map((t) => (
+                                                <Button
+                                                    key={t}
+                                                    variant={theme === t ? "default" : "ghost"}
+                                                    size="sm"
+                                                    onClick={() => setTheme(t as any)}
+                                                    className={`capitalize flex-1 rounded-lg ${theme === t ? 'shadow-sm' : ''}`}
+                                                >
+                                                    {t}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Accent Color</Label>
+                                        <div className="flex flex-wrap gap-3">
+                                            {[
+                                                { name: "blue", color: "#2563eb" },
+                                                { name: "teal", color: "#0d9488" },
+                                                { name: "forest", color: "#1e4620" },
+                                                { name: "golden", color: "#d97706" },
+                                                { name: "red", color: "#dc2626" },
+                                                { name: "zinc", color: "#18181b" },
+                                                { name: "pink", color: "#db2777" },
+                                            ].map(({ name, color: bg }) => (
+                                                <button
+                                                    key={name}
+                                                    onClick={() => setColor(name as any)}
+                                                    className={cn(
+                                                        "h-9 w-9 rounded-full ring-offset-2 transition-all hover:scale-110 focus:outline-none focus:ring-2 disabled:opacity-50",
+                                                        color === name ? "ring-2 ring-slate-900 dark:ring-white scale-110" : "ring-transparent",
+                                                        "border border-white/20 shadow-sm"
+                                                    )}
+                                                    style={{ backgroundColor: bg }}
+                                                    title={name.charAt(0).toUpperCase() + name.slice(1)}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}

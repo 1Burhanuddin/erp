@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function MyAttendance() {
     // Current viewed month for calendar
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
     // Fetch all attendance (we'll filter client-side for this UI, or ideally fetch by range)
     // For now, fetching all as per previous logic, but filtering for display
@@ -31,6 +32,13 @@ export default function MyAttendance() {
 
     // Stats for the current month
     const currentMonthLogs = attendanceLogs?.filter(log => isSameMonth(new Date(log.date), currentMonth)) || [];
+
+    // Filtered logs for display (Selected Date)
+    const displayLogs = selectedDate
+        ? attendanceLogs?.filter(log => isSameDay(new Date(log.date), selectedDate)) || []
+        : [];
+    const isSelectedDateFuture = selectedDate > new Date();
+
     const presentCount = currentMonthLogs.filter(l => l.status === 'present').length;
     const lateCount = currentMonthLogs.filter(l => l.status === 'late').length;
     const absentCount = currentMonthLogs.filter(l => l.status === 'absent').length;
@@ -52,12 +60,12 @@ export default function MyAttendance() {
                     <Card className="border-0 shadow-sm bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden">
                         <CardContent className="p-5">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="font-bold text-lg">{format(currentMonth, 'MMMM yyyy')}</h2>
+                                <h2 className="font-bold text-lg text-slate-900 dark:text-white">{format(currentMonth, 'MMMM yyyy')}</h2>
                                 <div className="flex gap-1">
-                                    <Button variant="ghost" size="icon" onClick={previousMonth} className="h-8 w-8 rounded-full hover:bg-slate-100">
+                                    <Button variant="ghost" size="icon" onClick={previousMonth} className="h-8 w-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-300">
                                         <ChevronLeft className="w-4 h-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" onClick={nextMonth} className="h-8 w-8 rounded-full hover:bg-slate-100">
+                                    <Button variant="ghost" size="icon" onClick={nextMonth} className="h-8 w-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-300">
                                         <ChevronRight className="w-4 h-4" />
                                     </Button>
                                 </div>
@@ -65,7 +73,7 @@ export default function MyAttendance() {
 
                             <div className="grid grid-cols-7 text-center mb-2">
                                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-                                    <div key={day} className="text-xs font-bold text-slate-300">{day}</div>
+                                    <div key={day} className="text-xs font-bold text-slate-300 dark:text-slate-600">{day}</div>
                                 ))}
                             </div>
 
@@ -77,7 +85,7 @@ export default function MyAttendance() {
 
                                 {days.map((day, dayIdx) => {
                                     const log = getLogForDate(day);
-                                    let statusColor = "bg-transparent text-slate-900";
+                                    let statusColor = "bg-transparent text-slate-900 dark:text-white";
 
                                     if (log) {
                                         if (log.status === 'present') statusColor = "bg-emerald-100 text-emerald-700 font-bold";
@@ -86,14 +94,17 @@ export default function MyAttendance() {
                                         else if (log.status === 'half_day') statusColor = "bg-orange-100 text-orange-700 font-bold";
                                     }
 
+
                                     const isTodayDate = isSameDay(day, new Date());
+                                    const isSelected = isSameDay(day, selectedDate);
 
                                     return (
-                                        <div key={day.toString()} className="flex justify-center">
+                                        <div key={day.toString()} className="flex justify-center" onClick={() => setSelectedDate(day)}>
                                             <div className={`
-                                                w-8 h-8 rounded-full flex items-center justify-center text-sm relative
+                                                w-8 h-8 rounded-full flex items-center justify-center text-sm relative cursor-pointer transition-all
                                                 ${statusColor}
-                                                ${isTodayDate ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+                                                ${isTodayDate && !isSelected ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-900' : ''}
+                                                ${isSelected ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-lg scale-110' : ''}
                                             `}>
                                                 {format(day, 'd')}
                                                 {/* Dot indicator for logs */}
@@ -111,10 +122,12 @@ export default function MyAttendance() {
 
                     {/* Timeline History */}
                     <div>
-                        <h3 className="font-bold text-lg mb-4 ml-1">Daily Log</h3>
+                        <h3 className="font-bold text-lg mb-4 ml-1 text-slate-900 dark:text-white">
+                            {isSameDay(selectedDate, new Date()) ? "Today's Log" : `Log for ${format(selectedDate, "MMM d")}`}
+                        </h3>
                         <div className="space-y-4">
-                            {currentMonthLogs.length > 0 ? (
-                                currentMonthLogs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((log) => (
+                            {displayLogs.length > 0 ? (
+                                displayLogs.map((log) => (
                                     <div key={log.id} className="bg-white dark:bg-slate-900 rounded-[1.5rem] p-5 shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between">
                                         <div className="flex gap-4 items-center">
                                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold
@@ -143,9 +156,9 @@ export default function MyAttendance() {
                                         </div>
 
                                         <div className="text-right">
-                                            <Badge variant="outline" className={`border-0 uppercase tracking-wider text-[10px] font-bold px-2 py-1 rounded-lg ${log.status === 'present' ? 'bg-emerald-50 text-emerald-600' :
-                                                log.status === 'late' ? 'bg-amber-50 text-amber-600' :
-                                                    log.status === 'absent' ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-600'
+                                            <Badge variant="outline" className={`border-0 uppercase tracking-wider text-[10px] font-bold px-2 py-1 rounded-lg ${log.status === 'present' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' :
+                                                log.status === 'late' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' :
+                                                    log.status === 'absent' ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400' : 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                                                 }`}>
                                                 {log.status.replace('_', ' ')}
                                             </Badge>
@@ -154,8 +167,8 @@ export default function MyAttendance() {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center py-10 opacity-50">
-                                    <p>No records for this month</p>
+                                <div className="text-center py-10 opacity-50 text-slate-500 dark:text-slate-400">
+                                    <p>{isSelectedDateFuture ? "No records for future dates" : "No attendance record found"}</p>
                                 </div>
                             )}
                         </div>
@@ -163,7 +176,7 @@ export default function MyAttendance() {
 
                 </main>
             </div>
-        </EmployeeLayout>
+        </EmployeeLayout >
     );
 }
 

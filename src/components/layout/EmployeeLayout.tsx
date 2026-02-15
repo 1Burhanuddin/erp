@@ -202,7 +202,7 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
                 )}
 
                 {/* Page Content */}
-                <main className="flex-1 pb-24 md:pb-4 overflow-auto">
+                <main className="flex-1 overflow-auto md:pb-4">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}

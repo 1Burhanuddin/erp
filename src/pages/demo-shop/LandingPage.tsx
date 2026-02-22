@@ -26,6 +26,8 @@ const LandingPage = () => {
         return slug ? `/s/${slug}${cleanPath}` : cleanPath;
     };
 
+    const [searchQuery, setSearchQuery] = useState("");
+
     const uniqueCategories = useMemo(() => {
         if (!categories) return [];
         const seen = new Set();
@@ -36,6 +38,17 @@ const LandingPage = () => {
             return true;
         });
     }, [categories]);
+
+    const displayedProducts = useMemo(() => {
+        if (!products) return [];
+        if (!searchQuery.trim()) return products;
+
+        const lowerQuery = searchQuery.toLowerCase().trim();
+        return products.filter(p =>
+            p.name.toLowerCase().includes(lowerQuery) ||
+            (p.description && p.description.toLowerCase().includes(lowerQuery))
+        );
+    }, [products, searchQuery]);
 
     if (storeLoading) {
         return (
@@ -59,7 +72,9 @@ const LandingPage = () => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                         <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-sm focus:outline-none focus:border-white/20 transition-all"
                         />
                     </div>
@@ -100,7 +115,7 @@ const LandingPage = () => {
                             <div className="h-3 w-1/2 bg-white/5 rounded-full animate-pulse" />
                         </div>
                     ))
-                ) : products && products.length > 0 ? products.map((product) => (
+                ) : displayedProducts && displayedProducts.length > 0 ? displayedProducts.map((product) => (
                     <div
                         key={product.id}
                         onClick={() => navigate(getLink(`/product/${product.id}`))}

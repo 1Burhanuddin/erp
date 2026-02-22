@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard } from "@/components/shared";
+import { DataCard } from "@/components/shared";
+import { ListingLayout } from "@/components/layout/ListingLayout";
 import { usePurchaseOrders } from "@/api/purchase";
-import { ExpandableSearch } from "@/components/ui/expandable-search";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { ResponsivePageActions } from "@/components/shared";
+import { Plus, ShoppingCart, Upload, Download } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -19,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
-import { Upload, Download } from "lucide-react";
+
 import { downloadCSV } from "@/lib/csvParser";
 import { toast } from "sonner";
 import {
@@ -63,45 +62,44 @@ const PurchaseOrder = () => {
     };
 
 
+    const headerActions = (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-2 sm:px-4">
+                        <Download className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Export</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                        Export as CSV
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/purchase/import")}>
+                <Upload className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Import</span>
+            </Button>
+        </>
+    );
+
     return (
         <PageLayout>
-            <div className="flex flex-col gap-4 mb-4">
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                    <ExpandableSearch
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search orders..."
-                        className="w-full sm:w-auto"
-                    />
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="h-10 px-2 sm:px-4">
-                                    <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Export</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    Export as CSV
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/purchase/import")}>
-                            <Upload className="h-4 w-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Import</span>
-                        </Button>
-                        <ResponsivePageActions
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                            onAdd={() => navigate("/purchase/add")}
-                            addLabel="Create Order"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div>
+            <ListingLayout
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search orders..."
+                onAdd={() => navigate("/purchase/add")}
+                addLabel="Create Order"
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                headerActions={headerActions}
+                tabs={[
+                    { id: 'all', label: 'All Orders', icon: ShoppingCart, count: orders.length }
+                ]}
+                activeTab="all"
+            >
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
@@ -176,7 +174,7 @@ const PurchaseOrder = () => {
                         </Table>
                     </div>
                 )}
-            </div>
+            </ListingLayout>
         </PageLayout>
     );
 };

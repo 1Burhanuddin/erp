@@ -18,14 +18,14 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, User } from "lucide-react";
+import { Plus, Search, User, Trash, Upload, Download, Filter, X, Users, Edit } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataCard, DataViewToggle, ResponsivePageActions } from "@/components/shared";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteEmployee } from "@/api/employees";
-import { Trash } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -38,9 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { Upload, Download } from "lucide-react";
+import { ListingLayout } from "@/components/layout/ListingLayout";
 import { downloadCSV } from "@/lib/csvParser";
 import { toast } from "sonner";
 import {
@@ -49,7 +47,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 const EmployeeList = () => {
     const navigate = useNavigate();
     const deleteEmployeeMutation = useDeleteEmployee();
@@ -57,6 +54,7 @@ const EmployeeList = () => {
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [employeeToDelete, setEmployeeToDelete] = useState<string | null>(null);
     const [showAllStores, setShowAllStores] = useState(false);
+    const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
     const { data: employees, isLoading } = useEmployees({ allStores: showAllStores });
     const [mounted, setMounted] = useState(false);
 
@@ -69,13 +67,6 @@ const EmployeeList = () => {
         emp.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.role?.toLowerCase().includes(searchQuery.toLowerCase())
     ) || [];
-
-    const handleDelete = () => {
-        if (employeeToDelete) {
-            deleteEmployeeMutation.mutate(employeeToDelete);
-            setEmployeeToDelete(null);
-        }
-    };
 
     const handleExportCSV = () => {
         if (!filteredEmployees || filteredEmployees.length === 0) {
@@ -97,58 +88,73 @@ const EmployeeList = () => {
         );
     };
 
+    const handleDelete = () => {
+        if (employeeToDelete) {
+            deleteEmployeeMutation.mutate(employeeToDelete);
+            setEmployeeToDelete(null);
+        }
+    };
+
     // Portal actions to the header
 
 
+    const tabs = [
+        { id: 'current', label: 'Current Store', icon: Users, count: filteredEmployees.length },
+        { id: 'all', label: 'All Stores', icon: Users, count: employees?.length || 0 }
+    ];
+
+    const floatingActions = (
+        <>
+            <Button variant="ghost" size="sm" className="h-9 hover:bg-white/10 dark:hover:bg-muted text-white dark:text-foreground border border-white/10 dark:border-transparent rounded-full px-4" onClick={handleExportCSV}>
+                <Download className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Export</span>
+            </Button>
+            {selectedEmployees.length === 1 && (
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 hover:bg-white/10 dark:hover:bg-muted text-white dark:text-foreground border border-white/10 dark:border-transparent rounded-full px-4"
+                    onClick={() => navigate(`/employees/edit/${selectedEmployees[0]}`)}
+                >
+                    <Edit className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Edit</span>
+                </Button>
+            )}
+            <Button
+                variant="destructive"
+                size="sm"
+                className="h-9 bg-red-500 hover:bg-red-600 text-white border-transparent rounded-full px-4 ml-1"
+                onClick={() => {
+                    if (selectedEmployees.length === 1) {
+                        setEmployeeToDelete(selectedEmployees[0]);
+                    } else {
+                        toast.error("Multi-delete not supported yet");
+                    }
+                }}
+            >
+                <Trash className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline font-semibold">Delete</span>
+            </Button>
+        </>
+    );
+
     return (
         <PageLayout>
-            <div className="flex flex-col gap-4 mb-4">
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                    <ExpandableSearch
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search employees..."
-                        className="w-full sm:w-auto"
-                    />
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="h-10 px-2 sm:px-4">
-                                    <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Export</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    Export as CSV
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/employees/import")}>
-                            <Upload className="h-4 w-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Import</span>
-                        </Button>
-                        <ResponsivePageActions
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                            onAdd={() => navigate("/employees/add")}
-                            addLabel="Add Employee"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-4">
-                {/* View Tabs */}
-                <div className="mb-6">
-                    <Tabs value={showAllStores ? "all" : "current"} onValueChange={(v) => setShowAllStores(v === "all")} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="current">Current Store</TabsTrigger>
-                            <TabsTrigger value="all">All Stores</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                </div>
-
+            <ListingLayout
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Filter employees..."
+                tabs={tabs}
+                activeTab={showAllStores ? "all" : "current"}
+                onTabChange={(v) => setShowAllStores(v === "all")}
+                onAdd={() => navigate("/employees/add")}
+                addLabel="New employee"
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                selectedCount={selectedEmployees.length}
+                onClearSelection={() => setSelectedEmployees([])}
+                floatingActions={floatingActions}
+            >
                 {isLoading ? (
                     <div className="space-y-4">
                         <Skeleton className="h-12 w-full" />
@@ -162,47 +168,89 @@ const EmployeeList = () => {
                 ) : (
                     <>
                         {viewMode === 'table' ? (
-                            <div className="rounded-xl border-0 shadow-sm bg-card overflow-hidden">
+                            <div className="w-full">
                                 <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Role</TableHead>
-                                            {showAllStores && <TableHead>Store</TableHead>}
-                                            <TableHead>Phone</TableHead>
-                                            <TableHead>Status</TableHead>
+                                    <TableHeader className="bg-transparent">
+                                        <TableRow className="hover:bg-transparent border-b-border/50">
+                                            <TableHead className="w-[50px] px-4">
+                                                <Checkbox
+                                                    className="rounded-sm"
+                                                    checked={filteredEmployees.length > 0 && selectedEmployees.length === filteredEmployees.filter(e => e.role !== 'admin').length}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            setSelectedEmployees(filteredEmployees.filter(e => e.role !== 'admin').map(e => e.id));
+                                                        } else {
+                                                            setSelectedEmployees([]);
+                                                        }
+                                                    }}
+                                                />
+                                            </TableHead>
+                                            <TableHead className="text-xs font-semibold py-4 uppercase tracking-wider text-muted-foreground">Name</TableHead>
+                                            <TableHead className="text-xs font-semibold py-4 uppercase tracking-wider text-muted-foreground">Role</TableHead>
+                                            {showAllStores && <TableHead className="text-xs font-semibold py-4 uppercase tracking-wider text-muted-foreground">Store</TableHead>}
+                                            <TableHead className="text-xs font-semibold py-4 uppercase tracking-wider text-muted-foreground">Phone</TableHead>
+                                            <TableHead className="text-xs font-semibold py-4 uppercase tracking-wider text-muted-foreground">Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredEmployees.map((emp) => (
-                                            <TableRow
-                                                key={emp.id}
-                                                className={`hover:bg-muted/50 ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
-                                                onClick={() => {
-                                                    if (emp.role === 'admin') return;
-                                                    navigate(`/employees/details/${emp.id}`);
-                                                }}
-                                                title={emp.role === 'admin' ? "Admin profiles cannot be edited here" : "Click to edit"}
-                                            >
-                                                <TableCell className="font-medium">{emp.full_name}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={emp.role === 'admin' ? 'default' : 'secondary'}>
-                                                        {emp.role}
-                                                    </Badge>
-                                                </TableCell>
-                                                {showAllStores && (
-                                                    <TableCell className="text-muted-foreground">
-                                                        {emp.store?.name || '-'}
+                                        {filteredEmployees.map((emp) => {
+                                            const isSelected = selectedEmployees.includes(emp.id);
+                                            return (
+                                                <TableRow
+                                                    key={emp.id}
+                                                    className={`transition-colors border-b-border/50 ${isSelected ? 'bg-primary/5' : 'hover:bg-muted/30'} ${emp.role === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+                                                    onClick={() => {
+                                                        if (emp.role === 'admin') return;
+                                                        // Allow clicking anywhere to toggle selection if we want, or just navigate
+                                                        navigate(`/employees/details/${emp.id}`);
+                                                    }}
+                                                    title={emp.role === 'admin' ? "Admin profiles cannot be edited here" : "Click to view details"}
+                                                >
+                                                    <TableCell className="px-4" onClick={(e) => e.stopPropagation()}>
+                                                        {emp.role !== 'admin' && (
+                                                            <Checkbox
+                                                                className={`rounded-sm ${isSelected ? '!bg-primary !border-primary text-primary-foreground' : ''}`}
+                                                                checked={isSelected}
+                                                                onCheckedChange={(checked) => {
+                                                                    if (checked) {
+                                                                        setSelectedEmployees(prev => [...prev, emp.id]);
+                                                                    } else {
+                                                                        setSelectedEmployees(prev => prev.filter(id => id !== emp.id));
+                                                                    }
+                                                                }}
+                                                            />
+                                                        )}
                                                     </TableCell>
-                                                )}
-                                                <TableCell>{emp.phone || '-'}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={emp.status === 'active' ? 'outline' : 'destructive'} className={emp.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : ''}>
-                                                        {emp.status}
-                                                    </Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                                    <TableCell className="font-medium text-sm">
+                                                        <div className="flex items-center gap-3">
+                                                            <Avatar className="h-8 w-8 rounded-md">
+                                                                <AvatarFallback className="bg-primary/10 text-primary rounded-md text-xs">
+                                                                    {emp.full_name?.substring(0, 2).toUpperCase()}
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            {emp.full_name}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-sm text-muted-foreground">{emp.role}</span>
+                                                    </TableCell>
+                                                    {showAllStores && (
+                                                        <TableCell className="text-sm text-muted-foreground">
+                                                            {emp.store?.name || '-'}
+                                                        </TableCell>
+                                                    )}
+                                                    <TableCell className="text-sm text-muted-foreground">{emp.phone || '-'}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center text-[11px] font-bold tracking-wider rounded-full bg-transparent px-0 uppercase text-muted-foreground">
+                                                            <span className={`h-2 w-2 rounded-full mr-2 ${emp.status === 'active' ? 'bg-green-500' : 'bg-amber-500'}`}></span>
+                                                            <span className={emp.status === 'active' ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
+                                                                {emp.status}
+                                                            </span>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -257,7 +305,7 @@ const EmployeeList = () => {
                         )}
                     </>
                 )}
-            </div>
+            </ListingLayout>
 
             <AlertDialog open={!!employeeToDelete} onOpenChange={(open) => !open && setEmployeeToDelete(null)}>
                 <AlertDialogContent>
@@ -275,7 +323,7 @@ const EmployeeList = () => {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </PageLayout>
+        </PageLayout >
     );
 }
 

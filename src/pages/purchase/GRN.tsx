@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataCard, ResponsivePageActions } from "@/components/shared";
+import { DataCard } from "@/components/shared";
+import { ListingLayout } from "@/components/layout/ListingLayout";
 import { usePurchaseOrders, useConvertPOToGRN } from "@/api/purchase";
 import { Button } from "@/components/ui/button";
-import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -12,14 +12,14 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-import { CheckCircle2, RotateCcw } from "lucide-react";
+import { CheckCircle2, Clock, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-import { Upload, Download } from "lucide-react";
+
 import { downloadCSV } from "@/lib/csvParser";
 import {
     DropdownMenu,
@@ -32,6 +32,13 @@ const GRN = () => {
     const { data: allOrders, isLoading } = usePurchaseOrders();
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [activeTab, setActiveTab] = useState('pending');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     // Filter locally
     const filteredAll = allOrders?.filter((o: any) =>
@@ -176,55 +183,50 @@ const GRN = () => {
 
     // ...
 
+    const headerActions = (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-2 sm:px-4">
+                        <Download className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Export</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                        Export as CSV
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    );
+
     return (
         <PageLayout>
-            <div className="flex flex-col gap-4 mb-4">
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                    <ExpandableSearch
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search orders..."
-                    />
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="h-10 px-2 sm:px-4">
-                                    <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Export</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    Export as CSV
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <ResponsivePageActions
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div className="p-4 space-y-6">
-                <Tabs defaultValue="pending" className="w-full">
-                    <TabsList className="w-full grid grid-cols-2">
-                        <TabsTrigger value="pending">Pending Receipt ({pendingOrders.length})</TabsTrigger>
-                        <TabsTrigger value="received">Received History</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="pending" className="mt-4">
-                        {isLoading ? <Skeleton className="h-48 w-full" /> : <OrdersList orders={pendingOrders} isPending={true} />}
-                    </TabsContent>
-
-                    <TabsContent value="received" className="mt-4">
-                        {isLoading ? <Skeleton className="h-48 w-full" /> : <OrdersList orders={receivedOrders} isPending={false} />}
-                    </TabsContent>
-                </Tabs>
-            </div>
+            <ListingLayout
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search orders..."
+                hideViewToggle={false}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                headerActions={headerActions}
+                tabs={[
+                    { id: 'pending', label: 'Pending Receipt', icon: Clock, count: pendingOrders.length },
+                    { id: 'received', label: 'Received History', icon: CheckCircle2, count: receivedOrders.length }
+                ]}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+            >
+                {activeTab === 'pending' ? (
+                    isLoading ? <Skeleton className="h-48 w-full" /> : <OrdersList orders={pendingOrders} isPending={true} />
+                ) : (
+                    isLoading ? <Skeleton className="h-48 w-full" /> : <OrdersList orders={receivedOrders} isPending={false} />
+                )}
+            </ListingLayout>
         </PageLayout>
     );
+
 };
 
 export default GRN;

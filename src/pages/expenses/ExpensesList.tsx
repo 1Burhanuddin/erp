@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataCard, DataViewToggle, ResponsivePageActions } from "@/components/shared";
+import { DataCard } from "@/components/shared";
+import { ListingLayout } from "@/components/layout/ListingLayout";
 import { useExpenses } from "@/api/expenses";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { ExpandableSearch } from "@/components/ui/expandable-search";
 import {
     Table,
     TableBody,
@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
-import { Upload, Download } from "lucide-react";
+import { Upload, Download, CreditCard } from "lucide-react";
 import { downloadCSV } from "@/lib/csvParser";
 import { toast } from "sonner";
 import {
@@ -74,45 +74,44 @@ const ExpensesList = () => {
         );
     }
 
+    const headerActions = (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-2 sm:px-4">
+                        <Download className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Export</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                        Export as CSV
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/expenses/import")}>
+                <Upload className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Import</span>
+            </Button>
+        </>
+    );
+
     return (
         <PageLayout>
-            <div className="flex flex-col gap-4 mb-4">
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                    <ExpandableSearch
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search expenses..."
-                        className="w-full sm:w-auto"
-                    />
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="h-10 px-2 sm:px-4">
-                                    <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Export</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    Export as CSV
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/expenses/import")}>
-                            <Upload className="h-4 w-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Import</span>
-                        </Button>
-                        <ResponsivePageActions
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                            onAdd={() => navigate("/expenses/add")}
-                            addLabel="Add Expense"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div className="p-4">
+            <ListingLayout
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search expenses..."
+                onAdd={() => navigate("/expenses/add")}
+                addLabel="Add Expense"
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                headerActions={headerActions}
+                tabs={[
+                    { id: 'all', label: 'All Expenses', icon: CreditCard, count: expenses.length }
+                ]}
+                activeTab="all"
+            >
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
@@ -213,7 +212,7 @@ const ExpensesList = () => {
                         </Table>
                     </div>
                 )}
-            </div>
+            </ListingLayout>
         </PageLayout>
     );
 };

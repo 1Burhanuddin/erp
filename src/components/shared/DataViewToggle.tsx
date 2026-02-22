@@ -53,11 +53,11 @@ export const DataViewToggle = ({ viewMode, setViewMode, variant = 'default' }: D
     }
 
     return (
-        <div className="flex items-center gap-1 border rounded-full p-1 bg-muted/50">
+        <div className="flex items-center gap-1 rounded-full p-1 bg-slate-100 dark:bg-muted/50 h-11">
             <Button
                 variant={viewMode === 'table' ? 'default' : 'ghost'}
                 size="sm"
-                className="h-7 w-7 p-0 rounded-full"
+                className="h-full w-10 p-0 rounded-full"
                 onClick={() => setViewMode('table')}
             >
                 <Table className="h-4 w-4" />
@@ -65,7 +65,7 @@ export const DataViewToggle = ({ viewMode, setViewMode, variant = 'default' }: D
             <Button
                 variant={viewMode === 'card' ? 'default' : 'ghost'}
                 size="sm"
-                className="h-7 w-7 p-0 rounded-full"
+                className="h-full w-10 p-0 rounded-full"
                 onClick={() => setViewMode('card')}
             >
                 <LayoutGrid className="h-4 w-4" />

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PageLayout, PageHeader } from "@/components/layout";
-import { DataViewToggle, DataCard, ResponsivePageActions } from "@/components/shared";
+import { DataCard } from "@/components/shared";
+import { ListingLayout } from "@/components/layout/ListingLayout";
 import { useBookings, useUpdateBooking, useDeleteBooking, Booking } from "@/api/bookings";
 import { Button } from "@/components/ui/button";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
@@ -114,45 +115,44 @@ const Bookings = () => {
         );
     };
 
+    const headerActions = (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-2 sm:px-4">
+                        <Download className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Export</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                        Export as CSV
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/sell/bookings/import")}>
+                <Upload className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Import</span>
+            </Button>
+        </>
+    );
+
     return (
         <PageLayout>
-            <div className="flex flex-col gap-4 mb-4">
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                    <ExpandableSearch
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search bookings..."
-                        className="w-full sm:w-auto"
-                    />
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="h-10 px-2 sm:px-4">
-                                    <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Export</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    Export as CSV
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/sell/bookings/import")}>
-                            <Upload className="h-4 w-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Import</span>
-                        </Button>
-                        <ResponsivePageActions
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                            onAdd={() => navigate("/sell/bookings/add")}
-                            addLabel="Add Booking"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div className="p-4">
+            <ListingLayout
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search bookings..."
+                onAdd={() => navigate("/sell/bookings/add")}
+                addLabel="Add Booking"
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                headerActions={headerActions}
+                tabs={[
+                    { id: 'all', label: 'All Bookings', icon: Calendar, count: filteredBookings?.length || 0 }
+                ]}
+                activeTab="all"
+            >
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {isLoading ? (
@@ -293,7 +293,7 @@ const Bookings = () => {
                         </Table>
                     </div>
                 )}
-            </div>
+            </ListingLayout>
 
             <AlertDialog open={!!bookingToDelete} onOpenChange={(open) => !open && setBookingToDelete(null)}>
                 <AlertDialogContent>

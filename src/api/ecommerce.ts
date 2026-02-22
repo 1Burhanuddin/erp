@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
-import { isERPDomain } from "@/config/domains";
+import { normalizeHostname, isERPDomain } from "@/config/domains";
 
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 export type Category = Database["public"]["Tables"]["product_categories"]["Row"];
@@ -206,27 +206,29 @@ export const useStoreDetails = (slug?: string) => {
     return useQuery({
         queryKey: ["ecommerce_store_details", slug],
         queryFn: async () => {
-            const hostname = window.location.hostname.replace('www.', '');
+            const hostname = normalizeHostname(window.location.hostname);
             let query = supabase
                 .from("stores")
                 .select("id, name, address, phone, email, domain");
 
             if (slug) {
-                query = query.eq("domain", slug);
+                // Try matching by slug as is first, then normalized if it looks like a domain
+                const normalizedSlug = normalizeHostname(slug);
+                query = query.or(`domain.eq.${slug},domain.eq.${normalizedSlug}`);
             } else if (hostname !== 'localhost' && !isERPDomain(hostname)) {
-                // If on a custom domain, resolve by hostname
+                // If on a custom domain, resolve by normalized hostname
                 query = query.eq("domain", hostname);
             } else {
                 query = query.limit(1);
             }
 
-            const { data, error } = await query.single();
+            const { data, error } = await query.maybeSingle();
 
-            // Fallback: If hostname resolution fails on a custom domain, 
+            // Fallback 1: If hostname resolution fails on a custom domain, 
             // try to fetch the first store instead of failing completely.
             // This handles cases where the 'domain' column isn't set up yet.
-            if (error && !slug && hostname !== 'localhost' && !isERPDomain(hostname)) {
-                const { data: fallbackData, error: fallbackError } = await supabase
+            if ((!data || error) && !slug && hostname !== 'localhost' && !isERPDomain(hostname)) {
+                const { data: fallbackData } = await supabase
                     .from("stores")
                     .select("id, name, address, phone, email, domain")
                     .limit(1)

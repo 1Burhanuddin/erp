@@ -4,7 +4,9 @@ import { PageLayout, PageHeader } from "@/components/layout";
 import { useCategories, Category } from "@/api/products";
 import { DataCard, ResponsivePageActions } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { ExpandableSearch } from "@/components/ui/expandable-search";
+import { ListingLayout } from "@/components/layout/ListingLayout";
+import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
     TableBody,
@@ -13,7 +15,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Upload, Download } from "lucide-react";
+import { Upload, Download, Bookmark } from "lucide-react";
 import { downloadCSV } from "@/lib/csvParser";
 import { toast } from "sonner";
 import {
@@ -56,47 +58,44 @@ const Categories = () => {
         return () => setMounted(false);
     }, []);
 
+    const headerActions = (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-10 px-2 sm:px-4">
+                        <Download className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Export</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                        Export as CSV
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/products/categories/import")}>
+                <Upload className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Import</span>
+            </Button>
+        </>
+    );
+
     return (
         <PageLayout>
-            <div className="flex flex-col gap-4 mb-4">
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                    <ExpandableSearch
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Search categories..."
-                        className="w-full sm:w-auto"
-                    />
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="h-10 px-2 sm:px-4">
-                                    <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Export</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    Export as CSV
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/products/categories/import")}>
-                            <Upload className="h-4 w-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Import</span>
-                        </Button>
-                        <ResponsivePageActions
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                            onAdd={() => navigate("/products/categories/add")}
-                            addLabel="Add Category"
-                        />
-                    </div>
-                </div>
-            </div>
-
-
-
-            <div className="p-4">
+            <ListingLayout
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search categories..."
+                onAdd={() => navigate("/products/categories/add")}
+                addLabel="Add Category"
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                headerActions={headerActions}
+                tabs={[
+                    { id: 'all', label: 'All Categories', icon: Bookmark, count: categories.length }
+                ]}
+                activeTab="all"
+            >
                 {viewMode === 'card' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {isLoading ? (
@@ -115,7 +114,8 @@ const Categories = () => {
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold">{category.name}</h3>
-                                        </div>                </div>
+                                        </div>
+                                    </div>
                                     <p className="text-sm text-muted-foreground line-clamp-3">
                                         {category.description || "No description"}
                                     </p>
@@ -162,7 +162,7 @@ const Categories = () => {
                         </Table>
                     </div>
                 )}
-            </div>
+            </ListingLayout>
         </PageLayout >
     );
 };

@@ -143,6 +143,7 @@ export default function FixStores() {
                                     disabled={processing}
                                 >
                                     <span className="font-bold text-lg">{store.name}</span>
+                                    <span className="text-xs opacity-70">{store.domain || "No domain set"}</span>
                                     <span className="text-xs opacity-70">{store.location || "No location"}</span>
                                     {currentStore?.id === store.id && <Check className="ml-auto w-5 h-5" />}
                                 </Button>

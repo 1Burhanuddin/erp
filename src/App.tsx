@@ -75,7 +75,7 @@ import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/RoleRoutes";
 import { AuthProvider } from "./hooks/useAuth";
-import { isLocalDomain, isERPDomain } from "@/config/domains";
+import { isERPDomain } from "@/config/domains";
 
 // Employee Management
 import EmployeeList from "./pages/employees/EmployeeList";
@@ -120,8 +120,7 @@ const queryClient = new QueryClient();
 const App = () => {
   // Domain Detection
   const hostname = window.location.hostname;
-  const isPrivateIP = isLocalDomain(hostname);
-  const isERP = isPrivateIP || isERPDomain(hostname);
+  const isERP = isERPDomain(hostname);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -265,6 +264,7 @@ const App = () => {
                 <Route path="/mobile/attendance" element={<MyAttendance />} />
                 <Route path="/mobile/profile" element={<EmployeeProfile />} />
                 <Route path="/debug/auth" element={<DebugAuth />} />
+                <Route path="/debug/fix-stores" element={<FixStores />} />
               </Route>
             </Routes>
           </AuthProvider>

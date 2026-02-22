@@ -44,7 +44,7 @@
     --sidebar-muted: 215 16% 47%;
     --sidebar-accent: 217 91% 60%;
 
-    --floating-label-bg: var(--background);
+    --floating-label-bg: var(--card);
   }
 
   .dark {
@@ -89,7 +89,7 @@
     --surface-hover: 217 33% 17%;
     --surface-active: 217 33% 20%;
 
-    --floating-label-bg: var(--background);
+    --floating-label-bg: var(--card);
   }
 
   /* --- Color Themes --- */

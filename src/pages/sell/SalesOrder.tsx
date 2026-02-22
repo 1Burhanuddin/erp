@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
+import { PageLayout, PageHeader } from "@/components/layout";
+import { DataViewToggle, DataCard } from "@/components/shared";
 import { ListingLayout } from "@/components/layout/ListingLayout";
-import { DataCard } from "@/components/shared";
 import { useSalesOrders } from "@/api/sales";
 import { Button } from "@/components/ui/button";
 import { Plus, ShoppingCart, Upload, Download } from "lucide-react";
@@ -15,6 +17,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+
 import { downloadCSV } from "@/lib/csvParser";
 import { toast } from "sonner";
 import {
@@ -23,7 +26,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PageLayout } from "@/components/layout";
 
 const SalesOrder = () => {
     const { data: salesOrders, isLoading } = useSalesOrders();
@@ -59,6 +61,7 @@ const SalesOrder = () => {
             "sales_orders_export.csv"
         );
     };
+
 
     const headerActions = (
         <>

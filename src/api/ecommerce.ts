@@ -217,7 +217,14 @@ export const useStoreDetails = (slug?: string) => {
                 query = query.or(`domain.eq.${slug},domain.eq.${normalizedSlug}`);
             } else if (hostname !== 'localhost' && !isERPDomain(hostname)) {
                 // If on a custom domain, resolve by normalized hostname
-                query = query.eq("domain", hostname);
+                // Fallback: If domain column is empty, match by store name for known domains
+                if (hostname === 'tajglass.in') {
+                    query = query.or(`domain.eq.${hostname},name.ilike.%Taj Glass%`);
+                } else if (hostname === 'asvac.in') {
+                    query = query.or(`domain.eq.${hostname},name.ilike.%ASVAC%`);
+                } else {
+                    query = query.eq("domain", hostname);
+                }
             } else {
                 query = query.limit(1);
             }

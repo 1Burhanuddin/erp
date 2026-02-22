@@ -46,7 +46,7 @@ const LandingPage = () => {
     }
 
     return (
-        <div className="pb-32 pt-20 px-6 space-y-8 animate-in fade-in duration-700">
+        <div className="pb-32 pt-6 px-6 space-y-8 animate-in fade-in duration-700">
             {/* Greeting & Search */}
             <div className="space-y-6">
                 <div className="space-y-1">

@@ -109,12 +109,12 @@ const Auth = () => {
                 {/* Left Side - Branding (Desktop) */}
                 <div className="hidden lg:flex flex-col justify-center flex-1 space-y-6 bg-white/60 dark:bg-zinc-800/60 backdrop-blur-sm rounded-3xl p-10 shadow-lg">
                     <div className="flex items-center gap-3 mb-4">
-                        <LayoutDashboard className="h-12 w-12 text-[#8B6B9E] dark:text-[#9B7BAE]" />
-                        <h1 className="text-5xl font-bold text-[#8B6B9E] dark:text-[#9B7BAE] tracking-tight">
+                        <LayoutDashboard className="h-12 w-12 text-black dark:text-white" />
+                        <h1 className="text-5xl font-bold text-black dark:text-white tracking-tight">
                             Operra
                         </h1>
                     </div>
-                    <p className="text-sm text-[#8B6B9E]/70 dark:text-[#9B7BAE]/70 font-medium tracking-widest uppercase">
+                    <p className="text-sm text-black/70 dark:text-white/70 font-medium tracking-widest uppercase">
                         Enterprise Resource Planning
                     </p>
 
@@ -153,12 +153,12 @@ const Auth = () => {
                     {/* Mobile Branding */}
                     <div className="lg:hidden text-center mb-6 relative z-10">
                         <div className="flex items-center justify-center gap-2 mb-3">
-                            <LayoutDashboard className="h-8 w-8 text-[#8B6B9E] dark:text-[#9B7BAE]" />
-                            <h1 className="text-3xl font-bold text-[#8B6B9E] dark:text-[#9B7BAE] tracking-tight">
+                            <LayoutDashboard className="h-8 w-8 text-black dark:text-white" />
+                            <h1 className="text-3xl font-bold text-black dark:text-white tracking-tight">
                                 Operra
                             </h1>
                         </div>
-                        <p className="text-xs text-[#8B6B9E]/70 dark:text-[#9B7BAE]/70 font-medium tracking-widest uppercase">
+                        <p className="text-xs text-black/70 dark:text-white/70 font-medium tracking-widest uppercase">
                             Enterprise Resource Planning
                         </p>
                     </div>
@@ -179,7 +179,7 @@ const Auth = () => {
                     </div>
 
                     {/* Auth Card */}
-                    <Card className="border-0 shadow-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl relative z-10">
+                    <Card className="border-0 shadow-2xl bg-card relative z-10">
                         <CardHeader className="space-y-1 pb-6 pt-8 px-8">
                             <CardTitle className="text-3xl font-bold text-center lg:text-left text-gray-800 dark:text-gray-100">
                                 {isLogin ? "Welcome Back" : "Create Account"}
@@ -195,13 +195,23 @@ const Auth = () => {
                             <CardContent className="space-y-5 px-8">
                                 <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
                                     <TabsList className="grid w-full grid-cols-2 mb-4">
-                                        <TabsTrigger value="signin">Sign In</TabsTrigger>
-                                        <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                                        <TabsTrigger
+                                            value="signin"
+                                            className="data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black"
+                                        >
+                                            Sign In
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="signup"
+                                            className="data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black"
+                                        >
+                                            Sign Up
+                                        </TabsTrigger>
                                     </TabsList>
 
                                     <motion.div
                                         layout
-                                        className="relative overflow-hidden"
+                                        className="relative overflow-hidden p-2 -m-2"
                                         transition={{ duration: 0.3, ease: "easeInOut" }}
                                     >
                                         <AnimatePresence mode="wait">
@@ -300,7 +310,7 @@ const Auth = () => {
 
                             <CardFooter className="flex flex-col gap-4 px-8 pb-8">
                                 <Button
-                                    className="w-full font-semibold h-12 text-base bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80"
+                                    className="w-full font-semibold h-12 text-base bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 border-0"
                                     type="submit"
                                     disabled={loading}
                                 >
@@ -315,7 +325,7 @@ const Auth = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => setMode("signup")}
-                                                className="text-[#8B6B9E] dark:text-[#9B7BAE] hover:underline font-medium"
+                                                className="text-black dark:text-white hover:underline font-bold"
                                             >
                                                 Sign up
                                             </button>
@@ -326,7 +336,7 @@ const Auth = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => setMode("signin")}
-                                                className="text-[#8B6B9E] dark:text-[#9B7BAE] hover:underline font-medium"
+                                                className="text-black dark:text-white hover:underline font-bold"
                                             >
                                                 Sign in
                                             </button>

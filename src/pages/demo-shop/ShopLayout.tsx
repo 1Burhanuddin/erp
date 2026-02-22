@@ -1,6 +1,5 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { ShoppingBag, Search, Menu, User, ArrowRight } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Outlet, Link, useLocation } from "react-router-dom";
+import { ShoppingBag, Search, User, Heart, Compass, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
 import { useLayoutEffect } from "react";
@@ -8,16 +7,17 @@ import { useStoreDetails } from "@/api/ecommerce";
 
 const ShopLayout = () => {
     const { slug } = useParams();
-    const { data: store } = useStoreDetails(slug);
+    const { data: store, error: storeError, isLoading: isStoreLoading } = useStoreDetails(slug);
+
+    if (storeError) {
+        console.error("ShopLayout: Error loading store details:", storeError);
+    }
+
     const cartItems = useAppSelector(state => state.cart.items);
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
     const { pathname } = useLocation();
     const navigate = useNavigate();
 
-    const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const showGlobalCart = cartItems.length > 0 && !pathname.includes('/checkout') && !pathname.includes('/product');
-
-    // Helper for domain-aware links
     const getLink = (path: string) => {
         const cleanPath = path.startsWith('/') ? path : `/${path}`;
         return slug ? `/s/${slug}${cleanPath}` : cleanPath;
@@ -27,116 +27,119 @@ const ShopLayout = () => {
         window.scrollTo(0, 0);
     }, [pathname]);
 
-    return (
-        <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-orange-100">
+    const isHome = pathname === getLink('/') || pathname === '/';
+    const isProduct = pathname.includes('/product/');
+    const isCheckout = pathname.includes('/checkout');
 
+    return (
+        <div className="min-h-screen bg-black text-white font-sans selection:bg-white/20 overflow-x-hidden relative">
+            {/* Background Glows */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 blur-[120px] rounded-full" />
+                <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[100px] rounded-full" />
+            </div>
 
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-stone-50/80 backdrop-blur-md border-b border-stone-100">
-                <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
+            <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isHome ? 'bg-transparent' : 'glass-dark'}`}>
+                <div className="container mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
+                    {/* Back Button for non-home pages */}
+                    {!isHome ? (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => navigate(-1)}
+                            className="rounded-full hover:bg-white/10"
+                        >
+                            <ArrowLeft className="w-6 h-6" />
+                        </Button>
+                    ) : (
+                        <div className="w-10" /> // Spacer
+                    )}
 
-
-                    {/* Logo */}
-                    <Link to={getLink('/')} className="text-xl md:text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity uppercase min-w-[80px]">
-                        {store?.name ? (
-                            <>
-                                {store.name.split(' ').slice(0, 2).join(' ')}<span className="text-orange-500">.</span>
-                            </>
-                        ) : (
-                            <div className="h-6 w-24 bg-stone-200 animate-pulse rounded-full inline-block" />
+                    {/* Title/Logo */}
+                    <div className="text-center flex-1">
+                        {!isHome && (
+                            <h1 className="text-xl font-bold tracking-tighter uppercase whitespace-nowrap">
+                                {isCheckout ? 'Checkout' : isProduct ? '' : store?.name || 'Shop'}
+                            </h1>
                         )}
-                    </Link>
+                    </div>
 
-                    {/* Desktop Nav */}
-                    <nav className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
-                        <Link to={getLink('/')} className="hover:text-orange-600 transition-colors">NEW ARRIVALS</Link>
-                        <Link to={getLink('/')} className="hover:text-orange-600 transition-colors">COLLECTIONS</Link>
-                        <Link to={getLink('/')} className="hover:text-orange-600 transition-colors">ACCESSORIES</Link>
-                        <Link to={getLink('/')} className="hover:text-orange-600 transition-colors">SALE</Link>
-                    </nav>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 md:gap-4">
-                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-stone-100 hidden md:flex">
-                            <Search className="w-5 h-5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-stone-100 hidden md:flex">
-                            <User className="w-5 h-5" />
-                        </Button>
-                        <Link to={getLink('/checkout')}>
-                            <Button
-                                size="icon"
-                                className="rounded-full bg-stone-900 text-white hover:bg-stone-800 relative w-10 h-10 md:w-auto md:h-10 md:px-4 flex gap-2 items-center group transition-all"
-                            >
-                                <ShoppingBag className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-                                <span className="hidden md:inline">Cart</span>
-                                {cartCount > 0 && <span className="bg-orange-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full absolute -top-1 -right-1 border-2 border-stone-50">{cartCount}</span>}
-                            </Button>
-                        </Link>
+                    {/* Top Actions */}
+                    <div className="flex items-center justify-end w-10">
+                        {/* 3-dot button removed per user request */}
                     </div>
                 </div>
             </header>
 
             {/* Main Content */}
-            <main>
+            <main className="relative z-10">
                 <Outlet />
             </main>
 
-            {/* Footer - Hide on Product Page */}
-            {!pathname.includes('/product/') && (
-                <footer className="bg-stone-900 text-stone-400 py-12 md:py-16 mt-20">
-                    <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <div className="space-y-6">
-                            <div className="space-y-4">
-                                <h4 className="text-white text-2xl font-bold tracking-tighter">
-                                    {store?.name ? (
-                                        <>
-                                            {store.name.split(' ').slice(0, 2).join(' ')}<span className="text-orange-500">.</span>
-                                        </>
-                                    ) : (
-                                        <div className="h-8 w-32 bg-stone-800 animate-pulse rounded-full" />
-                                    )}
-                                </h4>
-                                <p className="text-sm leading-relaxed max-w-xs">
-                                    Elevating everyday essentials with sustainable materials and timeless design.
-                                </p>
-                            </div>
-                            <div className="space-y-2 text-sm">
-                                <p><span className="text-stone-500">Email:</span> {store?.email || "hello@aurastore.com"}</p>
-                                <p><span className="text-stone-500">Phone:</span> {store?.phone || "+91 98765 43210"}</p>
-                            </div>
-                        </div>
-                        <div className="md:text-right">
-                            <h5 className="text-white font-medium mb-4">Shop</h5>
-                            <ul className="space-y-2 text-sm">
-                                <li><a href="#" className="hover:text-white transition-colors">All Products</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">New Arrivals</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Accessories</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </footer>
-            )}
+            {/* Floating Cart Bar - Above Nav */}
+            {!isProduct && <CartFloatingBar getLink={getLink} />}
 
-            {/* Global Mobile Floating Cart Bar */}
-            {showGlobalCart && (
-                <div className="fixed bottom-4 inset-x-4 md:hidden z-50 animate-in slide-in-from-bottom-5 duration-500">
-                    <div
-                        onClick={() => navigate(`/s/${slug}/checkout`)}
-                        className="flex items-center justify-between gap-3 h-16 rounded-full bg-stone-900 text-white px-6 shadow-2xl cursor-pointer"
-                    >
-                        <div className="flex flex-col">
-                            <span className="text-sm font-bold">{cartCount} Items</span>
-                            <span className="text-xs text-stone-400">Total: ₹{cartTotal}</span>
-                        </div>
-                        <div className="flex items-center gap-2 font-bold text-sm">
-                            View Cart <ArrowRight className="w-4 h-4" />
-                        </div>
-                    </div>
+            {/* Premium Bottom Navigation */}
+            {!isProduct && (
+                <div className="fixed bottom-8 left-0 right-0 z-[60] flex justify-center px-6 pointer-events-none animate-in slide-in-from-bottom-10 duration-500">
+                    <nav className="glass-dark px-10 h-16 rounded-full flex items-center gap-16 pointer-events-auto border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                        <Link to={getLink('/')} className={`transition-all ${isHome ? 'text-white scale-125' : 'text-white/40 hover:text-white/60'}`}>
+                            <Compass className="w-6 h-6" />
+                        </Link>
+                        <Link to={getLink('/checkout')} className={`relative transition-all ${isCheckout ? 'text-white scale-125' : 'text-white/40 hover:text-white/60'}`}>
+                            <ShoppingBag className="w-6 h-6" />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                        <Link to={getLink('/profile')} className={`transition-all ${pathname.includes('/profile') ? 'text-white scale-125' : 'text-white/40 hover:text-white/60'}`}>
+                            <User className="w-6 h-6" />
+                        </Link>
+                    </nav>
                 </div>
             )}
         </div>
     );
 };
 
+const CartFloatingBar = ({ getLink }: { getLink: (p: string) => string }) => {
+    const navigate = useNavigate();
+    const cartItems = useAppSelector(state => state.cart.items);
+    const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const { pathname } = useLocation();
+
+    // Don't show on checkout or product pages to avoid clutter with specific page actions
+    if (cartCount === 0 || pathname.includes('/checkout') || pathname.includes('/product/')) return null;
+
+    return (
+        <div className="fixed bottom-28 left-0 right-0 z-50 flex justify-center px-6 animate-in slide-in-from-bottom-10 fade-in duration-500 pointer-events-none">
+            <div className="glass-dark w-full max-w-sm h-16 rounded-2xl flex items-center justify-between px-6 border-white/10 shadow-2xl pointer-events-auto">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center relative border border-white/10">
+                        <ShoppingBag className="w-5 h-5 text-white/60" />
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-[8px] font-bold rounded-full flex items-center justify-center border border-black shadow-lg">
+                            {cartCount}
+                        </span>
+                    </div>
+                    <div>
+                        <p className="text-[10px] text-white/40 uppercase font-black tracking-widest leading-none mb-1">Total</p>
+                        <p className="text-sm font-bold leading-none">₹{totalPrice}</p>
+                    </div>
+                </div>
+                <Button
+                    onClick={() => navigate(getLink('/checkout'))}
+                    className="h-10 px-6 rounded-xl bg-white text-black font-extrabold text-xs shadow-xl active:scale-95 transition-transform"
+                >
+                    Checkout
+                </Button>
+            </div>
+        </div>
+    );
+};
+
+// Need to import ArrowLeft since it's used
 export default ShopLayout;

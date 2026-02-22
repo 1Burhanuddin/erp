@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, Truck, ShieldCheck, Heart, Minus, Plus, ShoppingBag } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, Star, Heart, Minus, Plus, ShoppingBag, ShieldCheck, Truck } from "lucide-react";
 import { useState } from "react";
 import { useEcommerceProduct, useStoreProducts, useStoreDetails } from "@/api/ecommerce";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart, updateQuantity, removeFromCart } from "@/store/slices/cartSlice";
-import { toast } from "sonner";
 
 const ProductPage = () => {
     const { slug, id } = useParams();
@@ -14,64 +13,34 @@ const ProductPage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
-    // Helper for domain-aware links
     const getLink = (path: string) => {
         const cleanPath = path.startsWith('/') ? path : `/${path}`;
         return slug ? `/s/${slug}${cleanPath}` : cleanPath;
     };
     const cartItems = useAppSelector(state => state.cart.items);
-
-    // Check if product is already in cart (simple check by ID)
     const cartItem = cartItems.find(item => item.productId === id);
     const isInCart = !!cartItem;
 
     const [quantity, setQuantity] = useState(1);
-    const [selectedColor, setSelectedColor] = useState("Default");
-
-    // Fetch similar products from the same category
-    const { data: similarProducts, isLoading: isSimilarLoading } = useStoreProducts(store?.id, product?.category_id || undefined);
-
-    // Filter out current product and limit to 10
-    const filteredSimilar = similarProducts?.filter(p => p.id !== id).slice(0, 10) || [];
+    const [selectedSize, setSelectedSize] = useState("M");
+    const [selectedColor, setSelectedColor] = useState("#333");
 
     if (isLoading) {
         return (
-            <div className="container mx-auto px-4 py-6 md:py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
-                    {/* Gallery Skeleton */}
-                    <div className="aspect-[4/5] rounded-[2.5rem] bg-stone-100 animate-pulse" />
-
-                    {/* Details Skeleton */}
-                    <div className="space-y-8 md:space-y-12 py-4">
-                        <div className="space-y-4">
-                            <div className="h-4 w-24 bg-stone-100 rounded-full animate-pulse" />
-                            <div className="h-12 w-3/4 bg-stone-100 rounded-xl animate-pulse" />
-                            <div className="h-8 w-32 bg-stone-100 rounded-xl animate-pulse" />
-                        </div>
-                        <div className="space-y-4">
-                            <div className="h-4 w-full bg-stone-100 rounded-full animate-pulse" />
-                            <div className="h-4 w-full bg-stone-100 rounded-full animate-pulse" />
-                            <div className="h-4 w-2/3 bg-stone-100 rounded-full animate-pulse" />
-                        </div>
-                        <div className="h-20 w-full bg-stone-100 rounded-full animate-pulse" />
-                    </div>
-                </div>
+            <div className="h-screen w-full flex items-center justify-center bg-black">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/10 border-r-white" />
             </div>
         );
     }
 
     if (!product) {
-        return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
+        return <div className="min-h-screen flex items-center justify-center bg-black text-white">Product not found</div>;
     }
 
-    // Safely handle images
+    const price = product.online_price || product.sale_price || 0;
     const images: string[] = Array.isArray(product.images)
         ? (product.images as string[])
-        : product.image_url
-            ? [product.image_url]
-            : ["https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1200"];
-
-    const price = product.online_price || product.sale_price || 0;
+        : [product.image_url || "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1200"];
 
     const handleAddToCart = () => {
         dispatch(addToCart({
@@ -82,22 +51,10 @@ const ProductPage = () => {
             quantity: quantity,
             color: selectedColor
         }));
-        // No toast as requested
-    };
-
-    const handleBuyNow = () => {
-        navigate(getLink('/checkout'));
-    };
-
-    const onMainAction = () => {
-        if (!isInCart) {
-            handleAddToCart();
-        }
     };
 
     const handleUpdateQuantity = (newQty: number) => {
         if (!product) return;
-
         if (newQty < 1) {
             dispatch(removeFromCart({ productId: product.id, color: selectedColor }));
         } else {
@@ -106,173 +63,103 @@ const ProductPage = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-6 md:py-8">
+        <div className="bg-black min-h-screen pb-32">
+            {/* Hero Image Section */}
+            <section className="relative aspect-[3/4] md:aspect-video w-full overflow-hidden">
+                <img
+                    src={images[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                />
+            </section>
 
-
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
-                {/* Gallery */}
-                <div className="space-y-4">
-                    <div className="aspect-square rounded-[2.5rem] overflow-hidden bg-stone-100">
-                        <img
-                            src={images[0]}
-                            alt={product.name}
-                            className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-500"
-                        />
+            {/* Product Details Section - Straight Alignment */}
+            <section className="px-6 -mt-10 relative z-20 space-y-8 pb-10">
+                <div className="glass-dark rounded-[2.5rem] p-8 space-y-6">
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
+                            <div className="flex items-center gap-1 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                                <Minus className="w-4 h-4 text-white/40 cursor-pointer" onClick={() => setQuantity(Math.max(1, quantity - 1))} />
+                                <span className="text-sm font-bold w-6 text-center">{quantity}</span>
+                                <Plus className="w-4 h-4 text-white/40 cursor-pointer" onClick={() => setQuantity(quantity + 1)} />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-yellow-500">
+                                <Star className="w-4 h-4 fill-yellow-500" />
+                                <span className="text-sm font-bold">5.0</span>
+                            </div>
+                            <span className="text-white/40 text-sm">(1,502 reviews)</span>
+                        </div>
                     </div>
-                    {images.length > 1 && (
-                        <div className="grid grid-cols-2 gap-4">
-                            {images.slice(1).map((img, i) => (
-                                <div key={i} className="aspect-square rounded-[2rem] overflow-hidden bg-stone-100">
-                                    <img src={img} alt="Detail" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                                </div>
+
+                    <p className="text-white/60 text-sm leading-relaxed">
+                        {product.description || "As simple and elegant shape makes it perfect for those of you who want minimal clothes. Read More..."}
+                    </p>
+
+                    {/* Size Selection */}
+                    <div className="space-y-4">
+                        <h4 className="text-sm font-bold">Choose Size</h4>
+                        <div className="flex gap-3">
+                            {['S', 'M', 'L', 'XL'].map(size => (
+                                <button
+                                    key={size}
+                                    onClick={() => setSelectedSize(size)}
+                                    className={`w-10 h-10 rounded-full border text-xs font-bold transition-all ${selectedSize === size ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/10'}`}
+                                >
+                                    {size}
+                                </button>
                             ))}
                         </div>
-                    )}
+                    </div>
+
+                    {/* Color Selection */}
+                    <div className="space-y-4">
+                        <h4 className="text-sm font-bold">Color</h4>
+                        <div className="flex gap-3">
+                            {['#333', '#888', '#fff'].map(color => (
+                                <button
+                                    key={color}
+                                    onClick={() => setSelectedColor(color)}
+                                    className={`w-10 h-10 rounded-full border-2 transition-all p-0.5 ${selectedColor === color ? 'border-white' : 'border-transparent'}`}
+                                >
+                                    <div className="w-full h-full rounded-full" style={{ backgroundColor: color }} />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
-                {/* Details */}
-                <div className="lg:sticky lg:top-10 h-fit space-y-6 md:space-y-8 py-4">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-stone-500 text-sm font-medium uppercase tracking-wider">
-                            <span>{(product as any).category?.name || 'General'}</span>
-                        </div>
-                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter leading-none text-stone-900">
-                            {product.name}
-                        </h1>
-                        <p className="text-xl md:text-2xl font-medium text-stone-800">
-                            ₹{price}
-                        </p>
+                {/* Features/Trust */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="glass-dark p-6 rounded-3xl flex flex-col items-center text-center gap-2">
+                        <ShieldCheck className="w-6 h-6 text-blue-400" />
+                        <span className="text-xs font-medium">Authentic</span>
                     </div>
-
-                    <div className="space-y-5">
-                        <p className="text-stone-600 leading-relaxed text-base">
-                            {product.description || "Experience the perfect blend of form and function. Crafted with precision and care, this item adds a touch of sophistication to your collection."}
-                        </p>
-
-                        {/* Variants (Mock for now or extract from features) */}
-                        <div className="space-y-4">
-                            <span className="text-sm font-bold uppercase tracking-wider text-stone-900">Variant</span>
-                            <div className="flex flex-wrap gap-3">
-                                {['Default'].map((color) => (
-                                    <button
-                                        key={color}
-                                        onClick={() => setSelectedColor(color)}
-                                        className={`px-6 py-3 rounded-full text-sm font-medium transition-all ${selectedColor === color
-                                            ? 'bg-stone-900 text-white shadow-lg scale-105'
-                                            : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                                            }`}
-                                    >
-                                        {color}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-
+                    <div className="glass-dark p-6 rounded-3xl flex flex-col items-center text-center gap-2">
+                        <Truck className="w-6 h-6 text-purple-400" />
+                        <span className="text-xs font-medium">Fast Ship</span>
                     </div>
+                </div>
+            </section>
 
-                    {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                        <Button
-                            onClick={onMainAction}
-                            className="flex-1 rounded-full text-lg h-14 bg-stone-900 hover:bg-stone-800 text-white shadow-xl shadow-stone-900/10"
-                        >
-                            {isInCart ? "Buy Now" : `Add to Cart - ₹${price * quantity}`}
-                        </Button>
+            {/* Sticky Bottom Bar - Positioned where bottom nav used to be */}
+            <div className="fixed bottom-8 left-0 right-0 px-6 z-40 pointer-events-none">
+                <div className="glass-dark rounded-[2.5rem] h-20 px-4 flex items-center justify-between border-white/5 shadow-2xl pointer-events-auto max-w-lg mx-auto">
+                    <div className="px-4">
+                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Price</p>
+                        <p className="text-xl font-bold">₹{price * quantity}</p>
                     </div>
-
-                    {/* Features */}
-
+                    <Button
+                        onClick={isInCart ? () => navigate(getLink('/checkout')) : handleAddToCart}
+                        className="h-14 px-10 rounded-full bg-white text-black font-extrabold hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                    >
+                        {isInCart ? "Checkout" : "Add to Cart"}
+                        <ShoppingBag className="w-5 h-5 ml-2" />
+                    </Button>
                 </div>
             </div>
-
-            {/* Similar Products Section */}
-            {(isSimilarLoading || filteredSimilar.length > 0) && (
-                <section className="mt-20 border-t border-stone-100 pt-16">
-                    <div className="flex items-end justify-between mb-8 px-2">
-                        <div className="space-y-1">
-                            <h2 className="text-2xl md:text-3xl font-bold tracking-tighter text-stone-900">Similar Products</h2>
-                            <p className="text-stone-500 text-sm">You might also like these items from {(product as any).category?.name || 'this category'}.</p>
-                        </div>
-                    </div>
-
-                    <div className="flex overflow-x-auto gap-4 pb-8 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth snap-x">
-                        {isSimilarLoading ? (
-                            [1, 2, 3, 4].map(i => (
-                                <div key={i} className="flex-shrink-0 w-[200px] snap-start bg-white p-2 rounded-2xl shadow-sm animate-pulse">
-                                    <div className="aspect-[4/5] rounded-xl bg-stone-100 mb-3" />
-                                    <div className="space-y-2 px-1">
-                                        <div className="h-2 w-1/2 bg-stone-100 rounded-full" />
-                                        <div className="h-4 w-3/4 bg-stone-100 rounded-full" />
-                                    </div>
-                                </div>
-                            ))
-                        ) : filteredSimilar.map((item) => (
-                            <div
-                                key={item.id}
-                                onClick={() => navigate(getLink(`/product/${item.id}`))}
-                                className="flex-shrink-0 w-[200px] md:w-[240px] snap-start group cursor-pointer"
-                            >
-                                <div className="bg-white p-2 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300 h-full border border-stone-50">
-                                    <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-stone-100 mb-3">
-                                        <img
-                                            src={item.image_url || "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?q=80&w=800"}
-                                            alt={item.name}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                    </div>
-                                    <div className="space-y-1 px-1">
-                                        <h3 className="font-bold text-sm text-stone-900 line-clamp-1">{item.name}</h3>
-                                        <div className="font-serif text-base text-stone-900">
-                                            ₹{item.online_price || item.sale_price || 0}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
-            {/* Floating Quantity Pill (When in Cart) */}
-            {isInCart && (
-                <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-4 animate-in slide-in-from-bottom-10 fade-in duration-500">
-                    <div className="bg-stone-900/95 backdrop-blur-md text-white p-3 pl-5 rounded-full shadow-2xl flex items-center gap-4 max-w-sm w-full mx-auto border border-white/10">
-                        {/* Product Info */}
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="h-12 w-12 rounded-full bg-white/10 shrink-0 overflow-hidden">
-                                <img src={images[0]} alt="Product" className="h-full w-full object-cover" />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-sm font-bold truncate leading-none mb-0.5 pr-2">{product.name}</p>
-                                <p className="text-[10px] text-stone-400 font-medium">Added to Bag</p>
-                            </div>
-                        </div>
-
-                        {/* Quantity Controls */}
-                        <div className="flex items-center gap-1 bg-white/10 rounded-full p-1 h-12">
-                            <button
-                                onClick={() => handleUpdateQuantity((cartItem?.quantity || 1) - 1)}
-                                className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-95 transition-all text-white"
-                            >
-                                <Minus className="h-4 w-4" />
-                            </button>
-                            <span className="w-8 text-center font-bold text-sm tabular-nums">
-                                {cartItem?.quantity || 1}
-                            </span>
-                            <button
-                                onClick={() => handleUpdateQuantity((cartItem?.quantity || 1) + 1)}
-                                className="h-10 w-10 flex items-center justify-center rounded-full bg-white text-stone-900 hover:bg-stone-200 active:scale-95 transition-all shadow-sm"
-                            >
-                                <Plus className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-
-
         </div>
     );
 };

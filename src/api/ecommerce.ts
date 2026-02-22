@@ -12,11 +12,12 @@ export const useStoreProducts = (storeId?: string, categoryId?: string) => {
         queryFn: async () => {
             if (!storeId) return [];
 
+            // Use !inner to filter the joined table results correctly in PostgREST
             const { data, error } = await supabase
                 .from("store_products")
                 .select(`
                     is_active,
-                    product:products(
+                    product:products!inner(
                         *,
                         category:product_categories(name),
                         brand:product_brands(name)
@@ -28,7 +29,6 @@ export const useStoreProducts = (storeId?: string, categoryId?: string) => {
 
             if (error) throw error;
 
-            // Reformat data to match Product type
             let formattedData = (data as any[])
                 .map(item => item.product)
                 .filter(p => !!p);
@@ -212,12 +212,12 @@ export const useStoreDetails = (slug?: string) => {
                 .select("id, name, address, phone, email, domain");
 
             if (slug) {
-                // Try matching by slug as is first, then normalized if it looks like a domain
+                // Try matching by slug as is first, then normalized, then by name
                 const normalizedSlug = normalizeHostname(slug);
-                query = query.or(`domain.eq.${slug},domain.eq.${normalizedSlug}`);
+                const searchName = slug.replace(/-/g, ' ');
+                query = query.or(`domain.eq.${slug},domain.eq.${normalizedSlug},name.ilike.%${searchName}%`);
             } else if (hostname !== 'localhost' && !isERPDomain(hostname)) {
                 // If on a custom domain, resolve by normalized hostname
-                // Fallback: If domain column is empty, match by store name for known domains
                 if (hostname === 'tajglass.in') {
                     query = query.or(`domain.eq.${hostname},name.ilike.%Taj Glass%`);
                 } else if (hostname === 'asvac.in') {
@@ -226,25 +226,33 @@ export const useStoreDetails = (slug?: string) => {
                     query = query.eq("domain", hostname);
                 }
             } else {
-                query = query.limit(1);
+                // On localhost with no slug, try active store ID from local storage first
+                const activeStoreId = localStorage.getItem('erp_active_store_id');
+                if (activeStoreId) {
+                    query = query.eq("id", activeStoreId);
+                } else {
+                    query = query.limit(1);
+                }
             }
 
             const { data, error } = await query.maybeSingle();
 
-            // Fallback 1: If hostname resolution fails on a custom domain, 
-            // try to fetch the first store instead of failing completely.
-            // This handles cases where the 'domain' column isn't set up yet.
-            if ((!data || error) && !slug && hostname !== 'localhost' && !isERPDomain(hostname)) {
-                const { data: fallbackData } = await supabase
+            if (error) {
+                console.error("Supabase error in useStoreDetails:", error);
+                throw error;
+            }
+
+            // Fallback: If no store found by slug/name, or no slug provided, return the first store
+            if (!data) {
+                const { data: firstStore } = await supabase
                     .from("stores")
                     .select("id, name, address, phone, email, domain")
                     .limit(1)
                     .maybeSingle();
 
-                if (fallbackData) return fallbackData;
+                return firstStore;
             }
 
-            if (error) throw error;
             return data;
         },
         staleTime: 1000 * 60 * 60, // 1 hour

@@ -113,6 +113,7 @@ import ShopLayout from "./pages/demo-shop/ShopLayout";
 import LandingPage from "./pages/demo-shop/LandingPage";
 import ProductPage from "./pages/demo-shop/ProductPage";
 import CheckoutPage from "./pages/demo-shop/CheckoutPage";
+import ProfilePage from "./pages/demo-shop/ProfilePage";
 import Anniversary from "./pages/Anniversary";
 
 const queryClient = new QueryClient();
@@ -136,6 +137,7 @@ const App = () => {
                   <Route index element={<LandingPage />} />
                   <Route path="product/:id" element={<ProductPage />} />
                   <Route path="checkout" element={<CheckoutPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
                 </Route>
               )}
 
@@ -147,6 +149,7 @@ const App = () => {
                 <Route index element={<LandingPage />} />
                 <Route path="product/:id" element={<ProductPage />} />
                 <Route path="checkout" element={<CheckoutPage />} />
+                <Route path="profile" element={<ProfilePage />} />
               </Route>
 
               {/* Admin Routes - Protected & Restricted to 'admin' role */}

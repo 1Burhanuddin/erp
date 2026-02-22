@@ -36,6 +36,7 @@
     --ring: 221 83% 53%;
 
     --radius: 0.75rem;
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 
     /* Primary Colors (Default: Blue) */
     --primary: 221 83% 53%;
@@ -270,5 +271,27 @@
     /* IE and Edge */
     scrollbar-width: none;
     /* Firefox */
+  }
+
+  /* Storefront Premium Utilities */
+  .glass {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+  }
+
+  .bg-glow-orange {
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0) 70%);
+  }
+
+  .bg-glow-purple {
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0) 70%);
   }
 }

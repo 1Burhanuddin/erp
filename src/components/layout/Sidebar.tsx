@@ -250,7 +250,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
             <TooltipTrigger asChild>
               <div className={cn(
                 "flex items-center gap-3 px-3 h-10 rounded-md transition-all duration-200 justify-center cursor-pointer",
-                active ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                active ? "bg-primary/10 text-primary font-medium" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
               )}>
                 {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
               </div>
@@ -281,7 +281,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
         <CollapsibleTrigger asChild>
           <div className={cn(
             "flex items-center justify-between px-3 h-10 rounded-md transition-all duration-200 cursor-pointer",
-            active ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+            active ? "bg-primary/10 text-primary font-medium" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
           )}>
             <div className="flex items-center gap-3">
               {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
@@ -312,7 +312,7 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
         "flex items-center gap-3 px-3 h-10 rounded-md transition-all duration-200",
         isCollapsed && "justify-center px-2",
         active
-          ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
+          ? "bg-primary/10 text-primary font-medium"
           : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
       )}
     >
@@ -339,7 +339,7 @@ export const SidebarMobileContent = ({ onLinkClick }: { onLinkClick?: () => void
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-sidebar">
       <nav className="flex-1 px-4 pt-4 space-y-1 overflow-y-auto no-scrollbar pb-6">
-        {navGroups.map((group) => (
+        {navGroups.map((group, idx) => (
           <div key={group.title} className="mb-6">
             <h4 className="px-3 mb-2 text-xs font-bold tracking-widest text-slate-400/80 uppercase">
               {group.title}
@@ -349,6 +349,9 @@ export const SidebarMobileContent = ({ onLinkClick }: { onLinkClick?: () => void
                 <SidebarItem key={item.path} item={item as NavItem} isCollapsed={false} onMobileClick={onLinkClick} />
               ))}
             </div>
+            {idx < navGroups.length - 1 && (
+              <div className="mx-2 mt-6 border-t border-slate-200/50 dark:border-slate-800/50" />
+            )}
           </div>
         ))}
       </nav>
@@ -403,6 +406,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
                   <SidebarItem key={item.path} item={item} isCollapsed={isCollapsed} />
                 ))}
               </div>
+              {!isCollapsed && idx < navGroups.length - 1 && (
+                <div className="mx-2 mt-6 border-t border-slate-200/50 dark:border-slate-800/50" />
+              )}
             </div>
           ))}
         </nav>

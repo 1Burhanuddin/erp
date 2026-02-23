@@ -158,38 +158,24 @@ const ImportContacts = () => {
                   className="cursor-pointer"
                 />
               </div>
-              <div className="flex items-end">
-                <Button variant="outline" onClick={handleDownloadTemplate}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Template
+              <div className="flex items-end gap-2">
+                <Button onClick={handleImport} disabled={parsedData.length === 0 || parseErrors.length > 0} className="w-full sm:w-auto">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Contacts
+                </Button>
+                <Button variant="outline" onClick={resetImport} className="w-full sm:w-auto">
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Reset
                 </Button>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Default Role</Label>
-              <Select value={defaultRole} onValueChange={setDefaultRole}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Customer">Customer</SelectItem>
-                  <SelectItem value="Supplier">Supplier</SelectItem>
-                  <SelectItem value="Both">Both</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">
-                All imported contacts will be assigned this role. You can change individual roles after import.
-              </p>
+            <div className="flex justify-between items-center">
+              <Button variant="link" onClick={handleDownloadTemplate} className="px-0">
+                <Download className="h-4 w-4 mr-2" />
+                Download CSV Template
+              </Button>
             </div>
-
-            {selectedFile && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <FileText className="h-4 w-4" />
-                <span>{selectedFile.name}</span>
-                <span className="text-xs">({(selectedFile.size / 1024).toFixed(2)} KB)</span>
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -197,32 +183,36 @@ const ImportContacts = () => {
         {isPreviewing && (
           <Card>
             <CardHeader>
-              <CardTitle>Preview Import</CardTitle>
+              <CardTitle>Preview & Validation</CardTitle>
               <CardDescription>
-                Review the parsed contacts before importing. {parsedData.length} valid contact(s) found.
+                Review the parsed data and any errors before importing.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {parseErrors.length > 0 && (
-                <Alert variant="destructive">
-                  <XCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>{parseErrors.length} error(s) found:</strong>
-                    <ul className="list-disc list-inside mt-2">
-                      {parseErrors.slice(0, 5).map((error, index) => (
-                        <li key={index} className="text-sm">{error}</li>
-                      ))}
-                      {parseErrors.length > 5 && (
-                        <li className="text-sm">... and {parseErrors.length - 5} more</li>
-                      )}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {parsedData.length > 0 && (
+            <CardContent>
+              {parseErrors.length > 0 ? (
+                <div className="space-y-4">
+                  <Alert variant="destructive">
+                    <XCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Found {parseErrors.length} validation errors. Please fix them in your CSV and re-upload.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="max-h-[300px] overflow-y-auto bg-muted/50 p-4 rounded-md font-mono text-sm space-y-1">
+                    {parseErrors.map((err, i) => (
+                      <div key={i} className="text-destructive">{err}</div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
                 <>
-                  <div className="border rounded-lg overflow-hidden max-h-[400px] overflow-y-auto">
+                  <Alert className="mb-4 bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
+                    <FileText className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <AlertDescription>
+                      All {parsedData.length} contacts parsed successfully and are ready to import.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="rounded-md border overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -234,49 +224,23 @@ const ImportContacts = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {parsedData.slice(0, 10).map((contact, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">{contact.name}</TableCell>
-                            <TableCell>{contact.email || '-'}</TableCell>
-                            <TableCell>{contact.phone || '-'}</TableCell>
-                            <TableCell>{contact.company || '-'}</TableCell>
-                            <TableCell>{contact.role}</TableCell>
+                        {parsedData.slice(0, 10).map((row, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="font-medium">{row.name}</TableCell>
+                            <TableCell>{row.email || '-'}</TableCell>
+                            <TableCell>{row.phone || '-'}</TableCell>
+                            <TableCell>{row.company || '-'}</TableCell>
+                            <TableCell>{row.role}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   </div>
                   {parsedData.length > 10 && (
-                    <p className="text-sm text-muted-foreground text-center">
-                      Showing first 10 of {parsedData.length} contacts
-                    </p>
+                    <div className="text-center text-sm text-muted-foreground mt-4">
+                      Showing first 10 rows of {parsedData.length} total
+                    </div>
                   )}
-
-                  <div className="flex gap-4">
-                    <Button
-                      variant="outline"
-                      onClick={resetImport}
-                      disabled={bulkImportMutation.isPending}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleImport}
-                      disabled={bulkImportMutation.isPending || parsedData.length === 0}
-                    >
-                      {bulkImportMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Importing...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="mr-2 h-4 w-4" />
-                          Import {parsedData.length} Contact(s)
-                        </>
-                      )}
-                    </Button>
-                  </div>
                 </>
               )}
             </CardContent>

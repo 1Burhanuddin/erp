@@ -126,23 +126,7 @@ const ExpenseCategories = () => {
         );
     }
 
-    const headerActions = (
-        <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-10 px-2 sm:px-4">
-                        <Download className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Export</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleExportCSV}>
-                        Export as CSV
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </>
-    );
+    
 
     return (
         <>
@@ -154,7 +138,7 @@ const ExpenseCategories = () => {
                 addLabel="Add Category"
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
-                headerActions={headerActions}
+                
                 tabs={[
                     { id: 'all', label: 'All Categories', icon: FolderOpen, count: filteredCategories.length }
                 ]}

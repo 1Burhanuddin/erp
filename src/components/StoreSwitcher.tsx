@@ -83,8 +83,7 @@ export function StoreSwitcher() {
 
     const activeStore = availableStores.find((store) => store.id === activeStoreId);
 
-    if (availableStores.length <= 1 && !activeStoreId) return null; // Don't show if 0 or 1 store (and it's auto-selected)? 
-    // Actually, showing it even if 1 is good context.
+    if (availableStores.length <= 1) return null;
 
     return (
         <Popover open={open} onOpenChange={setOpen}>

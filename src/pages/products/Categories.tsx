@@ -58,27 +58,7 @@ const Categories = () => {
         return () => setMounted(false);
     }, []);
 
-    const headerActions = (
-        <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-10 px-2 sm:px-4">
-                        <Download className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Export</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleExportCSV}>
-                        Export as CSV
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline" className="h-10 px-2 sm:px-4" onClick={() => navigate("/products/categories/import")}>
-                <Upload className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Import</span>
-            </Button>
-        </>
-    );
+    
 
     return (
         <PageLayout>
@@ -90,7 +70,7 @@ const Categories = () => {
                 addLabel="Add Category"
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
-                headerActions={headerActions}
+                
                 tabs={[
                     { id: 'all', label: 'All Categories', icon: Bookmark, count: categories.length }
                 ]}

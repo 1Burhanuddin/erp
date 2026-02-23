@@ -110,7 +110,6 @@ const AddEmployee = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="role">Role</Label>
                                     <Select
                                         value={formData.role}
                                         onValueChange={(v: EmployeeRole) => setFormData({ ...formData, role: v })}

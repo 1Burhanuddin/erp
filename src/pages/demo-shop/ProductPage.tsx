@@ -25,6 +25,9 @@ const ProductPage = () => {
     const [selectedSize, setSelectedSize] = useState("M");
     const [selectedColor, setSelectedColor] = useState("#333");
 
+    const { data: allProducts } = useStoreProducts(store?.id);
+    const relatedProducts = allProducts?.filter(p => product && p.id !== product?.id).slice(0, 4) || [];
+
     if (isLoading) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-black">
@@ -61,9 +64,6 @@ const ProductPage = () => {
             dispatch(updateQuantity({ productId: product.id, color: selectedColor, quantity: newQty }));
         }
     };
-
-    const { data: allProducts } = useStoreProducts(store?.id);
-    const relatedProducts = allProducts?.filter(p => p.id !== product.id).slice(0, 4) || [];
 
     return (
         <div className="bg-black min-h-screen pb-32">

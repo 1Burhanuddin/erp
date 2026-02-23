@@ -150,7 +150,6 @@ export default function EditEmployee() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="role">Role</Label>
                                     <Select
                                         value={formData.role}
                                         onValueChange={(v: EmployeeRole) => setFormData({ ...formData, role: v })}

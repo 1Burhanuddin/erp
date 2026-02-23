@@ -118,7 +118,7 @@ export const ListingLayout = ({
                             {headerActions}
 
                             {onAdd && (
-                                <Button onClick={onAdd} className="flex-1 sm:flex-none bg-white hover:bg-white/90 text-foreground dark:bg-card dark:hover:bg-card/90 rounded-full px-5 h-11 shadow-sm transition-all font-medium whitespace-nowrap">
+                                <Button onClick={onAdd} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-5 h-11 shadow-sm transition-all font-medium whitespace-nowrap">
                                     <Plus className="h-4 w-4 sm:mr-2" />
                                     <span className="hidden sm:inline">{addLabel}</span>
                                     <span className="sm:hidden ml-1">Add</span>
@@ -156,7 +156,7 @@ export const ListingLayout = ({
                         <span className="sm:hidden">selected</span>
                     </div>
 
-                    <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
+                    <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar [&_button]:!rounded-full [&_button]:!h-10 [&_button_svg]:!mr-1 sm:[&_button]:!h-9 sm:[&_button]:!px-4 sm:[&_button_svg]:!mr-2">
                         {floatingActions}
                     </div>
                 </div>

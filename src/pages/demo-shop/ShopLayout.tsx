@@ -131,14 +131,20 @@ const CartFloatingBar = ({ getLink }: { getLink: (p: string) => string }) => {
     };
 
     return (
-        <div className="fixed bottom-28 left-0 right-0 z-50 flex justify-center px-6 animate-in slide-in-from-bottom-10 fade-in duration-500 pointer-events-none">
-            <div className="glass-dark w-full max-w-sm h-16 rounded-2xl flex items-center justify-between px-6 border-white/10 shadow-2xl pointer-events-auto">
-                <div className="flex items-center gap-3">
+        <div className="fixed bottom-28 left-0 right-0 z-50 flex justify-center px-4 md:px-6 animate-in slide-in-from-bottom-10 fade-in duration-500 pointer-events-none">
+            <div className="glass-dark w-full max-w-[95vw] sm:max-w-lg h-auto min-h-[4rem] py-2 md:py-0 md:h-16 rounded-2xl flex items-center justify-between px-4 md:px-6 border-white/10 shadow-2xl pointer-events-auto gap-2 md:gap-4">
+                <div className="flex items-center gap-3 overflow-hidden">
                     {cartItems.length === 1 ? (
-                        <div className="flex items-center gap-3 bg-white/10 px-3 py-1.5 rounded-full border border-white/10">
-                            <Minus className="w-4 h-4 text-white/60 cursor-pointer active:scale-95" onClick={() => handleUpdateQuantity(cartItems[0].quantity - 1)} />
-                            <span className="text-sm font-bold w-4 text-center">{cartItems[0].quantity}</span>
-                            <Plus className="w-4 h-4 text-white/60 cursor-pointer active:scale-95" onClick={() => handleUpdateQuantity(cartItems[0].quantity + 1)} />
+                        <div className="flex items-center gap-3">
+                            <img src={cartItems[0].image} alt={cartItems[0].name} className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover shrink-0 border border-white/10" />
+                            <div className="flex flex-col justify-center">
+                                <p className="text-xs font-bold leading-tight truncate max-w-[80px] sm:max-w-[120px] mb-1">{cartItems[0].name}</p>
+                                <div className="flex items-center bg-white/10 px-2 py-0.5 rounded-full border border-white/10 w-fit">
+                                    <Minus className="w-3 h-3 text-white/60 cursor-pointer active:scale-95" onClick={() => handleUpdateQuantity(cartItems[0].quantity - 1)} />
+                                    <span className="text-[10px] md:text-xs font-bold w-5 text-center">{cartItems[0].quantity}</span>
+                                    <Plus className="w-3 h-3 text-white/60 cursor-pointer active:scale-95" onClick={() => handleUpdateQuantity(cartItems[0].quantity + 1)} />
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center relative border border-white/10">

@@ -149,12 +149,12 @@ const CheckoutPage = () => {
                 </div>
             </div>
 
-            {/* Fixed Bottom Action */}
-            <div className="fixed bottom-0 left-0 right-0 p-6 z-50 bg-gradient-to-t from-black via-black/80 to-transparent pt-12">
+            {/* Bottom Action */}
+            <div className="pt-8 pb-8">
                 <Button
                     onClick={handlePlaceOrder}
                     disabled={createOrder.isPending}
-                    className="w-full h-20 rounded-[2.5rem] bg-white text-black text-xl font-extrabold uppercase hover:bg-white/90 shadow-[0_20px_50px_rgba(255,255,255,0.15)] transition-all active:scale-95 pointer-events-auto max-w-lg mx-auto"
+                    className="w-full h-20 rounded-[2.5rem] bg-white text-black text-xl font-extrabold uppercase hover:bg-white/90 shadow-[0_20px_50px_rgba(255,255,255,0.15)] transition-all active:scale-95 mx-auto"
                 >
                     {createOrder.isPending ? "Hold tight..." : "Order"}
                 </Button>

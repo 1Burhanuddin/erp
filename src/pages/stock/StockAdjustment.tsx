@@ -81,7 +81,7 @@ const StockAdjustment = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="h-10 px-2 sm:px-4">
                                     <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Export</span>
+                                    <span>Export</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">

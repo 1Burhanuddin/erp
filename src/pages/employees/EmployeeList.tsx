@@ -108,7 +108,7 @@ const EmployeeList = () => {
 
             <Button variant="ghost" size="sm" className="h-9 hover:bg-white/10 dark:hover:bg-muted text-white dark:text-foreground border border-white/10 dark:border-transparent rounded-full px-4" onClick={handleExportCSV}>
                 <Download className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Export</span>
+                <span>Export</span>
             </Button>
          
             
@@ -120,7 +120,7 @@ const EmployeeList = () => {
                     onClick={() => navigate(`/employees/edit/${selectedEmployees[0]}`)}
                 >
                     <Edit className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Edit</span>
+                    <span>Edit</span>
                 </Button>
             )}
             <Button

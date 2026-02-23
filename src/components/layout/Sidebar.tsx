@@ -21,6 +21,7 @@ import {
   Wrench,
   Smartphone,
   Contact,
+  ArchiveX
 } from "lucide-react";
 import {
   Collapsible,
@@ -51,99 +52,138 @@ interface SidebarProps {
   setIsCollapsed: (value: boolean) => void;
 }
 
-const navItems = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard, description: "Welcome back! Here's your overview." },
-  {
-    path: "/employees",
-    label: "Employees",
-    icon: Users,
-    children: [
-      { path: "/employees/list", label: "All Employees", description: "Manage staff profiles" },
-      { path: "/employees/tasks", label: "Tasks Board", description: "Assign and track tasks" },
-      { path: "/employees/live", label: "Live Status", description: "Real-time activity" },
-      { path: "/employees/performance", label: "Performance", description: "Productivity metrics" },
-      { path: "/employees/attendance", label: "Attendance Log", description: "View daily attendance" },
-    ]
-  },
-  {
-    path: "/contacts",
-    label: "Contacts",
-    icon: Contact,
-    children: [
-      { path: "/contacts/suppliers", label: "Suppliers", description: "Manage your supplier database" },
-      { path: "/contacts/customers", label: "Customers", description: "Manage your customer database" },
-      { path: "/contacts/ecommerce", label: "E-commerce", description: "Manage e-commerce customers" },
-      { path: "/contacts/import", label: "Import Contacts", description: "Import contacts from file" },
-    ],
-  },
-  {
-    path: "/products",
-    label: "Products",
-    icon: Package,
-    children: [
-      { path: "/products/list", label: "Products List", description: "Manage your product catalog" },
-      { path: "/products/units", label: "Units", description: "Manage product units" },
-      { path: "/products/categories", label: "Category", description: "Manage product categories" },
-      { path: "/products/sub-categories", label: "Sub Category", description: "Manage sub categories" },
-      { path: "/products/brands", label: "Brand", description: "Manage product brands" },
-    ],
-  },
-  { path: "/services", label: "Services", icon: Wrench, description: "Manage services" },
-  {
-    path: "/purchase",
-    label: "Purchase",
-    icon: ShoppingCart,
-    children: [
-      { path: "/purchase/order", label: "Purchase Order", description: "Manage purchase orders" },
-      { path: "/purchase/grn", label: "GRN", description: "Goods Received Note" },
-      { path: "/purchase/invoice", label: "Purchase Invoice", description: "Manage purchase invoices" },
-      { path: "/purchase/direct", label: "Direct Purchase", description: "Manage direct purchases" },
-      { path: "/purchase/return", label: "Purchase Return", description: "Manage purchase returns" },
-    ],
-  },
-  {
-    path: "/sell",
-    label: "Sell",
-    icon: CreditCard,
-    children: [
-      { path: "/sales/quotations", label: "Quotations", description: "Manage sales quotations" },
-      { path: "/sell/order", label: "Sales Order", description: "Manage sales orders" },
-      { path: "/sales/challans", label: "Delivery Challan", description: "Manage delivery challans" },
-      { path: "/sell/invoice", label: "Sales Invoice", description: "Manage sales invoices" },
-      { path: "/sell/direct", label: "Direct Sale", description: "Manage direct sales" },
-      { path: "/sell/return", label: "Sale Return", description: "Manage sale returns" },
-      { path: "/sell/ecommerce", label: "E-Commerce Sale", description: "Manage e-commerce sales" },
-      { path: "/sell/bookings", label: "Web Bookings", description: "Manage service requests" },
-    ],
-  },
-  { path: "/stock/adjustment", label: "Stock Adjustment", icon: ClipboardList, description: "Manage stock adjustments" },
-  {
-    path: "/expenses",
-    label: "Expenses",
-    icon: Wallet,
-    children: [
-      { path: "/expenses/list", label: "Expenses", description: "Manage expenses" },
-      { path: "/expenses/categories", label: "Expense Categories", description: "Manage expense categories" },
-    ],
-  },
+type NavItem = {
+  path: string;
+  label: string;
+  description?: string;
+  icon?: ComponentType<{ className?: string }>;
+  children?: Array<{ path: string; label: string; description?: string }>;
+};
 
-  { path: "/inventory", label: "Inventory", icon: ClipboardList, description: "Manage inventory stock" },
-  { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
+type NavGroup = {
+  title: string;
+  items: NavItem[];
+};
+
+const navGroups: NavGroup[] = [
   {
-    path: "/reports",
-    label: "Reports",
-    icon: BarChart3,
-    children: [
-      { path: "/reports/profit-loss", label: "Profit & Loss", description: "Financial health summary" },
-      { path: "/reports/gst", label: "GST Reports", description: "GSTR-1 & 3B" },
-      { path: "/reports", label: "General Reports", description: "Analytics and insights" },
+    title: "OVERVIEW",
+    items: [
+      { path: "/", label: "Dashboard", icon: LayoutDashboard, description: "Welcome back! Here's your overview." },
+      { path: "/deals", label: "Deals", icon: PieChart, description: "Manage your deals" },
+      {
+        path: "/reports",
+        label: "Reports",
+        icon: BarChart3,
+        children: [
+          { path: "/reports/profit-loss", label: "Profit & Loss", description: "Financial health summary" },
+          { path: "/reports/gst", label: "GST Reports", description: "GSTR-1 & 3B" },
+          { path: "/reports", label: "General Reports", description: "Analytics and insights" },
+        ]
+      },
+      { path: "/stock/adjustment", label: "Stock Adjustment", icon: ClipboardList, description: "Manage stock adjustments" },
     ]
   },
-  { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },
-  { path: "/settings/profile", label: "Profile", icon: User, description: "Manage your profile" },
-  { path: "/settings", label: "Settings", icon: Settings, description: "App configuration" },
-  { path: "/mobile/dashboard", label: "Mobile App", icon: Smartphone, description: "Switch to Employee View" },
+  {
+    title: "SALES & FINANCE",
+    items: [
+      {
+        path: "/sell",
+        label: "Sales",
+        icon: CreditCard,
+        children: [
+          { path: "/sales/quotations", label: "Quotations", description: "Manage sales quotations" },
+          { path: "/sell/order", label: "Sales Order", description: "Manage sales orders" },
+          { path: "/sales/challans", label: "Delivery Challan", description: "Manage delivery challans" },
+          { path: "/sell/invoice", label: "Sales Invoice", description: "Manage sales invoices" },
+          { path: "/sell/direct", label: "Direct Sale", description: "Manage direct sales" },
+          { path: "/sell/return", label: "Sale Return", description: "Manage sale returns" },
+          { path: "/sell/ecommerce", label: "E-Commerce Sale", description: "Manage e-commerce sales" },
+          { path: "/sell/bookings", label: "Web Bookings", description: "Manage service requests" },
+        ],
+      },
+      {
+        path: "/purchase",
+        label: "Purchase",
+        icon: ShoppingCart,
+        children: [
+          { path: "/purchase/order", label: "Purchase Order", description: "Manage purchase orders" },
+          { path: "/purchase/grn", label: "GRN", description: "Goods Received Note" },
+          { path: "/purchase/invoice", label: "Purchase Invoice", description: "Manage purchase invoices" },
+          { path: "/purchase/direct", label: "Direct Purchase", description: "Manage direct purchases" },
+          { path: "/purchase/return", label: "Purchase Return", description: "Manage purchase returns" },
+        ],
+      },
+      {
+        path: "/expenses",
+        label: "Expenses",
+        icon: Wallet,
+        children: [
+          { path: "/expenses/list", label: "Expenses", description: "Manage expenses" },
+          { path: "/expenses/categories", label: "Expense Categories", description: "Manage expense categories" },
+        ],
+      },
+    ]
+  },
+  {
+    title: "OPERATIONS",
+    items: [
+      {
+        path: "/contacts",
+        label: "Contacts",
+        icon: Contact,
+        children: [
+          { path: "/contacts/suppliers", label: "Suppliers", description: "Manage your supplier database" },
+          { path: "/contacts/customers", label: "Customers", description: "Manage your customer database" },
+          { path: "/contacts/ecommerce", label: "E-commerce", description: "Manage e-commerce customers" },
+          { path: "/contacts/import", label: "Import Contacts", description: "Import contacts from file" },
+        ],
+      },
+      { path: "/inventory", label: "Inventory", icon: ClipboardList, description: "Manage inventory stock" },
+      {
+        path: "/products",
+        label: "Products",
+        icon: Package,
+        children: [
+          { path: "/products/list", label: "Products List", description: "Manage your product catalog" },
+          { path: "/products/categories", label: "Category", description: "Manage product categories" },
+          { path: "/products/sub-categories", label: "Sub Category", description: "Manage sub categories" },
+          { path: "/products/brands", label: "Brand", description: "Manage product brands" },
+          { path: "/products/units", label: "Units", description: "Manage product units" },
+        ],
+      },
+      { path: "/services", label: "Services", icon: Wrench, description: "Manage services" },
+    ]
+  },
+  {
+    title: "TEAM",
+    items: [
+      {
+        path: "/employees",
+        label: "Employees",
+        icon: Users,
+        children: [
+          { path: "/employees/list", label: "All Employees", description: "Manage staff profiles" },
+          { path: "/employees/tasks", label: "Tasks Board", description: "Assign and track tasks" },
+          { path: "/employees/live", label: "Live Status", description: "Real-time activity" },
+          { path: "/employees/performance", label: "Performance", description: "Productivity metrics" },
+          { path: "/employees/attendance", label: "Attendance Log", description: "View daily attendance" },
+        ]
+      },
+    ]
+  },
+  {
+    title: "SYSTEM",
+    items: [
+      { path: "/audit-logs", label: "Audit Logs", icon: History, description: "View audit trail and changes" },
+      { path: "/settings/profile", label: "Profile", icon: User, description: "Manage your profile" },
+      { path: "/settings", label: "Settings", icon: Settings, description: "App configuration" },
+      { path: "/mobile/dashboard", label: "Mobile App", icon: Smartphone, description: "Switch to Employee View" },
+    ]
+  }
 ];
+
+const navItems = navGroups.flatMap(g => g.items);
 
 // Helper function to get page title from path
 export const getPageTitle = (pathname: string): { title: string; description?: string } => {
@@ -191,14 +231,6 @@ export const getPageTitle = (pathname: string): { title: string; description?: s
   return { title: 'ERP System', description: '' };
 };
 
-type NavItem = {
-  path: string;
-  label: string;
-  description?: string;
-  icon?: ComponentType<{ className?: string }>;
-  children?: Array<{ path: string; label: string; description?: string }>;
-};
-
 const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCollapsed: boolean, onMobileClick?: () => void }) => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
@@ -217,10 +249,10 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <div className={cn(
-                "flex items-center gap-3 px-3 h-14 rounded-xl transition-all duration-200 justify-center cursor-pointer",
-                active ? "bg-sidebar-accent text-sidebar-primary-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
+                "flex items-center gap-3 px-3 h-10 rounded-md transition-all duration-200 justify-center cursor-pointer",
+                active ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
               )}>
-                {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
+                {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
               </div>
             </TooltipTrigger>
             <DropdownMenu>
@@ -248,11 +280,11 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
         <CollapsibleTrigger asChild>
           <div className={cn(
-            "flex items-center justify-between px-3 h-14 rounded-xl transition-all duration-200 cursor-pointer",
-            active ? "bg-sidebar-accent text-sidebar-primary-foreground" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
+            "flex items-center justify-between px-3 h-10 rounded-md transition-all duration-200 cursor-pointer",
+            active ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
           )}>
             <div className="flex items-center gap-3">
-              {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
+              {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
               <span className="font-medium text-sm">{item.label}</span>
             </div>
             <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
@@ -261,8 +293,8 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
         <CollapsibleContent className="pl-4 space-y-1 mt-1 overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
           {item.children.map(child => (
             <Link key={child.path} to={child.path} onClick={onMobileClick} className={cn(
-              "flex items-center gap-2 px-3 h-12 rounded-lg transition-all duration-200 text-sm",
-              isActive(child.path) ? "bg-sidebar-accent/10 text-sidebar-accent" : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/5"
+              "flex items-center gap-2 px-3 h-9 rounded-md transition-all duration-200 text-sm",
+              isActive(child.path) ? "bg-primary/10 text-primary font-medium" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
             )}>
               <span>{child.label}</span>
             </Link>
@@ -277,14 +309,14 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
       to={item.path}
       onClick={onMobileClick}
       className={cn(
-        "flex items-center gap-3 px-3 h-14 rounded-xl transition-all duration-200",
+        "flex items-center gap-3 px-3 h-10 rounded-md transition-all duration-200",
         isCollapsed && "justify-center px-2",
         active
-          ? "bg-sidebar-accent text-sidebar-primary-foreground"
-          : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
+          ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
+          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
       )}
     >
-      {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
+      {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
       {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
     </Link>
   );
@@ -303,14 +335,21 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
   return linkContent;
 };
 
-
-
 export const SidebarMobileContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-sidebar">
-      <nav className="flex-1 px-4 pt-0 space-y-1 overflow-y-auto no-scrollbar pb-6">
-        {navItems.map((item) => (
-          <SidebarItem key={item.path} item={item as NavItem} isCollapsed={false} onMobileClick={onLinkClick} />
+      <nav className="flex-1 px-4 pt-4 space-y-1 overflow-y-auto no-scrollbar pb-6">
+        {navGroups.map((group) => (
+          <div key={group.title} className="mb-6">
+            <h4 className="px-3 mb-2 text-xs font-bold tracking-widest text-slate-400/80 uppercase">
+              {group.title}
+            </h4>
+            <div className="space-y-1">
+              {group.items.map((item) => (
+                <SidebarItem key={item.path} item={item as NavItem} isCollapsed={false} onMobileClick={onLinkClick} />
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
     </div>
@@ -320,11 +359,10 @@ export const SidebarMobileContent = ({ onLinkClick }: { onLinkClick?: () => void
 const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   return (
     <>
-
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex fixed left-0 top-0 h-full bg-sidebar border-r border-sidebar-foreground/10 z-50 transition-all duration-300 flex-col",
+          "hidden lg:flex fixed left-0 top-0 h-full bg-slate-50/50 dark:bg-slate-950/50 backdrop-blur-xl border-r border-slate-200/60 dark:border-slate-800/60 z-50 transition-all duration-300 flex-col shadow-sm",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
@@ -333,14 +371,14 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           isCollapsed ? "justify-center" : "justify-between"
         )}>
           {!isCollapsed && (
-            <h1 className="text-xl font-bold text-sidebar-foreground">
-
+            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              ERP System
             </h1>
           )}
           <Button
             variant="ghost"
             size="icon"
-            className={cn("h-8 w-8 text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-foreground/10", isCollapsed && "mx-auto")}
+            className={cn("h-8 w-8 text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800", isCollapsed && "mx-auto")}
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             {isCollapsed ? (
@@ -352,8 +390,20 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto no-scrollbar pb-4">
-          {navItems.map((item) => (
-            <SidebarItem key={item.path} item={item} isCollapsed={isCollapsed} />
+          {navGroups.map((group, idx) => (
+            <div key={group.title} className={cn("mb-6", isCollapsed && "mb-2")}>
+              {!isCollapsed && (
+                <h4 className="px-3 mb-2 text-xs font-bold tracking-widest text-slate-400/80 uppercase">
+                  {group.title}
+                </h4>
+              )}
+              {isCollapsed && idx !== 0 && <div className="mx-4 my-2 border-t border-slate-200/50 dark:border-slate-800/50" />}
+              <div className="space-y-1">
+                {group.items.map((item) => (
+                  <SidebarItem key={item.path} item={item} isCollapsed={isCollapsed} />
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
       </aside>

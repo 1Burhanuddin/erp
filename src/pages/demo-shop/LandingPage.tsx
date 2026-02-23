@@ -136,10 +136,10 @@ const LandingPage = () => {
                                     <span>5.0</span>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="space-y-3">
                                 <span className="text-lg font-bold">₹{product.online_price || product.sale_price || 0}</span>
                                 <Button
-                                    className="flex-1 h-10 rounded-xl bg-white text-black hover:bg-white/90 text-xs font-bold"
+                                    className="w-full h-10 rounded-xl bg-white text-black hover:bg-white/90 text-xs font-bold"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         dispatch(addToCart({

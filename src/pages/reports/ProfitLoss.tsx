@@ -152,12 +152,7 @@ const ProfitLoss = () => {
         <PageLayout>
             <ReportTabs />
 
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Financial Performance</h2>
-                    <p className="text-muted-foreground text-sm">Analyze your revenue, costs, and net profit</p>
-                </div>
-
+            <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-8">
                 <div className="flex items-center gap-2">
                     <Popover>
                         <PopoverTrigger asChild>

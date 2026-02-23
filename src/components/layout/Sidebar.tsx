@@ -399,7 +399,7 @@ export const SidebarMobileContent = ({ onLinkClick, activePlan = "FULL_ERP" }: {
               ))}
             </div>
             {idx < filteredNavGroups.length - 1 && (
-              <div className="mx-2 mt-6 border-t border-slate-200/50 dark:border-slate-800/50" />
+              <div className="mx-2 my-6 border-t border-slate-200/50 dark:border-slate-800/50" />
             )}
           </div>
         ))}
@@ -499,7 +499,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
                 ))}
               </div>
               {!isCollapsed && idx < filteredNavGroups.length - 1 && (
-                <div className="mx-2 mt-6 border-t border-slate-200/50 dark:border-slate-800/50" />
+                <div className="mx-2 my-6 border-t border-slate-200/50 dark:border-slate-800/50" />
               )}
             </div>
           ))}

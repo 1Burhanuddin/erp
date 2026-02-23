@@ -42,7 +42,6 @@ const ExpenseReport = () => {
                     expense_date, 
                     amount, 
                     reference_no, 
-                    notes,
                     expense_categories(name)
                 `)
                 .order('expense_date', { ascending: false });
@@ -82,16 +81,14 @@ const ExpenseReport = () => {
         { label: "Date", key: "date" },
         { label: "Category", key: "category" },
         { label: "Amount", key: "amount" },
-        { label: "Reference No", key: "reference_no" },
-        { label: "Notes", key: "notes" }
+        { label: "Reference No", key: "reference_no" }
     ];
 
     const csvData = expenses.map(e => ({
         date: format(new Date(e.expense_date), 'yyyy-MM-dd'),
         category: e.expense_categories?.name || 'Uncategorized',
         amount: e.amount,
-        reference_no: e.reference_no,
-        notes: e.notes
+        reference_no: e.reference_no
     }));
 
     const ReportTabs = () => (
@@ -272,14 +269,13 @@ const ExpenseReport = () => {
                                         <TableHead className="pl-6">Date</TableHead>
                                         <TableHead>Category</TableHead>
                                         <TableHead>Ref / Bill No</TableHead>
-                                        <TableHead>Notes</TableHead>
                                         <TableHead className="text-right pr-6">Amount</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {expenses.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                                            <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                                                 No expenses found in this period.
                                             </TableCell>
                                         </TableRow>
@@ -293,7 +289,6 @@ const ExpenseReport = () => {
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="font-mono text-xs text-stone-500">{e.reference_no || '-'}</TableCell>
-                                                <TableCell className="text-stone-600 truncate max-w-[200px]" title={e.notes}>{e.notes || '-'}</TableCell>
                                                 <TableCell className="text-right font-medium text-rose-600 pr-6">₹{e.amount?.toFixed(2)}</TableCell>
                                             </TableRow>
                                         ))

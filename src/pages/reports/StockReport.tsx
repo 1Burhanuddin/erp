@@ -34,7 +34,6 @@ const StockReport = () => {
                     name, 
                     sku, 
                     current_stock, 
-                    min_stock_level, 
                     purchase_price, 
                     selling_price,
                     product_categories(name)
@@ -58,14 +57,13 @@ const StockReport = () => {
 
     const totalStockValue = products.reduce((sum, p) => sum + ((p.current_stock || 0) * (p.purchase_price || 0)), 0);
     const totalItems = products.length;
-    const lowStockItems = products.filter(p => (p.current_stock || 0) <= (p.min_stock_level || 5)).length;
+    const lowStockItems = 0; // Temporarily disabled as min_stock_level doesn't exist
 
     const csvHeaders = [
         { label: "SKU", key: "sku" },
         { label: "Product Name", key: "name" },
         { label: "Category", key: "product_categories.name" },
         { label: "Current Stock", key: "current_stock" },
-        { label: "Min Level", key: "min_stock_level" },
         { label: "Purchase Price", key: "purchase_price" },
         { label: "Stock Value", key: "stockValue" }
     ];
@@ -150,11 +148,7 @@ const StockReport = () => {
         <PageLayout>
             <ReportTabs />
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Stock Valuation Report</h2>
-                    <p className="text-muted-foreground text-sm">Real-time inventory levels and financial valuation</p>
-                </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-6">
                 <Button asChild className="rounded-full shadow-sm">
                     <CSVLink data={csvData} headers={csvHeaders} filename="Stock_Valuation_Report.csv">
                         <Download className="mr-2 h-4 w-4" /> Export Report
@@ -247,7 +241,6 @@ const StockReport = () => {
                                 </TableRow>
                             ) : (
                                 filteredProducts.map((p) => {
-                                    const isLowStock = (p.current_stock || 0) <= (p.min_stock_level || 5);
                                     const value = (p.current_stock || 0) * (p.purchase_price || 0);
 
                                     return (
@@ -256,14 +249,10 @@ const StockReport = () => {
                                             <TableCell className="font-medium">
                                                 <div className="flex items-center gap-2">
                                                     {p.name}
-                                                    {isLowStock && <AlertCircle className="h-3 w-3 text-red-500" />}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-stone-500">{p.product_categories?.name || 'Uncategorized'}</TableCell>
-                                            <TableCell className={cn(
-                                                "text-right font-medium",
-                                                isLowStock ? "text-red-600" : "text-stone-900"
-                                            )}>
+                                            <TableCell className="text-right font-medium text-stone-900">
                                                 {p.current_stock || 0}
                                             </TableCell>
                                             <TableCell className="text-right text-stone-500">₹{p.purchase_price?.toFixed(2) || '0.00'}</TableCell>

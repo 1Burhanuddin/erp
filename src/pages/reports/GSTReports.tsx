@@ -109,12 +109,7 @@ const GSTReports = () => {
         <PageLayout>
             <ReportTabs />
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">GST Compliance Reports</h2>
-                    <p className="text-muted-foreground text-sm">GSTR-1 (Sales) and GSTR-3B (Summary) ready for filing.</p>
-                </div>
-
+            <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
                 <div className="flex items-center gap-2">
                     <Popover>
                         <PopoverTrigger asChild>

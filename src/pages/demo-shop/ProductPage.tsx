@@ -62,14 +62,23 @@ const ProductPage = () => {
         }
     };
 
+    const { data: allProducts } = useStoreProducts(store?.id);
+    const relatedProducts = allProducts?.filter(p => p.id !== product.id).slice(0, 4) || [];
+
     return (
         <div className="bg-black min-h-screen pb-32">
             {/* Hero Image Section */}
-            <section className="relative aspect-[3/4] md:aspect-video w-full overflow-hidden">
+            <section className="relative aspect-[3/4] md:aspect-video w-full overflow-hidden bg-white/5">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="absolute top-6 left-6 z-50 w-12 h-12 rounded-full glass-dark flex items-center justify-center text-white border border-white/10 shadow-lg"
+                >
+                    <ArrowLeft className="w-6 h-6" />
+                </button>
                 <img
                     src={images[0]}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                 />
             </section>
 
@@ -142,6 +151,26 @@ const ProductPage = () => {
                         <span className="text-xs font-medium">Fast Ship</span>
                     </div>
                 </div>
+
+                {/* Related Products */}
+                {relatedProducts.length > 0 && (
+                    <div className="pt-6 space-y-4">
+                        <h3 className="text-lg font-bold">You Might Also Like</h3>
+                        <div className="flex overflow-x-auto gap-4 no-scrollbar pb-4 -mx-6 px-6">
+                            {relatedProducts.map(rp => (
+                                <div key={rp.id} onClick={() => navigate(getLink(`/product/${rp.id}`))} className="w-40 shrink-0 space-y-3 cursor-pointer group">
+                                    <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-white/5 border border-white/10 relative">
+                                        <img src={rp.image_url || "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?q=80&w=400"} alt={rp.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="font-bold text-xs line-clamp-1">{rp.name}</h4>
+                                        <p className="font-bold text-sm">₹{rp.online_price || rp.sale_price || 0}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </section>
 
             {/* Sticky Bottom Bar - Positioned where bottom nav used to be */}

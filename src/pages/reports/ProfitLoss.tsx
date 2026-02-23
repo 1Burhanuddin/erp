@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, DollarSign, Wallet, ArrowUpRight, ArrowDownRight, Briefcase, Calendar, Package } from "lucide-react";
+import { TrendingUp, DollarSign, Wallet, ArrowUpRight, ArrowDownRight, Briefcase, Calendar, Package, BarChart3, FileText, PieChart } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { useReports } from "@/api/reports";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,8 +12,12 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CSVLink } from "react-csv";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ProfitLoss = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
     const [mounted, setMounted] = useState(false);
 
@@ -28,16 +32,63 @@ const ProfitLoss = () => {
             : undefined
     );
 
+    const ReportTabs = () => (
+        <div className="bg-white dark:bg-card border-none sm:border sm:border-border/50 sm:shadow-sm sm:rounded-2xl overflow-hidden mb-6">
+            <Tabs value={location.pathname} onValueChange={(v) => navigate(v)} className="w-full">
+                <div className="flex border-b pt-3 px-4 sm:px-6 gap-1 bg-slate-50/50 dark:bg-muted/10 overflow-x-auto no-scrollbar relative min-h-[50px]">
+                    <TabsList className="bg-transparent h-auto p-0 border-none flex gap-1 justify-start absolute bottom-0">
+                        <TabsTrigger
+                            value="/reports/profit-loss"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4" />
+                                Profit & Loss
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/gst"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                GST Reports
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/stock"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                Stock Valuation
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/expenses"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <PieChart className="h-4 w-4" />
+                                Expense Breakdown
+                            </div>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+            </Tabs>
+        </div>
+    );
+
     if (isLoading) {
         return (
             <PageLayout>
-                <PageHeader title="Profit & Loss" description="Summary of revenue, costs, and expenses" />
+                <ReportTabs />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
                     {[...Array(5)].map((_, i) => (
                         <Skeleton key={i} className="h-32 rounded-3xl" />
                     ))}
                 </div>
-                <Card className="h-[400px] rounded-3xl p-6 mb-8">
+                <Card className="h-[400px] rounded-3xl p-6 mb-8 border-0 shadow-sm">
                     <Skeleton className="w-full h-full rounded-2xl" />
                 </Card>
             </PageLayout>
@@ -47,7 +98,7 @@ const ProfitLoss = () => {
     if (error) {
         return (
             <PageLayout>
-                <PageHeader title="Profit & Loss" description="Summary of revenue, costs, and expenses" />
+                <ReportTabs />
                 <div className="p-6 rounded-3xl bg-destructive/10 text-destructive border border-destructive/20 text-center">
                     <h3 className="font-semibold mb-2">Error loading report</h3>
                     <p>{(error as Error).message}</p>
@@ -97,15 +148,15 @@ const ProfitLoss = () => {
             color: "bg-indigo-500",
         },
     ];
-
     return (
         <PageLayout>
-            <div className="flex justify-between items-center mb-6">
-                <PageHeader
-                    title="Profit & Loss"
-                    description="A summary of your business's financial performance"
-                    className="mb-0"
-                />
+            <ReportTabs />
+
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Financial Performance</h2>
+                    <p className="text-muted-foreground text-sm">Analyze your revenue, costs, and net profit</p>
+                </div>
 
                 <div className="flex items-center gap-2">
                     <Popover>

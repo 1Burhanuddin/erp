@@ -4,13 +4,17 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Search, AlertCircle, Package } from "lucide-react";
+import { Download, Search, AlertCircle, Package, BarChart3, FileText, PieChart } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { CSVLink } from "react-csv";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const StockReport = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [products, setProducts] = useState<any[]>([]);
@@ -71,10 +75,57 @@ const StockReport = () => {
         stockValue: ((p.current_stock || 0) * (p.purchase_price || 0)).toFixed(2)
     }));
 
+    const ReportTabs = () => (
+        <div className="bg-white dark:bg-card border-none sm:border sm:border-border/50 sm:shadow-sm sm:rounded-2xl overflow-hidden mb-6">
+            <Tabs value={location.pathname} onValueChange={(v) => navigate(v)} className="w-full">
+                <div className="flex border-b pt-3 px-4 sm:px-6 gap-1 bg-slate-50/50 dark:bg-muted/10 overflow-x-auto no-scrollbar relative min-h-[50px]">
+                    <TabsList className="bg-transparent h-auto p-0 border-none flex gap-1 justify-start absolute bottom-0">
+                        <TabsTrigger
+                            value="/reports/profit-loss"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4" />
+                                Profit & Loss
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/gst"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                GST Reports
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/stock"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                Stock Valuation
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/expenses"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <PieChart className="h-4 w-4" />
+                                Expense Breakdown
+                            </div>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+            </Tabs>
+        </div>
+    );
+
     if (isLoading) {
         return (
             <PageLayout>
-                <PageHeader title="Stock Valuation Report" description="Current inventory levels and financial value" />
+                <ReportTabs />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-32 rounded-3xl" />)}
                 </div>
@@ -86,6 +137,7 @@ const StockReport = () => {
     if (error) {
         return (
             <PageLayout>
+                <ReportTabs />
                 <div className="p-6 rounded-3xl bg-destructive/10 text-destructive text-center">
                     <h3 className="font-semibold mb-2">Error loading report</h3>
                     <p>{error}</p>
@@ -96,12 +148,13 @@ const StockReport = () => {
 
     return (
         <PageLayout>
+            <ReportTabs />
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <PageHeader
-                    title="Stock Valuation Report"
-                    description="Real-time inventory levels and financial valuation"
-                    className="mb-0"
-                />
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Stock Valuation Report</h2>
+                    <p className="text-muted-foreground text-sm">Real-time inventory levels and financial valuation</p>
+                </div>
                 <Button asChild className="rounded-full shadow-sm">
                     <CSVLink data={csvData} headers={csvHeaders} filename="Stock_Valuation_Report.csv">
                         <Download className="mr-2 h-4 w-4" /> Export Report

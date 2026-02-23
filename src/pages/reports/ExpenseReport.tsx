@@ -5,17 +5,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Download, Calendar, Wallet, PieChart as PieChartIcon, TrendingDown } from "lucide-react";
+import { Download, Calendar, Wallet, PieChart as PieChartIcon, TrendingDown, BarChart3, FileText, Package, PieChart as PieChartLucide } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { CSVLink } from "react-csv";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
 
 const ExpenseReport = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [isLoading, setIsLoading] = useState(true);
     const [expenses, setExpenses] = useState<any[]>([]);
     const [error, setError] = useState("");
@@ -90,14 +94,62 @@ const ExpenseReport = () => {
         notes: e.notes
     }));
 
+    const ReportTabs = () => (
+        <div className="bg-white dark:bg-card border-none sm:border sm:border-border/50 sm:shadow-sm sm:rounded-2xl overflow-hidden mb-6">
+            <Tabs value={location.pathname} onValueChange={(v) => navigate(v)} className="w-full">
+                <div className="flex border-b pt-3 px-4 sm:px-6 gap-1 bg-slate-50/50 dark:bg-muted/10 overflow-x-auto no-scrollbar relative min-h-[50px]">
+                    <TabsList className="bg-transparent h-auto p-0 border-none flex gap-1 justify-start absolute bottom-0">
+                        <TabsTrigger
+                            value="/reports/profit-loss"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4" />
+                                Profit & Loss
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/gst"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                GST Reports
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/stock"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                Stock Valuation
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/expenses"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <PieChartLucide className="h-4 w-4" />
+                                Expense Breakdown
+                            </div>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+            </Tabs>
+        </div>
+    );
+
     return (
         <PageLayout>
+            <ReportTabs />
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <PageHeader
-                    title="Expense Breakdown"
-                    description="Analyze your operational costs and spending patterns."
-                    className="mb-0"
-                />
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Expense Breakdown</h2>
+                    <p className="text-muted-foreground text-sm">Analyze your operational costs and spending patterns.</p>
+                </div>
 
                 <div className="flex items-center gap-2">
                     <Popover>

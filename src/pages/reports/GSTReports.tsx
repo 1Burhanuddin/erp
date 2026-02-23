@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Download, FileText, Table as TableIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Download, FileText, Table as TableIcon, BarChart3, Package, PieChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CSVLink } from "react-csv";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const GSTReports = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
         from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
         to: new Date()
@@ -23,8 +27,63 @@ const GSTReports = () => {
         endDate: dateRange.to
     });
 
+    const ReportTabs = () => (
+        <div className="bg-white dark:bg-card border-none sm:border sm:border-border/50 sm:shadow-sm sm:rounded-2xl overflow-hidden mb-6">
+            <Tabs value={location.pathname} onValueChange={(v) => navigate(v)} className="w-full">
+                <div className="flex border-b pt-3 px-4 sm:px-6 gap-1 bg-slate-50/50 dark:bg-muted/10 overflow-x-auto no-scrollbar relative min-h-[50px]">
+                    <TabsList className="bg-transparent h-auto p-0 border-none flex gap-1 justify-start absolute bottom-0">
+                        <TabsTrigger
+                            value="/reports/profit-loss"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4" />
+                                Profit & Loss
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/gst"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                GST Reports
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/stock"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                Stock Valuation
+                            </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="/reports/expenses"
+                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:border-b-transparent border border-transparent data-[state=active]:border-border rounded-t-xl rounded-b-none px-5 py-2.5 text-sm font-semibold data-[state=active]:text-primary text-muted-foreground transition-none data-[state=active]:shadow-none relative top-[1px]"
+                        >
+                            <div className="flex items-center gap-2">
+                                <PieChart className="h-4 w-4" />
+                                Expense Breakdown
+                            </div>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+            </Tabs>
+        </div>
+    );
+
     if (isLoading) {
-        return <PageLayout><div className="p-8">Loading GST Data...</div></PageLayout>;
+        return (
+            <PageLayout>
+                <ReportTabs />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-32 rounded-3xl" />)}
+                </div>
+                <Skeleton className="h-[400px] rounded-3xl" />
+            </PageLayout>
+        );
     }
 
     const gstr1 = report?.gstr1;
@@ -48,12 +107,13 @@ const GSTReports = () => {
 
     return (
         <PageLayout>
+            <ReportTabs />
+
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <PageHeader
-                    title="GST Compliance Reports"
-                    description="GSTR-1 (Sales) and GSTR-3B (Summary) ready for filing."
-                    className="mb-0"
-                />
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">GST Compliance Reports</h2>
+                    <p className="text-muted-foreground text-sm">GSTR-1 (Sales) and GSTR-3B (Summary) ready for filing.</p>
+                </div>
 
                 <div className="flex items-center gap-2">
                     <Popover>

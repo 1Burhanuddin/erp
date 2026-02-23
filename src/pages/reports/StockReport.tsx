@@ -35,7 +35,6 @@ const StockReport = () => {
                     sku, 
                     current_stock, 
                     purchase_price, 
-                    selling_price,
                     product_categories(name)
                 `)
                 .order('name');

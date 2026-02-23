@@ -12,6 +12,8 @@ import Invoices from "./pages/Invoices";
 import Reports from "./pages/Reports";
 import ProfitLoss from "./pages/reports/ProfitLoss";
 import GSTReports from "./pages/reports/GSTReports";
+import StockReport from "./pages/reports/StockReport";
+import ExpenseReport from "./pages/reports/ExpenseReport";
 import AuditLogs from "./pages/AuditLogs";
 import AuditLogDetails from "./pages/AuditLogDetails";
 import Settings from "./pages/Settings";
@@ -229,6 +231,8 @@ const App = () => {
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/reports/profit-loss" element={<ProfitLoss />} />
                   <Route path="/reports/gst" element={<GSTReports />} />
+                  <Route path="/reports/stock" element={<StockReport />} />
+                  <Route path="/reports/expenses" element={<ExpenseReport />} />
                   <Route path="/audit-logs" element={<AuditLogs />} />
                   <Route path="/audit-logs/:id" element={<AuditLogDetails />} />
                   <Route path="/settings" element={<Settings />} />

@@ -46,6 +46,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/lib/supabase";
+import { useAppSelector } from "@/store/hooks";
+import {
+  Building2,
+  Store,
+  Receipt,
+  UsersRound,
+  BriefcaseBusiness,
+  CheckCircle2
+} from "lucide-react";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -78,6 +87,8 @@ const navGroups: NavGroup[] = [
         children: [
           { path: "/reports/profit-loss", label: "Profit & Loss", description: "Financial health summary" },
           { path: "/reports/gst", label: "GST Reports", description: "GSTR-1 & 3B" },
+          { path: "/reports/stock", label: "Stock Valuation", description: "Inventory valuation & alerts" },
+          { path: "/reports/expenses", label: "Expense Breakdown", description: "Operational costs analysis" },
           { path: "/reports", label: "General Reports", description: "Analytics and insights" },
         ]
       },
@@ -184,6 +195,43 @@ const navGroups: NavGroup[] = [
 ];
 
 const navItems = navGroups.flatMap(g => g.items);
+
+type ModulePlan = "FULL_ERP" | "BILLING_ONLY" | "HR_ONLY" | "ECOMMERCE";
+
+// Mock plans for demonstration - in real app this comes from Supabase `subscriptions` table
+const DEMO_PLANS: { id: ModulePlan, name: string, icon: any, desc: string }[] = [
+  { id: "FULL_ERP", name: "Enterprise ERP", icon: Building2, desc: "All modules unlocked" },
+  { id: "BILLING_ONLY", name: "Basic Billing", icon: Receipt, desc: "Invoices, Quotes, Customers" },
+  { id: "HR_ONLY", name: "HR & Payroll", icon: UsersRound, desc: "Employees & Attendance" },
+  { id: "ECOMMERCE", name: "E-Commerce", icon: Store, desc: "Online Store & Inventory" },
+];
+
+const getFilteredNavGroups = (plan: ModulePlan): NavGroup[] => {
+  if (plan === "FULL_ERP") return navGroups;
+
+  let allowedPaths: string[] = [];
+
+  switch (plan) {
+    case "BILLING_ONLY":
+      allowedPaths = ["/", "/sell", "/contacts", "/reports", "/settings", "/mobile/dashboard"];
+      break;
+    case "HR_ONLY":
+      allowedPaths = ["/", "/employees", "/settings", "/mobile/dashboard"];
+      break;
+    case "ECOMMERCE":
+      allowedPaths = ["/", "/products", "/inventory", "/sell", "/contacts", "/settings", "/mobile/dashboard"];
+      break;
+  }
+
+  // Filter groups
+  return navGroups.map(group => {
+    return {
+      title: group.title,
+      items: group.items.filter(item => allowedPaths.includes(item.path))
+    };
+  }).filter(group => group.items.length > 0);
+};
+
 
 // Helper function to get page title from path
 export const getPageTitle = (pathname: string): { title: string; description?: string } => {
@@ -335,11 +383,12 @@ const SidebarItem = ({ item, isCollapsed, onMobileClick }: { item: NavItem, isCo
   return linkContent;
 };
 
-export const SidebarMobileContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
+export const SidebarMobileContent = ({ onLinkClick, activePlan = "FULL_ERP" }: { onLinkClick?: () => void, activePlan?: ModulePlan }) => {
+  const filteredNavGroups = getFilteredNavGroups(activePlan);
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-sidebar">
       <nav className="flex-1 px-4 pt-4 space-y-1 overflow-y-auto no-scrollbar pb-6">
-        {navGroups.map((group, idx) => (
+        {filteredNavGroups.map((group, idx) => (
           <div key={group.title} className="mb-6">
             <h4 className="px-3 mb-2 text-xs font-bold tracking-widest text-slate-400/80 uppercase">
               {group.title}
@@ -349,7 +398,7 @@ export const SidebarMobileContent = ({ onLinkClick }: { onLinkClick?: () => void
                 <SidebarItem key={item.path} item={item as NavItem} isCollapsed={false} onMobileClick={onLinkClick} />
               ))}
             </div>
-            {idx < navGroups.length - 1 && (
+            {idx < filteredNavGroups.length - 1 && (
               <div className="mx-2 mt-6 border-t border-slate-200/50 dark:border-slate-800/50" />
             )}
           </div>
@@ -360,6 +409,11 @@ export const SidebarMobileContent = ({ onLinkClick }: { onLinkClick?: () => void
 };
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
+  const [activePlan, setActivePlan] = useState<ModulePlan>("FULL_ERP");
+  const filteredNavGroups = getFilteredNavGroups(activePlan);
+  const activePlanDetails = DEMO_PLANS.find(p => p.id === activePlan);
+  const PlanIcon = activePlanDetails?.icon || Building2;
+
   return (
     <>
       {/* Desktop Sidebar */}
@@ -373,10 +427,48 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           "flex items-center h-16 px-4 border-b border-sidebar-foreground/10 flex-shrink-0",
           isCollapsed ? "justify-center" : "justify-between"
         )}>
+
           {!isCollapsed && (
-            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              ERP System
-            </h1>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors overflow-hidden mr-2 flex-grow">
+                  <div className="h-8 w-8 rounded-md bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                    <PlanIcon className="h-4 w-4" />
+                  </div>
+                  <div className="flex flex-col flex-grow truncate text-left">
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate leading-tight">
+                      {activePlanDetails?.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold tracking-wider">
+                      Active Plan
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[240px]">
+                <DropdownMenuLabel className="text-xs text-slate-500 uppercase">Change Active Plan (Demo)</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {DEMO_PLANS.map(plan => (
+                  <DropdownMenuItem
+                    key={plan.id}
+                    onClick={() => setActivePlan(plan.id)}
+                    className="flex items-center justify-between p-3 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
+                        <plan.icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">{plan.name}</span>
+                        <span className="text-xs text-slate-500">{plan.desc}</span>
+                      </div>
+                    </div>
+                    {activePlan === plan.id && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           <Button
             variant="ghost"
@@ -393,7 +485,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto no-scrollbar pb-4">
-          {navGroups.map((group, idx) => (
+          {filteredNavGroups.map((group, idx) => (
             <div key={group.title} className={cn("mb-6", isCollapsed && "mb-2")}>
               {!isCollapsed && (
                 <h4 className="px-3 mb-2 text-xs font-bold tracking-widest text-slate-400/80 uppercase">
@@ -406,7 +498,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
                   <SidebarItem key={item.path} item={item} isCollapsed={isCollapsed} />
                 ))}
               </div>
-              {!isCollapsed && idx < navGroups.length - 1 && (
+              {!isCollapsed && idx < filteredNavGroups.length - 1 && (
                 <div className="mx-2 mt-6 border-t border-slate-200/50 dark:border-slate-800/50" />
               )}
             </div>

@@ -68,17 +68,13 @@ export const useGSTReports = (filters?: ReportsFilters) => {
                 .from("sales_orders")
                 .select(`
                     id, order_no, order_date, total_amount, customer_id,
-                    contacts (id, name, gstin:address, state), 
+                    contacts (id, name, gstin, state), 
                     sales_items (
-                        subtotal, tax_amount,
+                        quantity, subtotal, tax_amount,
                         tax_rates (percentage),
                         products (hsn_code, name)
                     )
-                `) // note: using address field for gstin mock if needed, but ideally contacts has gstin column. 
-                // Based on schema, contacts table DOES NOT have gstin column? 
-                // Accessing 'address' just to not break, but we need to check schema.
-                // Schema check: contacts has 'state', but no 'gstin'. 
-                // We will assume for now B2C unless we find a custom field.
+                `)
                 .neq("status", "Cancelled");
 
             if (startDate) salesQuery = salesQuery.gte("order_date", startDate);
@@ -97,20 +93,19 @@ export const useGSTReports = (filters?: ReportsFilters) => {
                 const isInterState = customerState.toLowerCase() !== myState.toLowerCase();
                 const placeOfSupply = customerState;
 
-                // For now, treat all as B2C unless we have a flag. 
-                // In real app, check order.contacts.gstin
-                const isB2B = false; // Placeholder
+                const isB2B = !!order.contacts?.gstin;
 
                 order.sales_items?.forEach((item: any) => {
                     const taxRate = item.tax_rates?.percentage || 0;
                     const taxAmt = item.tax_amount || 0;
                     const taxable = item.subtotal || 0;
+                    const qty = item.quantity || 1;
 
                     // HSN Summary
                     const hsn = item.products?.hsn_code || "Generated";
                     const existingHsn = hsnMap.get(hsn) || { quantity: 0, value: 0, tax: 0 };
                     hsnMap.set(hsn, {
-                        quantity: existingHsn.quantity + 1, // Quantity not in select, using 1 as mock or need to fetch quantity
+                        quantity: existingHsn.quantity + qty,
                         value: existingHsn.value + taxable,
                         tax: existingHsn.tax + taxAmt
                     });
@@ -118,6 +113,7 @@ export const useGSTReports = (filters?: ReportsFilters) => {
                     const entry = {
                         invoiceNo: order.order_no,
                         date: order.order_date,
+                        gstin: order.contacts?.gstin || null,
                         value: taxable,
                         rate: taxRate,
                         igst: isInterState ? taxAmt : 0,

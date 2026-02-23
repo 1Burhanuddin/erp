@@ -30,6 +30,10 @@ const GSTReports = () => {
     const gstr1 = report?.gstr1;
     const gstr3b = report?.gstr3b;
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     // CSV Headers
     const b2bHeaders = [
         { label: "Invoice No", key: "invoiceNo" },
@@ -112,7 +116,60 @@ const GSTReports = () => {
                         </Card>
                     </div>
 
-                    <Card className="border-0 shadow-sm rounded-3xl overflow-hidden">
+                    {/* B2B Table */}
+                    <Card className="border-0 shadow-sm rounded-3xl overflow-hidden mb-8 bg-white">
+                        <CardHeader className="bg-stone-50/50 border-b border-stone-100 flex flex-row justify-between items-center">
+                            <CardTitle className="text-lg">B2B Invoices (Business to Business)</CardTitle>
+                            <Button variant="outline" size="sm" className="gap-2 rounded-full">
+                                <Download className="h-4 w-4" />
+                                <CSVLink data={gstr1?.b2b || []} headers={b2bHeaders} filename={`GSTR1_B2B_${format(new Date(), 'yyyyMMdd')}.csv`}>
+                                    Export B2B CSV
+                                </CSVLink>
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="pl-6">Invoice No</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>GSTIN</TableHead>
+                                        <TableHead>State</TableHead>
+                                        <TableHead className="text-right">Value</TableHead>
+                                        <TableHead className="text-right">Rate</TableHead>
+                                        <TableHead className="text-right">IGST</TableHead>
+                                        <TableHead className="text-right">CGST</TableHead>
+                                        <TableHead className="text-right pr-6">SGST</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {gstr1?.b2b?.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={9} className="h-32 text-center text-muted-foreground">
+                                                No B2B transactions found in this period.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        gstr1?.b2b?.map((item: any, idx: number) => (
+                                            <TableRow key={idx} className="hover:bg-stone-50">
+                                                <TableCell className="font-medium pl-6">{item.invoiceNo}</TableCell>
+                                                <TableCell>{format(new Date(item.date), 'dd MMM yyyy')}</TableCell>
+                                                <TableCell className="font-mono text-xs">{item.gstin || 'N/A'}</TableCell>
+                                                <TableCell>{item.state}</TableCell>
+                                                <TableCell className="text-right text-stone-600">₹{item.value.toFixed(2)}</TableCell>
+                                                <TableCell className="text-right text-red-600 font-medium">{item.rate}%</TableCell>
+                                                <TableCell className="text-right">₹{item.igst.toFixed(2)}</TableCell>
+                                                <TableCell className="text-right">₹{item.cgst.toFixed(2)}</TableCell>
+                                                <TableCell className="text-right pr-6">₹{item.sgst.toFixed(2)}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-sm rounded-3xl overflow-hidden mb-8">
                         <CardHeader className="bg-stone-50/50 border-b border-stone-100 flex flex-row justify-between items-center">
                             <CardTitle className="text-lg">B2C Invoices (Small & Large)</CardTitle>
                             <Button variant="outline" size="sm" className="gap-2 rounded-full">
@@ -192,33 +249,56 @@ const GSTReports = () => {
                 </TabsContent>
 
                 <TabsContent value="gstr3b">
-                    <Card className="border-0 shadow-sm rounded-3xl p-8 max-w-4xl mx-auto">
-                        <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold tracking-tight">GSTR-3B Summary</h2>
-                            <p className="text-muted-foreground">Monthly Self-Declaration</p>
+                    <Card className="border-0 shadow-sm rounded-3xl p-8 max-w-4xl mx-auto overflow-hidden relative">
+                        {/* Print Only Styles */}
+                        <style>{`
+                            @media print {
+                                body * { visibility: hidden; }
+                                #printable-gstr3b, #printable-gstr3b * { visibility: visible; }
+                                #printable-gstr3b { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; }
+                                .no-print { display: none !important; }
+                            }
+                        `}</style>
+
+                        <div className="absolute top-6 right-6 no-print">
+                            <Button variant="outline" className="rounded-full gap-2" onClick={handlePrint}>
+                                <FileText className="h-4 w-4" /> Print / Save PDF
+                            </Button>
                         </div>
 
-                        <div className="space-y-8">
-                            <div className="space-y-4">
-                                <h3 className="font-semibold text-lg border-b pb-2">3.1 Details of Outward Supplies (Sales)</h3>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div className="p-4 bg-stone-50 rounded-xl">
-                                        <p className="text-stone-500 mb-1">Total Taxable Value</p>
-                                        <p className="text-2xl font-bold text-stone-900">₹{(gstr3b?.outward?.taxable || 0).toLocaleString()}</p>
-                                    </div>
-                                    <div className="p-4 bg-stone-50 rounded-xl">
-                                        <p className="text-stone-500 mb-1">Total Tax Liability</p>
-                                        <p className="text-2xl font-bold text-red-600">₹{(gstr3b?.outward?.tax || 0).toLocaleString()}</p>
-                                    </div>
-                                </div>
+                        <div id="printable-gstr3b" className="pt-2">
+                            <div className="text-center mb-10 border-b pb-6">
+                                <h1 className="text-3xl font-bold tracking-tight mb-2">GSTR-3B Summary</h1>
+                                <p className="text-muted-foreground text-lg">Monthly Self-Declaration</p>
+                                <p className="text-sm font-medium mt-2">
+                                    Period: {dateRange.from ? format(dateRange.from, "MMMM yyyy") : "All Time"}
+                                </p>
                             </div>
 
-                            <div className="space-y-4">
-                                <h3 className="font-semibold text-lg border-b pb-2">4. Eligible ITC (Input Tax Credit)</h3>
-                                <div className="p-6 bg-stone-100/50 rounded-xl text-center">
-                                    <p className="text-stone-500 mb-1">ITC Available (From Purchases)</p>
-                                    <p className="text-3xl font-bold text-stone-400">Coming Soon</p>
-                                    <p className="text-xs text-stone-400 mt-2">Will be enabled with Purchase Module update</p>
+                            <div className="space-y-10">
+                                <div className="space-y-4">
+                                    <h3 className="font-semibold text-xl border-b border-stone-200 pb-2">3.1 Details of Outward Supplies (Sales)</h3>
+                                    <div className="grid grid-cols-2 gap-6 text-sm mt-4">
+                                        <div className="p-6 bg-stone-50 border border-stone-100 rounded-2xl">
+                                            <p className="text-stone-500 mb-2 uppercase text-xs font-bold tracking-wider">Total Taxable Value</p>
+                                            <p className="text-3xl font-bold text-stone-900">₹{(gstr3b?.outward?.taxable || 0).toLocaleString()}</p>
+                                            <p className="text-xs text-stone-400 mt-2">Sum of all B2B and B2C sales</p>
+                                        </div>
+                                        <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl">
+                                            <p className="text-rose-600 mb-2 uppercase text-xs font-bold tracking-wider">Total Tax Liability</p>
+                                            <p className="text-3xl font-bold text-rose-700">₹{(gstr3b?.outward?.tax || 0).toLocaleString()}</p>
+                                            <p className="text-xs text-rose-400 mt-2">IGST + CGST + SGST collected</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h3 className="font-semibold text-xl border-b border-stone-200 pb-2">4. Eligible ITC (Input Tax Credit)</h3>
+                                    <div className="p-8 bg-stone-100/50 border border-dashed border-stone-300 rounded-2xl text-center">
+                                        <p className="text-stone-500 mb-2 font-medium">ITC Available (From Purchases)</p>
+                                        <p className="text-3xl font-bold text-stone-400">₹0.00*</p>
+                                        <p className="text-xs text-stone-400 mt-3 max-w-sm mx-auto">*Pending full integration of Purchase Invoicing to automatically aggregate eligible supplier ITC.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

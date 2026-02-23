@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CSVLink } from "react-csv";
 
 const ProfitLoss = () => {
     const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
@@ -205,6 +207,7 @@ const ProfitLoss = () => {
                                 tickLine={false}
                                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                                 dy={10}
+                                tickMargin={10}
                             />
                             <YAxis
                                 axisLine={false}
@@ -275,12 +278,55 @@ const ProfitLoss = () => {
                         </p>
                     </div>
                     <div className="mt-8 flex gap-3">
-                        <Button className="bg-white text-indigo-600 hover:bg-white/90 rounded-full font-bold px-8">
-                            Export Full Audit
+                        <Button asChild className="bg-white text-indigo-600 hover:bg-white/90 rounded-full font-bold px-8 cursor-pointer">
+                            <CSVLink
+                                data={report?.monthlySales?.map(m => ({ Month: m.month, Revenue: m.sales, Orders: m.orders })) || []}
+                                filename={`ProfitLoss_${format(dateRange.from || new Date(), 'MMM_yyyy')}.csv`}
+                            >
+                                Export Full Audit
+                            </CSVLink>
                         </Button>
                     </div>
                 </Card>
             </div>
+
+            {/* Detailed Breakdown Table */}
+            <Card className="rounded-3xl border-0 shadow-sm overflow-hidden mt-8">
+                <div className="p-6 border-b border-border/50 bg-stone-50/50">
+                    <h3 className="text-xl font-bold">Detailed Monthly Breakdown</h3>
+                    <p className="text-sm text-muted-foreground">Month-over-month revenue and order volume</p>
+                </div>
+                <div className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead className="w-[200px] pl-6">Month</TableHead>
+                                <TableHead className="text-right">Total Orders</TableHead>
+                                <TableHead className="text-right pr-6">Revenue</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {report?.monthlySales?.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
+                                        No data available for the selected period.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                report?.monthlySales?.map((row, idx) => (
+                                    <TableRow key={idx} className="hover:bg-stone-50/50">
+                                        <TableCell className="font-medium pl-6">{row.month}</TableCell>
+                                        <TableCell className="text-right">{row.orders}</TableCell>
+                                        <TableCell className="text-right font-semibold text-emerald-600 pr-6">
+                                            ₹{row.sales.toLocaleString()}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </Card>
         </PageLayout>
     );
 };

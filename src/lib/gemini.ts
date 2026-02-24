@@ -1,60 +1,69 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export interface InvoiceItem {
+export interface OrderItem {
     product_name: string;
     quantity: number;
     unit_price: number;
 }
 
-export interface ParsedInvoice {
-    supplier_name: string | null;
-    items: InvoiceItem[];
+export interface ParsedOrder {
+    contact_name: string | null;  // supplier for purchase, customer for sales
+    items: OrderItem[];
 }
 
-export async function parseInvoiceImage(base64Image: string, mimeType: string): Promise<ParsedInvoice> {
+function getModel() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) throw new Error("VITE_GEMINI_API_KEY is not set in .env");
-
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+}
 
-    const prompt = `You are an invoice parser. Analyze this invoice/bill image and extract the following information as valid JSON only, without any markdown or explanation:
+function parseJson(text: string): ParsedOrder {
+    const clean = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+    try {
+        return JSON.parse(clean);
+    } catch {
+        const match = clean.match(/\{[\s\S]*\}/);
+        if (match) return JSON.parse(match[0]);
+        throw new Error("Could not parse Gemini response as JSON");
+    }
+}
+
+const ORDER_PROMPT = (contactLabel: string) => `You are an order/invoice parser. Analyze this image and extract the following as valid JSON only, no markdown:
 {
-  "supplier_name": "<vendor/supplier company name or null>",
+  "${contactLabel}": "<company or person name, or null>",
   "items": [
     {
       "product_name": "<product or item name>",
       "quantity": <number>,
-      "unit_price": <number, price per unit, no currency symbol>
+      "unit_price": <number, per-unit price, no currency symbol>
     }
   ]
 }
-
 Rules:
-- Extract ALL line items visible.
-- If a field is not visible, use null for strings and 0 for numbers.
-- unit_price should be per-unit cost, NOT the total line amount.
-- Respond with ONLY the JSON object, no other text.`;
+- Extract ALL line items.
+- unit_price is per-unit cost, NOT the total.
+- Use null for missing strings, 0 for missing numbers.
+- Respond with ONLY the JSON, no other text.`;
 
+/** Parse a purchase invoice image — returns supplier_name + items */
+export async function parseInvoiceImage(base64Image: string, mimeType: string): Promise<ParsedOrder & { supplier_name: string | null }> {
+    const model = getModel();
     const result = await model.generateContent([
-        prompt,
-        {
-            inlineData: {
-                mimeType,
-                data: base64Image,
-            },
-        },
+        ORDER_PROMPT("supplier_name"),
+        { inlineData: { mimeType, data: base64Image } },
     ]);
+    const parsed = parseJson(result.response.text().trim());
+    return { ...parsed, supplier_name: parsed.contact_name };
+}
 
-    const text = result.response.text().trim();
-
-    try {
-        // Strip markdown code fences if present
-        const clean = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-        return JSON.parse(clean) as ParsedInvoice;
-    } catch {
-        const match = text.match(/\{[\s\S]*\}/);
-        if (match) return JSON.parse(match[0]) as ParsedInvoice;
-        throw new Error("Could not parse Gemini response as JSON");
-    }
+/** Parse a customer PO / sales order image — returns customer_name + items */
+export async function parseSaleOrderImage(base64Image: string, mimeType: string): Promise<ParsedOrder & { customer_name: string | null }> {
+    const model = getModel();
+    const result = await model.generateContent([
+        ORDER_PROMPT("customer_name"),
+        { inlineData: { mimeType, data: base64Image } },
+    ]);
+    const parsed = parseJson(result.response.text().trim());
+    return { ...parsed, customer_name: parsed.contact_name };
 }

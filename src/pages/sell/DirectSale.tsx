@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { useState, useRef } from "react";
+import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,7 +18,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Trash2 } from "lucide-react";
+import { Trash2, ScanLine, Loader2, AlertTriangle } from "lucide-react";
 import { useContacts } from "@/api/contacts";
 import { useProducts } from "@/api/products";
 import { useCreateSale } from "@/api/sales";
@@ -27,6 +26,8 @@ import { useTaxRates } from "@/api/taxRates";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { parseSaleOrderImage } from "@/lib/gemini";
+import { Badge } from "@/components/ui/badge";
 
 const DirectSale = () => {
     const navigate = useNavigate();
@@ -36,10 +37,12 @@ const DirectSale = () => {
     const createSale = useCreateSale();
 
     const [customerId, setCustomerId] = useState("");
-    const [orderNo] = useState(`DS-${Date.now()}`); // Auto-generate
+    const [orderNo] = useState(`DS-${Date.now()}`);
     const [items, setItems] = useState<any[]>([]);
+    const [isScanning, setIsScanning] = useState(false);
+    const [aiCustomerName, setAiCustomerName] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Quick Add Item State
     const [currentItem, setCurrentItem] = useState({
         productId: "",
         quantity: 1,
@@ -59,6 +62,91 @@ const DirectSale = () => {
             });
         }
     };
+
+    // ── AI Order Scan ───────────────────────────────────────────────────────────
+    const handleScanOrder = () => fileInputRef.current?.click();
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        e.target.value = "";
+        setIsScanning(true);
+        try {
+            const base64 = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve((reader.result as string).split(",")[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const parsed = await parseSaleOrderImage(base64, file.type);
+
+            // Match customer
+            if (parsed.customer_name) {
+                const aiName = parsed.customer_name.toLowerCase();
+                const aiWords = aiName.split(/\s+/).filter(w => w.length > 2);
+                const matched = customers?.find(c => {
+                    const cName = c.name.toLowerCase();
+                    if (cName.includes(aiName) || aiName.includes(cName)) return true;
+                    return aiWords.some(w => cName.includes(w));
+                });
+                if (matched) {
+                    setCustomerId(matched.id);
+                    setAiCustomerName(null);
+                } else {
+                    setAiCustomerName(parsed.customer_name);
+                }
+            }
+
+            // Build items, matching products by name, using sale price if AI price is 0
+            if (parsed.items?.length) {
+                const newItems = parsed.items.map(ai => {
+                    const matched = products?.find(p =>
+                        p.name.toLowerCase().includes(ai.product_name.toLowerCase()) ||
+                        ai.product_name.toLowerCase().includes(p.name.toLowerCase())
+                    );
+                    const unitPrice = ai.unit_price || matched?.sale_price || 0;
+                    const quantity = ai.quantity || 1;
+                    return {
+                        productId: matched?.id || "",
+                        productName: matched?.name || ai.product_name,
+                        aiProductName: ai.product_name,
+                        quantity,
+                        unitPrice,
+                        currentStock: matched?.current_stock || 0,
+                        taxRateId: "",
+                        taxAmount: 0,
+                        subtotal: quantity * unitPrice,
+                        unmatched: !matched,
+                    };
+                });
+                setItems(newItems);
+                toast.success(`Order scanned! ${newItems.length} item(s) found. Review and confirm.`);
+            } else {
+                toast.warning("No items could be extracted. Try a clearer image.");
+            }
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to scan order");
+        } finally {
+            setIsScanning(false);
+        }
+    };
+
+    const fixItemProduct = (idx: number, productId: string) => {
+        const product = products?.find(p => p.id === productId);
+        setItems(prev => prev.map((item, i) =>
+            i === idx ? {
+                ...item,
+                productId,
+                productName: product?.name || item.productName,
+                unitPrice: item.unitPrice || product?.sale_price || 0,
+                currentStock: product?.current_stock || 0,
+                subtotal: item.quantity * (item.unitPrice || product?.sale_price || 0),
+                unmatched: false,
+            } : item
+        ));
+    };
+    // ────────────────────────────────────────────────────────────────────────────
 
     const addItem = () => {
         if (!currentItem.productId) return toast.error("Select product");
@@ -91,16 +179,17 @@ const DirectSale = () => {
     const handleCompleteSale = async () => {
         if (!customerId) return toast.error("Select customer (or Walk-in)");
         if (items.length === 0) return toast.error("Add items");
+        if (items.some(i => !i.productId)) return toast.error("Some items have unmatched products. Please fix them.");
 
         try {
             await createSale.mutateAsync({
                 order: {
                     order_no: orderNo,
                     customer_id: customerId,
-                    order_date: format(new Date(), "yyyy-MM-dd"), // Today
+                    order_date: format(new Date(), "yyyy-MM-dd"),
                     total_amount: totalAmount,
                     status: 'Completed',
-                    payment_status: 'Paid', // Assume Cash/Immediate Payment
+                    payment_status: 'Paid',
                     paid_amount: totalAmount,
                     channel: 'Direct'
                 } as any,
@@ -114,8 +203,7 @@ const DirectSale = () => {
                 }))
             });
             toast.success("Direct Sale Completed!");
-            // Reset or navigate
-            navigate(0); // Reload for new sale
+            navigate(0);
         } catch (error) {
             toast.error("Failed to complete sale");
         }
@@ -123,121 +211,180 @@ const DirectSale = () => {
 
     return (
         <PageLayout>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-2 md:p-4">
                 {/* Left: Input Panel */}
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="bg-card border rounded-md p-4 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Customer</Label>
-                                <Select value={customerId} onValueChange={setCustomerId}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select / Walk-in" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="walk-in">Walk-in Customer</SelectItem> {/* Handle this logic if needed, or mapped to a dummy contact */}
-                                        {customers?.map(c => (
-                                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                    <div className="bg-card border rounded-xl shadow-sm p-3 md:p-6 space-y-4 md:space-y-6">
+
+                        {/* AI Scan Button */}
+                        <div className="flex items-center justify-between border-b pb-4">
+                            <div>
+                                <h3 className="font-semibold text-base">Direct Sale</h3>
+                                <p className="text-sm text-muted-foreground">Fill manually or scan a customer order</p>
                             </div>
-                            <div className="space-y-2">
-                                <Label>Product Scan/Select</Label>
-                                <Select value={currentItem.productId} onValueChange={handleProductChange}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select Product" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {products?.map(p => (
-                                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                            <Button
+                                variant="outline"
+                                onClick={handleScanOrder}
+                                disabled={isScanning}
+                                className="gap-2 border-primary text-primary hover:bg-primary/10"
+                            >
+                                {isScanning
+                                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Scanning...</>
+                                    : <><ScanLine className="h-4 w-4" /> Scan Order</>
+                                }
+                            </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <div className="flex gap-2">
+                                    <Select value={customerId} onValueChange={setCustomerId}>
+                                        <SelectTrigger className="flex-1">
+                                            <SelectValue placeholder="Select / Walk-in Customer" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="walk-in">Walk-in Customer</SelectItem>
+                                            {customers?.map(c => (
+                                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {aiCustomerName && !customerId && (
+                                    <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        AI detected: <span className="font-medium">{aiCustomerName}</span> — select manually above
+                                    </p>
+                                )}
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-4 items-end">
-                            <div className="space-y-2">
-                                <FloatingLabelInput
-                                    id="quantity"
-                                    label="Qty"
-                                    type="number"
-                                    min="1"
-                                    value={currentItem.quantity}
-                                    onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
-                                />
+                        {/* Manual Add Item */}
+                        <div className="border rounded-xl p-3 md:p-4 bg-muted/20">
+                            <h3 className="font-semibold mb-3 text-base">Add Item Manually</h3>
+                            <div className="grid grid-cols-1 gap-3">
+                                <div className="space-y-1.5">
+                                    <Label>Product</Label>
+                                    <Select value={currentItem.productId} onValueChange={handleProductChange}>
+                                        <SelectTrigger><SelectValue placeholder="Select Product" /></SelectTrigger>
+                                        <SelectContent>
+                                            {products?.map(p => (
+                                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
+                                    <FloatingLabelInput
+                                        id="quantity"
+                                        label="Qty"
+                                        type="number"
+                                        min="1"
+                                        value={currentItem.quantity}
+                                        onChange={e => setCurrentItem({ ...currentItem, quantity: Number(e.target.value) })}
+                                    />
+                                    <FloatingLabelInput
+                                        id="price"
+                                        label="Price"
+                                        type="number"
+                                        value={currentItem.unitPrice}
+                                        onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
+                                    />
+                                    <div className="space-y-1.5">
+                                        <Select value={currentItem.taxRateId} onValueChange={val => setCurrentItem({ ...currentItem, taxRateId: val })}>
+                                            <SelectTrigger><SelectValue placeholder="Tax %" /></SelectTrigger>
+                                            <SelectContent>
+                                                {taxRates?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <Button onClick={addItem}>Add</Button>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <FloatingLabelInput
-                                    id="price"
-                                    label="Price"
-                                    type="number"
-                                    value={currentItem.unitPrice}
-                                    onChange={e => setCurrentItem({ ...currentItem, unitPrice: Number(e.target.value) })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Tax</Label>
-                                <Select value={currentItem.taxRateId} onValueChange={val => setCurrentItem({ ...currentItem, taxRateId: val })}>
-                                    <SelectTrigger><SelectValue placeholder="%" /></SelectTrigger>
-                                    <SelectContent>
-                                        {taxRates?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Button onClick={addItem}>Add</Button>
                         </div>
                     </div>
 
                     {/* Items List */}
-                    <div className="border rounded-md bg-card">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Product</TableHead>
-                                    <TableHead>Qty</TableHead>
-                                    <TableHead>Price</TableHead>
-                                    <TableHead>Total</TableHead>
-                                    <TableHead></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {items.map((item, idx) => (
-                                    <TableRow key={idx}>
-                                        <TableCell>{item.productName}</TableCell>
-                                        <TableCell>{item.quantity}</TableCell>
-                                        <TableCell>{item.unitPrice}</TableCell>
-                                        <TableCell>{item.subtotal.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <Trash2 className="w-4 h-4 cursor-pointer text-destructive" onClick={() => {
-                                                const n = [...items]; n.splice(idx, 1); setItems(n);
-                                            }} />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
+                    {items.length > 0 && (
+                        <div className="border rounded-xl shadow-sm bg-card overflow-hidden">
+                            {items.some(i => i.unmatched) && (
+                                <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-sm px-4 py-2 border-b border-amber-200 dark:border-amber-800">
+                                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                                    Some items couldn't be matched. Select the correct product below.
+                                </div>
+                            )}
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Product</TableHead>
+                                            <TableHead>Qty</TableHead>
+                                            <TableHead>Price</TableHead>
+                                            <TableHead>Total</TableHead>
+                                            <TableHead className="w-12"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {items.map((item, idx) => (
+                                            <TableRow key={idx} className={item.unmatched ? "bg-amber-50/50 dark:bg-amber-950/20" : "hover:bg-muted/30"}>
+                                                <TableCell className="min-w-[180px]">
+                                                    {item.unmatched ? (
+                                                        <div className="space-y-1">
+                                                            <Badge variant="outline" className="text-amber-600 border-amber-400 text-xs">
+                                                                AI: {item.aiProductName}
+                                                            </Badge>
+                                                            <Select onValueChange={(v) => fixItemProduct(idx, v)}>
+                                                                <SelectTrigger className="h-8 text-xs">
+                                                                    <SelectValue placeholder="Match to product..." />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    ) : item.productName}
+                                                </TableCell>
+                                                <TableCell>{item.quantity}</TableCell>
+                                                <TableCell>₹{item.unitPrice.toFixed(2)}</TableCell>
+                                                <TableCell className="font-semibold">₹{item.subtotal.toFixed(2)}</TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                                        onClick={() => { const n = [...items]; n.splice(idx, 1); setItems(n); }}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right: Summary Panel */}
                 <div className="lg:col-span-1">
-                    <div className="bg-card border rounded-md p-6 space-y-6 sticky top-4">
-                        <h3 className="text-xl font-bold border-b pb-2">Sale Summary</h3>
-                        <div className="space-y-2 text-lg">
+                    <div className="bg-card border rounded-xl shadow-sm p-4 md:p-6 space-y-4 lg:sticky lg:top-4">
+                        <h3 className="text-lg md:text-xl font-bold border-b pb-2">Sale Summary</h3>
+                        <div className="space-y-3 text-base">
                             <div className="flex justify-between">
-                                <span>Total items:</span>
-                                <span>{items.length}</span>
+                                <span className="text-muted-foreground">Total items:</span>
+                                <span className="font-semibold">{items.length}</span>
                             </div>
-                            <div className="flex justify-between font-bold text-2xl text-primary">
+                            <div className="flex justify-between font-bold text-xl text-primary pt-2 border-t">
                                 <span>Total:</span>
                                 <span>₹{totalAmount.toFixed(2)}</span>
                             </div>
                         </div>
-                        <Button className="w-full" size="lg" onClick={handleCompleteSale}>Complete Sale (Paid)</Button>
+                        <Button className="w-full" size="lg" onClick={handleCompleteSale} disabled={createSale.isPending}>
+                            {createSale.isPending ? "Processing..." : "Complete Sale (Paid)"}
+                        </Button>
                     </div>
                 </div>
             </div>

@@ -331,8 +331,8 @@ export const useDeleteUnit = () => {
 };
 
 // Products
-export const useProducts = () => {
-    return useQuery({
+export const useProducts = (options?: any) => {
+    return useQuery<Product[], Error>({
         queryKey: ["products"],
         queryFn: async () => {
             const { data, error } = await supabase
@@ -349,6 +349,7 @@ export const useProducts = () => {
             return data;
         },
         staleTime: 1000 * 60 * 5,
+        ...options
     });
 };
 

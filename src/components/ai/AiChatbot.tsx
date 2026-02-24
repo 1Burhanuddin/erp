@@ -8,6 +8,8 @@ import { askChatbot, parseFormFromText, ChatMessage, FormParseResult } from "@/l
 import { useContacts } from "@/api/contacts";
 import { useProducts } from "@/api/products";
 import { useReports } from "@/api/reports";
+import { getAiConsent, setAiConsent as persistConsent } from "@/lib/ai-utils";
+import { ShieldAlert, ShieldCheck } from "lucide-react";
 
 const WELCOME = "Hi! I'm your ERP assistant 👋 Ask anything about your business, or describe a sale/purchase to fill a form automatically.";
 
@@ -35,12 +37,19 @@ export function AiChatbot() {
     const [minimized, setMinimized] = useState(false);
     const [messages, setMessages] = useState<ChatMessageWithAction[]>([]);
     const [input, setInput] = useState("");
+    const [hasConsent, setHasConsent] = useState(getAiConsent());
     const [isLoading, setIsLoading] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    const { data: contacts } = useContacts();
-    const { data: products } = useProducts();
-    const { data: report } = useReports(undefined);
+    const { data: contacts } = useContacts({ enabled: open });
+    const { data: products } = useProducts({ enabled: open });
+    const { data: report } = useReports(undefined, { enabled: open });
+
+    const handleConsent = () => {
+        persistConsent(true);
+        setHasConsent(true);
+    };
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,7 +60,7 @@ export function AiChatbot() {
         const customers = contacts?.filter(c => c.role === "Customer" || c.role === "Both" || !c.role) ?? [];
         const suppliers = contacts?.filter(c => c.role === "Supplier" || c.role === "Both") ?? [];
         const allProducts = products ? [...products] : [];
-        const lowStockItems = allProducts.filter(p => (p.current_stock ?? 0) <= (p.min_stock_level ?? 5));
+        const lowStockItems = allProducts.filter(p => (p.current_stock ?? 0) <= (p.alert_quantity ?? 5));
 
         return {
             customers: customers.map(c => ({ name: c.name, phone: c.phone, email: c.email })),
@@ -59,14 +68,14 @@ export function AiChatbot() {
             products: allProducts.map(p => ({
                 name: p.name,
                 current_stock: p.current_stock ?? 0,
-                min_stock_level: p.min_stock_level ?? 5,
+                alert_quantity: p.alert_quantity ?? 5,
                 sale_price: p.sale_price,
                 purchase_price: p.purchase_price,
             })),
             low_stock_items: lowStockItems.map(p => ({
                 name: p.name,
                 current_stock: p.current_stock ?? 0,
-                min_stock_level: p.min_stock_level ?? 5,
+                alert_quantity: p.alert_quantity ?? 5,
             })),
             financials: {
                 total_revenue: report?.totalRevenue ?? 0,
@@ -126,10 +135,11 @@ export function AiChatbot() {
     };
 
     // ── Main send logic ────────────────────────────────────────────────────
-    const handleSend = async () => {
-        const text = input.trim();
+    const handleSend = async (overrideText?: string) => {
+        const text = (overrideText ?? input).trim();
         if (!text || isLoading) return;
-        setInput("");
+        if (!overrideText) setInput("");
+        if (!hasConsent) return;
 
         const userMsg: ChatMessageWithAction = { role: "user", text };
         const newMessages: ChatMessageWithAction[] = [...messages, userMsg];
@@ -230,10 +240,10 @@ export function AiChatbot() {
                                         )}
                                         <div className="flex flex-col gap-2 max-w-[85%]">
                                             <div className={cn(
-                                                "rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap",
+                                                "rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap shadow-sm",
                                                 msg.role === "user"
                                                     ? "bg-primary text-primary-foreground rounded-tr-sm"
-                                                    : "bg-muted rounded-tl-sm"
+                                                    : "bg-muted rounded-tl-sm border border-border/50"
                                             )}>
                                                 {msg.text}
                                             </div>
@@ -242,7 +252,7 @@ export function AiChatbot() {
                                             {msg.formAction && msg.formAction.intent !== "none" && (
                                                 <button
                                                     onClick={() => openForm(msg.formAction)}
-                                                    className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-xl px-3 py-2 text-xs font-semibold transition-colors text-left"
+                                                    className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-xl px-3 py-2 text-xs font-bold transition-all hover:scale-[1.02] active:scale-[0.98] text-left shadow-sm"
                                                 >
                                                     <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                                                     <span>
@@ -271,8 +281,29 @@ export function AiChatbot() {
                                 <div ref={bottomRef} />
                             </div>
 
-                            {/* Suggested prompts */}
-                            {messages.length === 0 && (
+                            {/* Consent Check or Suggested prompts */}
+                            {!hasConsent ? (
+                                <div className="mx-4 mb-4 p-3 bg-violet-100/50 dark:bg-violet-950/40 rounded-xl border border-violet-200 dark:border-violet-800 flex flex-col gap-3">
+                                    <div className="flex gap-2 items-start">
+                                        <ShieldAlert className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0 mt-0.5" />
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-semibold text-violet-900 dark:text-violet-200">AI Privacy Consent</p>
+                                            <p className="text-[10px] leading-normal text-violet-700/80 dark:text-violet-400/80">
+                                                This assistant uses Google Gemini to help you manage your ERP.
+                                                By continuing, you agree to share sanitized business data for processing.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleConsent}
+                                        className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-lg h-8 text-xs font-bold"
+                                    >
+                                        <ShieldCheck className="mr-2 h-3.5 w-3.5" />
+                                        Accept & Start Chatting
+                                    </Button>
+                                </div>
+                            ) : messages.length === 0 && (
                                 <div className="px-4 pb-2 flex flex-wrap gap-1.5">
                                     {[
                                         "What's my net profit?",
@@ -282,8 +313,8 @@ export function AiChatbot() {
                                     ].map(q => (
                                         <button
                                             key={q}
-                                            onClick={() => setInput(q)}
-                                            className="text-xs bg-muted hover:bg-muted/80 text-muted-foreground px-2.5 py-1 rounded-full transition-colors"
+                                            onClick={() => handleSend(q)}
+                                            className="text-xs bg-muted hover:bg-muted/80 text-muted-foreground px-2.5 py-1 rounded-full transition-colors font-medium border border-border/50"
                                         >
                                             {q}
                                         </button>
@@ -294,18 +325,19 @@ export function AiChatbot() {
                             {/* Input */}
                             <div className="p-3 border-t flex gap-2">
                                 <Input
-                                    placeholder="Ask or describe a sale/purchase..."
+                                    ref={inputRef}
+                                    placeholder={hasConsent ? "Ask or describe a sale/purchase..." : "Please accept consent to chat"}
                                     value={input}
                                     onChange={e => setInput(e.target.value)}
                                     onKeyDown={e => e.key === "Enter" && handleSend()}
                                     className="flex-1 rounded-full text-sm h-9"
-                                    disabled={isLoading}
+                                    disabled={isLoading || !hasConsent}
                                 />
                                 <Button
                                     size="icon"
                                     className="h-9 w-9 rounded-full shrink-0"
-                                    onClick={handleSend}
-                                    disabled={isLoading || !input.trim()}
+                                    onClick={() => handleSend()}
+                                    disabled={isLoading || !input.trim() || !hasConsent}
                                 >
                                     <Send className="h-3.5 w-3.5" />
                                 </Button>

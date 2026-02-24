@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { getAiConsent } from "./ai-utils";
 
 // ── Types (unchanged — no impact on callers) ────────────────────────────────
 
@@ -36,7 +37,11 @@ export async function parseInvoiceImage(
     base64Image: string,
     mimeType: string
 ): Promise<ParsedOrder & { supplier_name: string | null }> {
-    return invoke("invoice", { base64Image, mimeType });
+    const parsed = await invoke<any>("invoice", { base64Image, mimeType });
+    return {
+        ...parsed,
+        supplier_name: parsed.supplier_name ?? parsed.contact_name ?? null
+    };
 }
 
 /** Parse a customer PO / sales order image — returns customer_name + items */
@@ -44,17 +49,26 @@ export async function parseSaleOrderImage(
     base64Image: string,
     mimeType: string
 ): Promise<ParsedOrder & { customer_name: string | null }> {
-    return invoke("sale", { base64Image, mimeType });
+    const parsed = await invoke<any>("sale", { base64Image, mimeType });
+    return {
+        ...parsed,
+        customer_name: parsed.customer_name ?? parsed.contact_name ?? null
+    };
 }
 
 /** Analyze any report data and return plain-English business insights */
 export async function analyzeReport(reportType: string, data: object): Promise<string> {
+    if (!getAiConsent()) throw new Error("AI processing consent not granted.");
     const result = await invoke<{ insights: string }>("report", { reportType, data });
     return result.insights;
 }
 
 /** ERP Chatbot — answers questions using provided live ERP context */
 export async function askChatbot(messages: ChatMessage[], context: object): Promise<string> {
+    if (!getAiConsent()) throw new Error("AI processing consent not granted.");
+    if (!Array.isArray(messages) || messages.length === 0) {
+        throw new Error("askChatbot requires at least one message");
+    }
     const result = await invoke<{ reply: string }>("chat", { messages, context });
     return result.reply;
 }

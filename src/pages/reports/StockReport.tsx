@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AiInsightPanel } from "@/components/ai/AiInsightPanel";
+import { summarizeStock } from "@/lib/ai-utils";
 
 const StockReport = () => {
     const navigate = useNavigate();
@@ -151,7 +152,7 @@ const StockReport = () => {
             {/* AI Insights */}
             <AiInsightPanel
                 reportType="Stock Valuation"
-                data={{ products, summary: { totalProducts: products.length } }}
+                data={summarizeStock(products)}
                 className="mb-6"
             />
 

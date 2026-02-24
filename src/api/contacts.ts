@@ -6,8 +6,8 @@ type Contact = Database["public"]["Tables"]["contacts"]["Row"];
 type ContactInsert = Database["public"]["Tables"]["contacts"]["Insert"];
 type ContactUpdate = Database["public"]["Tables"]["contacts"]["Update"];
 
-export const useContacts = () => {
-  return useQuery({
+export const useContacts = (options?: any) => {
+  return useQuery<Contact[], Error>({
     queryKey: ["contacts"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -19,6 +19,7 @@ export const useContacts = () => {
       return data;
     },
     staleTime: 1000 * 60 * 5,
+    ...options
   });
 };
 

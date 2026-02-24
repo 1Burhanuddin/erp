@@ -199,8 +199,20 @@ const ProfitLoss = () => {
             {/* AI Insights */}
             <AiInsightPanel
                 reportType="Profit & Loss"
-                data={report}
-                className="mb-6"
+                data={{
+                    period: dateRange.from ? `${format(dateRange.from, "MMM d")} - ${format(dateRange.to || new Date(), "MMM d, yyyy")}` : "Last 6 Months",
+                    summary: {
+                        revenue: report?.totalRevenue,
+                        cogs: report?.cogs,
+                        gross_profit: report?.grossProfit,
+                        expenses: report?.totalExpenses,
+                        net_profit: report?.netProfit,
+                    },
+                    trends: report?.trends,
+                    top_customers: report?.topCustomers,
+                    top_products: report?.topProducts
+                }}
+                className="mb-8"
             />
 
             {/* Summary Cards */}

@@ -201,7 +201,7 @@ const EditQuotation = () => {
         if (!id) return;
         convertQuotation.mutate(id, {
             onSuccess: () => {
-                navigate("/sell/orders"); // Navigate to Sales Orders list
+                navigate("/sell/order"); // Navigate to Sales Orders list
             }
         });
     };

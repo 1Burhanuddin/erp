@@ -24,9 +24,9 @@ interface ResolvedItem {
 }
 
 const FORM_ROUTES: Record<string, string> = {
-    sale: "/sell/direct-sale",
-    purchase: "/purchase/direct-purchase",
-    quotation: "/quotations/add",
+    sale: "/sell/order",
+    purchase: "/purchase/order",
+    quotation: "/sales/quotations/add",
 };
 
 export function AiChatbot() {
@@ -50,7 +50,7 @@ export function AiChatbot() {
     const buildContext = () => {
         const customers = contacts?.filter(c => c.role === "Customer" || c.role === "Both" || !c.role) ?? [];
         const suppliers = contacts?.filter(c => c.role === "Supplier" || c.role === "Both") ?? [];
-        const allProducts = products ?? [];
+        const allProducts = products ? [...products] : [];
         const lowStockItems = allProducts.filter(p => (p.current_stock ?? 0) <= (p.min_stock_level ?? 5));
 
         return {

@@ -275,7 +275,6 @@ const App = () => {
                 <Route path="/debug/fix-stores" element={<FixStores />} />
               </Route>
             </Routes>
-            <AiChatbot />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

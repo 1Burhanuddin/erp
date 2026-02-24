@@ -235,8 +235,8 @@ const DirectSale = () => {
                     tax_amount: item.taxAmount
                 }))
             });
-            toast.success("Direct Sale Completed!");
-            navigate(0);
+            toast.success("Sale order created successfully!");
+            navigate("/sell/order");
         } catch (error) {
             toast.error("Failed to complete sale");
         }

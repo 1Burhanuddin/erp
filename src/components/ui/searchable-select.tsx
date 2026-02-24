@@ -64,6 +64,7 @@ export function SearchableSelect({
         <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setQuery("") }}>
             <PopoverTrigger asChild>
                 <Button
+                    type="button"
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}

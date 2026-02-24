@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
@@ -26,8 +26,8 @@ import { useTaxRates } from "@/api/taxRates";
 import { toast } from "sonner";
 import { useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
-import { parseSaleOrderImage } from "@/lib/gemini";
-import { Badge } from "@/components/ui/badge";
+import { useAiOrderScan } from "@/hooks/useAiOrderScan";
+import { UnmatchedItemRow } from "@/components/ai/UnmatchedItemRow";
 
 const DirectSale = () => {
     const navigate = useNavigate();
@@ -39,10 +39,17 @@ const DirectSale = () => {
     const [customerId, setCustomerId] = useState("");
     const [orderNo] = useState(`DS-${Date.now()}`);
     const [items, setItems] = useState<any[]>([]);
-    const [isScanning, setIsScanning] = useState(false);
     const [aiCustomerName, setAiCustomerName] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const location = useLocation();
+
+    const { isScanning, fileInputRef, triggerScan, handleFileChange } = useAiOrderScan({
+        mode: "sale",
+        contacts: customers,
+        products,
+        onContactMatched: (id) => { setCustomerId(id); setAiCustomerName(null); },
+        onContactUnmatched: (name) => setAiCustomerName(name),
+        onItemsScanned: setItems,
+    });
 
     // ── Apply chatbot prefill on mount ─────────────────────────────────────────
     useEffect(() => {
@@ -96,79 +103,11 @@ const DirectSale = () => {
         }
     };
 
-    // ── AI Order Scan ───────────────────────────────────────────────────────────
-    const handleScanOrder = () => fileInputRef.current?.click();
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        e.target.value = "";
-        setIsScanning(true);
-        try {
-            const base64 = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve((reader.result as string).split(",")[1]);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-
-            const parsed = await parseSaleOrderImage(base64, file.type);
-
-            // Match customer
-            if (parsed.customer_name) {
-                const aiName = parsed.customer_name.toLowerCase();
-                const aiWords = aiName.split(/\s+/).filter(w => w.length > 2);
-                const matched = customers?.find(c => {
-                    const cName = c.name.toLowerCase();
-                    if (cName.includes(aiName) || aiName.includes(cName)) return true;
-                    return aiWords.some(w => cName.includes(w));
-                });
-                if (matched) {
-                    setCustomerId(matched.id);
-                    setAiCustomerName(null);
-                } else {
-                    setAiCustomerName(parsed.customer_name);
-                }
-            }
-
-            // Build items, matching products by name, using sale price if AI price is 0
-            if (parsed.items?.length) {
-                const newItems = parsed.items.map(ai => {
-                    const matched = products?.find(p =>
-                        p.name.toLowerCase().includes(ai.product_name.toLowerCase()) ||
-                        ai.product_name.toLowerCase().includes(p.name.toLowerCase())
-                    );
-                    const unitPrice = ai.unit_price || matched?.sale_price || 0;
-                    const quantity = ai.quantity || 1;
-                    return {
-                        productId: matched?.id || "",
-                        productName: matched?.name || ai.product_name,
-                        aiProductName: ai.product_name,
-                        quantity,
-                        unitPrice,
-                        currentStock: matched?.current_stock || 0,
-                        taxRateId: "",
-                        taxAmount: 0,
-                        subtotal: quantity * unitPrice,
-                        unmatched: !matched,
-                    };
-                });
-                setItems(newItems);
-                toast.success(`Order scanned! ${newItems.length} item(s) found. Review and confirm.`);
-            } else {
-                toast.warning("No items could be extracted. Try a clearer image.");
-            }
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to scan order");
-        } finally {
-            setIsScanning(false);
-        }
-    };
-
+    // ── Fix unmatched item ──────────────────────────────────────────────────────
     const fixItemProduct = (idx: number, productId: string) => {
         const product = products?.find(p => p.id === productId);
         setItems(prev => prev.map((item, i) =>
-            i === idx ? {
+            i !== idx ? item : {
                 ...item,
                 productId,
                 productName: product?.name || item.productName,
@@ -176,10 +115,9 @@ const DirectSale = () => {
                 currentStock: product?.current_stock || 0,
                 subtotal: item.quantity * (item.unitPrice || product?.sale_price || 0),
                 unmatched: false,
-            } : item
+            }
         ));
     };
-    // ────────────────────────────────────────────────────────────────────────────
 
     const addItem = () => {
         if (!currentItem.productId) return toast.error("Select product");
@@ -258,8 +196,9 @@ const DirectSale = () => {
                                 <p className="text-sm text-muted-foreground">Fill manually or scan a customer order</p>
                             </div>
                             <Button
+                                type="button"
                                 variant="outline"
-                                onClick={handleScanOrder}
+                                onClick={triggerScan}
                                 disabled={isScanning}
                                 className="gap-2 border-primary text-primary hover:bg-primary/10"
                             >
@@ -364,19 +303,11 @@ const DirectSale = () => {
                                             <TableRow key={idx} className={item.unmatched ? "bg-amber-50/50 dark:bg-amber-950/20" : "hover:bg-muted/30"}>
                                                 <TableCell className="min-w-[180px]">
                                                     {item.unmatched ? (
-                                                        <div className="space-y-1">
-                                                            <Badge variant="outline" className="text-amber-600 border-amber-400 text-xs">
-                                                                AI: {item.aiProductName}
-                                                            </Badge>
-                                                            <Select onValueChange={(v) => fixItemProduct(idx, v)}>
-                                                                <SelectTrigger className="h-8 text-xs">
-                                                                    <SelectValue placeholder="Match to product..." />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
+                                                        <UnmatchedItemRow
+                                                            aiProductName={item.aiProductName}
+                                                            products={products}
+                                                            onFix={(v) => fixItemProduct(idx, v)}
+                                                        />
                                                     ) : item.productName}
                                                 </TableCell>
                                                 <TableCell>{item.quantity}</TableCell>

@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CSVLink } from "react-csv";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AiInsightPanel } from "@/components/ai/AiInsightPanel";
 
 const ProfitLoss = () => {
     const navigate = useNavigate();
@@ -195,6 +196,12 @@ const ProfitLoss = () => {
                     )}
                 </div>
             </div>
+            {/* AI Insights */}
+            <AiInsightPanel
+                reportType="Profit & Loss"
+                data={report}
+                className="mb-6"
+            />
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">

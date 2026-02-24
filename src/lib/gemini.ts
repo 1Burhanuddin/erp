@@ -67,3 +67,23 @@ export async function parseSaleOrderImage(base64Image: string, mimeType: string)
     const parsed = parseJson(result.response.text().trim());
     return { ...parsed, customer_name: parsed.contact_name };
 }
+
+/** Analyze any report data and return plain-English business insights */
+export async function analyzeReport(reportType: string, data: object): Promise<string> {
+    const model = getModel();
+    const prompt = `You are a smart business analyst for an ERP system. Analyze the following ${reportType} report data and provide 4-6 concise, actionable bullet-point insights.
+
+Report Data:
+${JSON.stringify(data, null, 2)}
+
+Guidelines:
+- Use plain English, no jargon
+- Highlight key trends, risks, and opportunities
+- Be specific with numbers where available
+- Format each insight as a bullet starting with an emoji (📈 📉 ⚠️ ✅ 💡 🔴)
+- Keep each bullet to 1-2 lines max
+- Do NOT include headers or titles, just the bullets`;
+
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+}

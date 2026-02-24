@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CSVLink } from "react-csv";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AiInsightPanel } from "@/components/ai/AiInsightPanel";
 
 const GSTReports = () => {
     const navigate = useNavigate();
@@ -108,6 +109,13 @@ const GSTReports = () => {
     return (
         <PageLayout>
             <ReportTabs />
+
+            {/* AI Insights */}
+            <AiInsightPanel
+                reportType="GST Report"
+                data={report}
+                className="mb-6"
+            />
 
             <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
                 <div className="flex items-center gap-2">

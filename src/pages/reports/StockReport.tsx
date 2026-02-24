@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AiInsightPanel } from "@/components/ai/AiInsightPanel";
 
 const StockReport = () => {
     const navigate = useNavigate();
@@ -146,6 +147,13 @@ const StockReport = () => {
     return (
         <PageLayout>
             <ReportTabs />
+
+            {/* AI Insights */}
+            <AiInsightPanel
+                reportType="Stock Valuation"
+                data={{ products, summary: { totalProducts: products.length } }}
+                className="mb-6"
+            />
 
             <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-6">
                 <Button asChild className="rounded-full shadow-sm">

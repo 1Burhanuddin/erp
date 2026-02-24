@@ -28,25 +28,42 @@ export function AiChatbot() {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isLoading]);
 
-    const buildContext = () => ({
-        summary: {
-            total_customers: contacts?.filter(c => c.role === "Customer" || c.role === "Both").length ?? 0,
-            total_suppliers: contacts?.filter(c => c.role === "Supplier" || c.role === "Both").length ?? 0,
-            total_products: products?.length ?? 0,
-            low_stock_products: products?.filter(p => (p.current_stock ?? 0) <= (p.min_stock_level ?? 5)).length ?? 0,
-        },
-        financials: {
-            total_revenue: report?.totalRevenue ?? 0,
-            total_expenses: report?.totalExpenses ?? 0,
-            gross_profit: report?.grossProfit ?? 0,
-            net_profit: report?.netProfit ?? 0,
-            cogs: report?.cogs ?? 0,
-        },
-        top_products: products
-            ?.sort((a, b) => (b.current_stock ?? 0) - (a.current_stock ?? 0))
-            .slice(0, 10)
-            .map(p => ({ name: p.name, stock: p.current_stock, sale_price: p.sale_price })),
-    });
+    const buildContext = () => {
+        const customers = contacts?.filter(c => c.role === "Customer" || c.role === "Both" || !c.role) ?? [];
+        const suppliers = contacts?.filter(c => c.role === "Supplier" || c.role === "Both") ?? [];
+        const allProducts = products ?? [];
+        const lowStockItems = allProducts.filter(p => (p.current_stock ?? 0) <= (p.min_stock_level ?? 5));
+
+        return {
+            customers: customers.map(c => ({ name: c.name, phone: c.phone, email: c.email })),
+            suppliers: suppliers.map(s => ({ name: s.name, phone: s.phone })),
+            products: allProducts.map(p => ({
+                name: p.name,
+                current_stock: p.current_stock ?? 0,
+                min_stock_level: p.min_stock_level ?? 5,
+                sale_price: p.sale_price,
+                purchase_price: p.purchase_price,
+            })),
+            low_stock_items: lowStockItems.map(p => ({
+                name: p.name,
+                current_stock: p.current_stock ?? 0,
+                min_stock_level: p.min_stock_level ?? 5,
+            })),
+            financials: {
+                total_revenue: report?.totalRevenue ?? 0,
+                total_expenses: report?.totalExpenses ?? 0,
+                gross_profit: report?.grossProfit ?? 0,
+                net_profit: report?.netProfit ?? 0,
+                cogs: report?.cogs ?? 0,
+            },
+            summary: {
+                total_customers: customers.length,
+                total_suppliers: suppliers.length,
+                total_products: allProducts.length,
+                low_stock_count: lowStockItems.length,
+            },
+        };
+    };
 
     const handleSend = async () => {
         const text = input.trim();

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { PageLayout, PageHeader } from "@/components/layout";
+import { useState, useRef } from "react";
+import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, ScanLine, Loader2, AlertTriangle } from "lucide-react";
 import { useContacts } from "@/api/contacts";
 import { useProducts } from "@/api/products";
 import { useCreateDirectPurchase } from "@/api/purchase";
@@ -36,6 +36,8 @@ import { ContactForm } from "@/components/contacts/ContactForm";
 import { ProductForm } from "@/components/products/ProductForm";
 import { useCreateContact } from "@/api/contacts";
 import { useCreateProduct } from "@/api/products";
+import { parseInvoiceImage } from "@/lib/gemini";
+import { Badge } from "@/components/ui/badge";
 
 const DirectPurchase = () => {
     const navigate = useNavigate();
@@ -48,12 +50,13 @@ const DirectPurchase = () => {
 
     const [isAddSupplierOpen, setIsAddSupplierOpen] = useState(false);
     const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [supplierId, setSupplierId] = useState("");
-    const [orderNo, setOrderNo] = useState(`DP-${Date.now()}`); // Auto-generate
+    const [orderNo, setOrderNo] = useState(`DP-${Date.now()}`);
     const [items, setItems] = useState<any[]>([]);
 
-    // Quick Add Item State
     const [currentItem, setCurrentItem] = useState({
         productId: "",
         quantity: 1,
@@ -95,12 +98,6 @@ const DirectPurchase = () => {
             });
             toast.success("Product added");
             setIsAddProductOpen(false);
-            // We need to wait a tick for the product list to update via Query Client invalidation 
-            // OR manually inject. Usually React Query + auto-select needs a bit of care.
-            // For now, setting ID. If the list updates fast enough from props, it works.
-            setCurrentItem(prev => ({ ...prev, productId: newProduct.id }));
-
-            // Trigger price update manually since product might not be in 'products' list yet if not refetched
             setCurrentItem(prev => ({
                 ...prev,
                 productId: newProduct.id,
@@ -110,6 +107,88 @@ const DirectPurchase = () => {
             toast.error("Failed to add product");
         }
     };
+
+    // ── AI Invoice Scan ─────────────────────────────────────────────────────────
+    const handleScanInvoice = () => fileInputRef.current?.click();
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        // Reset so the same file can be re-selected
+        e.target.value = "";
+
+        setIsScanning(true);
+        try {
+            // Convert file to base64
+            const base64 = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result as string;
+                    // Strip data URL prefix
+                    resolve(result.split(",")[1]);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const parsed = await parseInvoiceImage(base64, file.type);
+
+            // Auto-match supplier by name (case-insensitive)
+            if (parsed.supplier_name) {
+                const matched = supplierList.find(s =>
+                    s.name.toLowerCase().includes(parsed.supplier_name!.toLowerCase()) ||
+                    parsed.supplier_name!.toLowerCase().includes(s.name.toLowerCase())
+                );
+                if (matched) setSupplierId(matched.id);
+            }
+
+            // Build items list, matching products by name
+            if (parsed.items?.length) {
+                const newItems = parsed.items.map(ai => {
+                    const matched = products?.find(p =>
+                        p.name.toLowerCase().includes(ai.product_name.toLowerCase()) ||
+                        ai.product_name.toLowerCase().includes(p.name.toLowerCase())
+                    );
+                    return {
+                        productId: matched?.id || "",
+                        productName: matched?.name || ai.product_name,
+                        aiProductName: ai.product_name,       // original AI name
+                        quantity: ai.quantity || 1,
+                        unitPrice: ai.unit_price || 0,
+                        taxRateId: "",
+                        taxPercentage: 0,
+                        taxAmount: 0,
+                        subtotal: (ai.quantity || 1) * (ai.unit_price || 0),
+                        unmatched: !matched,                  // flag for UI
+                    };
+                });
+                setItems(newItems);
+                toast.success(`Invoice scanned! ${newItems.length} item(s) found. Review and confirm.`);
+            } else {
+                toast.warning("No items could be extracted. Try a clearer image.");
+            }
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to scan invoice");
+        } finally {
+            setIsScanning(false);
+        }
+    };
+
+    // Handle product fix for unmatched AI items
+    const fixItemProduct = (idx: number, productId: string) => {
+        const product = products?.find(p => p.id === productId);
+        setItems(prev => prev.map((item, i) =>
+            i === idx ? {
+                ...item,
+                productId,
+                productName: product?.name || item.productName,
+                unitPrice: item.unitPrice || product?.purchase_price || 0,
+                subtotal: item.quantity * (item.unitPrice || product?.purchase_price || 0),
+                unmatched: false,
+            } : item
+        ));
+    };
+    // ────────────────────────────────────────────────────────────────────────────
 
     const addItem = () => {
         if (!currentItem.productId) return toast.error("Select product");
@@ -141,15 +220,16 @@ const DirectPurchase = () => {
     const handleSubmit = async () => {
         if (!supplierId) return toast.error("Select supplier");
         if (items.length === 0) return toast.error("Add items");
+        if (items.some(i => !i.productId)) return toast.error("Some items have unmatched products. Please fix them.");
 
         try {
             await createDirectPurchase.mutateAsync({
                 order: {
                     order_no: orderNo,
                     supplier_id: supplierId,
-                    order_date: format(new Date(), "yyyy-MM-dd"), // Today
+                    order_date: format(new Date(), "yyyy-MM-dd"),
                     total_amount: totalAmount,
-                    status: 'Received', // Explicitly received
+                    status: 'Received',
                     notes: 'Direct Purchase'
                 } as any,
                 items: items.map(item => ({
@@ -159,11 +239,10 @@ const DirectPurchase = () => {
                     subtotal: item.subtotal,
                     tax_rate_id: item.taxRateId || null,
                     tax_amount: item.taxAmount,
-                    // purchase_id added by hook
                 }))
             });
             toast.success("Direct Purchase Completed & Stock Updated!");
-            navigate("/purchase/grn"); // Redirect to GRN list to see it in history
+            navigate("/purchase/grn");
         } catch (error) {
             toast.error("Failed to complete direct purchase");
         }
@@ -171,12 +250,39 @@ const DirectPurchase = () => {
 
     return (
         <PageLayout>
-
+            {/* Hidden file input for invoice scanning */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-2 md:p-4">
                 {/* Left: Input Panel */}
                 <div className="lg:col-span-2 space-y-4">
                     <div className="bg-card border rounded-xl shadow-sm p-3 md:p-6 space-y-4 md:space-y-6">
+
+                        {/* AI Scan Button */}
+                        <div className="flex items-center justify-between border-b pb-4">
+                            <div>
+                                <h3 className="font-semibold text-base">Direct Purchase</h3>
+                                <p className="text-sm text-muted-foreground">Fill manually or scan an invoice</p>
+                            </div>
+                            <Button
+                                variant="outline"
+                                onClick={handleScanInvoice}
+                                disabled={isScanning}
+                                className="gap-2 border-primary text-primary hover:bg-primary/10"
+                            >
+                                {isScanning
+                                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Scanning...</>
+                                    : <><ScanLine className="h-4 w-4" /> Scan Invoice</>
+                                }
+                            </Button>
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <Label>Supplier <span className="text-destructive">*</span></Label>
@@ -207,7 +313,7 @@ const DirectPurchase = () => {
                         </div>
 
                         <div className="border rounded-xl p-3 md:p-4 bg-muted/20">
-                            <h3 className="font-semibold mb-3 text-base md:text-lg">Add Items</h3>
+                            <h3 className="font-semibold mb-3 text-base md:text-lg">Add Items Manually</h3>
                             <div className="grid grid-cols-1 gap-3">
                                 <div className="space-y-1.5">
                                     <Label>Product <span className="text-destructive">*</span></Label>
@@ -254,6 +360,12 @@ const DirectPurchase = () => {
                     {/* Items List */}
                     {items.length > 0 && (
                         <div className="border rounded-xl shadow-sm bg-card overflow-hidden">
+                            {items.some(i => i.unmatched) && (
+                                <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-sm px-4 py-2 border-b border-amber-200 dark:border-amber-800">
+                                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                                    Some items from the invoice couldn't be matched. Please select the correct product below.
+                                </div>
+                            )}
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
@@ -267,8 +379,28 @@ const DirectPurchase = () => {
                                     </TableHeader>
                                     <TableBody>
                                         {items.map((item, idx) => (
-                                            <TableRow key={idx} className="hover:bg-muted/30">
-                                                <TableCell className="font-medium">{item.productName}</TableCell>
+                                            <TableRow key={idx} className={item.unmatched ? "bg-amber-50/50 dark:bg-amber-950/20" : "hover:bg-muted/30"}>
+                                                <TableCell className="font-medium min-w-[180px]">
+                                                    {item.unmatched ? (
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Badge variant="outline" className="text-amber-600 border-amber-400 text-xs">
+                                                                    AI: {item.aiProductName}
+                                                                </Badge>
+                                                            </div>
+                                                            <Select onValueChange={(v) => fixItemProduct(idx, v)}>
+                                                                <SelectTrigger className="h-8 text-xs">
+                                                                    <SelectValue placeholder="Match to product..." />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    ) : (
+                                                        item.productName
+                                                    )}
+                                                </TableCell>
                                                 <TableCell className="text-center">{item.quantity}</TableCell>
                                                 <TableCell className="text-right">₹{item.unitPrice.toFixed(2)}</TableCell>
                                                 <TableCell className="text-right font-semibold">₹{item.subtotal.toFixed(2)}</TableCell>
@@ -313,6 +445,7 @@ const DirectPurchase = () => {
                     </div>
                 </div>
             </div>
+
             <Dialog open={isAddSupplierOpen} onOpenChange={setIsAddSupplierOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
@@ -330,7 +463,7 @@ const DirectPurchase = () => {
                     <ProductForm onSubmit={handleProductCreate} isSubmitting={createProduct.isPending} />
                 </DialogContent>
             </Dialog>
-        </PageLayout >
+        </PageLayout>
     );
 };
 

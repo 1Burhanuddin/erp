@@ -14,6 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AiInsightPanel } from "@/components/ai/AiInsightPanel";
+import { summarizeExpenses } from "@/lib/ai-utils";
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
 
@@ -141,6 +143,13 @@ const ExpenseReport = () => {
     return (
         <PageLayout>
             <ReportTabs />
+
+            {/* AI Insights */}
+            <AiInsightPanel
+                reportType="Expense Breakdown"
+                data={summarizeExpenses(expenses)}
+                className="mb-6"
+            />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>

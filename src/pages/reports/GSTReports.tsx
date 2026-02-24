@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CSVLink } from "react-csv";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AiInsightPanel } from "@/components/ai/AiInsightPanel";
 
 const GSTReports = () => {
     const navigate = useNavigate();
@@ -108,6 +109,21 @@ const GSTReports = () => {
     return (
         <PageLayout>
             <ReportTabs />
+
+            {/* AI Insights */}
+            <AiInsightPanel
+                reportType="GST Report"
+                data={{
+                    period: dateRange.from ? format(dateRange.from, "MMMM yyyy") : "All Time",
+                    gstr1_summary: {
+                        b2b_total: report?.gstr1?.b2b?.reduce((s: any, i: any) => s + i.value, 0) || 0,
+                        b2c_total: report?.gstr1?.b2c?.reduce((s: any, i: any) => s + i.value, 0) || 0,
+                        hsn_summary: report?.gstr1?.hsn?.map((h: any) => ({ hsn: h.hsn, value: h.value })) || []
+                    },
+                    gstr3b_summary: report?.gstr3b
+                }}
+                className="mb-6"
+            />
 
             <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
                 <div className="flex items-center gap-2">

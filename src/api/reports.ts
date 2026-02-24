@@ -53,7 +53,7 @@ export interface GSTReportMock {
 }
 
 export const useGSTReports = (filters?: ReportsFilters) => {
-    return useQuery({
+    return useQuery<any, Error>({
         queryKey: ["gst-reports", filters?.startDate?.toISOString(), filters?.endDate?.toISOString()],
         queryFn: async () => {
             const startDate = filters?.startDate ? startOfDay(filters.startDate).toISOString() : undefined;
@@ -151,8 +151,8 @@ export const useGSTReports = (filters?: ReportsFilters) => {
     });
 };
 
-export const useReports = (filters?: ReportsFilters) => {
-    return useQuery({
+export const useReports = (filters?: ReportsFilters, options?: any) => {
+    return useQuery<DashboardReport, Error>({
         queryKey: ["reports", filters?.startDate?.toISOString(), filters?.endDate?.toISOString()],
         queryFn: async (): Promise<DashboardReport> => {
             // Build date filters

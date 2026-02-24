@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar, { getPageTitle, SidebarMobileContent } from "./Sidebar";
 import TopHeader from "./TopHeader";
+import { AiChatbot } from "../ai/AiChatbot";
 import { useState } from "react";
 
 const DashboardLayout = () => {
@@ -22,6 +23,7 @@ const DashboardLayout = () => {
                 <main className="flex-1">
                     <Outlet context={{ isCollapsed, setIsCollapsed }} />
                 </main>
+                <AiChatbot />
             </div>
         </div>
     );

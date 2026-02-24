@@ -11,6 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -200,7 +201,7 @@ const EditQuotation = () => {
         if (!id) return;
         convertQuotation.mutate(id, {
             onSuccess: () => {
-                navigate("/sell/orders"); // Navigate to Sales Orders list
+                navigate("/sell/order"); // Navigate to Sales Orders list
             }
         });
     };
@@ -270,22 +271,14 @@ const EditQuotation = () => {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label>Customer</Label>
-                                    <Select
+
+                                    <SearchableSelect
+                                        options={contacts.map((c: any) => ({ label: c.name, value: c.id }))}
                                         value={formData.customer_id}
                                         onValueChange={(value) => setFormData({ ...formData, customer_id: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Customer" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {contacts.map((contact: any) => (
-                                                <SelectItem key={contact.id} value={contact.id}>
-                                                    {contact.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        placeholder="Select Customer"
+                                        searchPlaceholder="Search customers..."
+                                    />
                                 </div>
                                 <div className="space-y-1.5">
                                     <FloatingLabelInput
@@ -302,92 +295,82 @@ const EditQuotation = () => {
 
                             {/* Line Items */}
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center bg-muted/50 p-2 rounded-md font-medium text-sm">
+                                {/* Desktop Header */}
+                                <div className="hidden md:flex justify-between items-center bg-muted/50 p-2 rounded-md font-medium text-sm">
                                     <div className="flex-1 px-2">Product</div>
-                                    <div className="w-20 px-2">Qty</div>
-                                    <div className="w-28 px-2">Price</div>
-                                    <div className="w-32 px-2">Tax</div>
+                                    <div className="w-24 px-2">Qty</div>
+                                    <div className="w-32 px-2">Price</div>
+                                    <div className="w-40 px-2">Tax</div>
                                     <div className="w-32 px-2">Subtotal</div>
                                     <div className="w-10"></div>
                                 </div>
 
                                 {items.map((item, index) => (
-                                    <div key={item.id} className="flex gap-4 items-end">
-                                        <div className="flex-1">
-                                            <Select
+                                    <div key={item.id} className="flex flex-col md:flex-row gap-4 items-start md:items-end border-b md:border-0 pb-4 md:pb-0">
+                                        <div className="w-full md:flex-1">
+                                            <Label className="md:hidden text-xs text-muted-foreground mb-1 block">Product</Label>
+                                            <SearchableSelect
+                                                options={products.map((p: any) => ({ label: p.name, value: p.id }))}
                                                 value={item.product_id}
                                                 onValueChange={(value) => updateItem(item.id, "product_id", value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select Product" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {products.map((product: any) => (
-                                                        <SelectItem key={product.id} value={product.id}>
-                                                            {product.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="w-20">
-                                            <FloatingLabelInput
-                                                id={`qty-${item.id}`}
-                                                label="Qty"
-                                                type="number"
-                                                min="1"
-                                                value={item.quantity}
-                                                onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value) || 0)}
+                                                placeholder="Select Product"
+                                                searchPlaceholder="Search products..."
                                             />
                                         </div>
-                                        <div className="w-28">
-                                            <FloatingLabelInput
-                                                id={`price-${item.id}`}
-                                                label="Price"
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                value={item.unit_price}
-                                                onChange={(e) => updateItem(item.id, "unit_price", parseFloat(e.target.value) || 0)}
-                                            />
+                                        <div className="flex gap-4 w-full md:w-auto">
+                                            <div className="w-1/2 md:w-24 mt-1 md:mt-0">
+                                                <FloatingLabelInput
+                                                    id={`qty-${item.id}`}
+                                                    label="Qty"
+                                                    type="number"
+                                                    min="1"
+                                                    value={item.quantity}
+                                                    onChange={(e) => updateItem(item.id, "quantity", parseInt(e.target.value) || 0)}
+                                                />
+                                            </div>
+                                            <div className="w-1/2 md:w-32 mt-1 md:mt-0">
+                                                <FloatingLabelInput
+                                                    id={`price-${item.id}`}
+                                                    label="Price"
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={item.unit_price}
+                                                    onChange={(e) => updateItem(item.id, "unit_price", parseFloat(e.target.value) || 0)}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="w-32">
-                                            <Select
-                                                value={item.tax_rate_id}
-                                                onValueChange={(value) => updateItem(item.id, "tax_rate_id", value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Tax" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {taxRates?.map((rate) => (
-                                                        <SelectItem key={rate.id} value={rate.id}>
-                                                            {rate.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="w-32">
-                                            <FloatingLabelInput
-                                                id={`subtotal-${item.id}`}
-                                                label="Total"
-                                                value={item.subtotal.toFixed(2)}
-                                                readOnly
-                                                className="bg-muted pt-4"
-                                            />
-                                        </div>
-                                        <div className="w-10 pb-1">
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-destructive hover:text-destructive/90"
-                                                onClick={() => removeItem(item.id)}
-                                                disabled={items.length === 1}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                        <div className="flex gap-4 w-full md:w-auto items-end">
+                                            <div className="flex-1 md:w-40">
+                                                <Label className="md:hidden text-xs text-muted-foreground mb-1 block">Tax</Label>
+                                                <SearchableSelect
+                                                    options={taxRates?.map((r: any) => ({ label: r.name, value: r.id })) || []}
+                                                    value={item.tax_rate_id}
+                                                    onValueChange={(value) => updateItem(item.id, "tax_rate_id", value)}
+                                                    placeholder="Tax"
+                                                />
+                                            </div>
+                                            <div className="flex-1 md:w-32">
+                                                <FloatingLabelInput
+                                                    id={`subtotal-${item.id}`}
+                                                    label="Total"
+                                                    value={item.subtotal.toFixed(2)}
+                                                    readOnly
+                                                    className="bg-muted pt-4"
+                                                />
+                                            </div>
+                                            <div className="w-10 pb-1 flex justify-center">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-destructive hover:text-destructive/90"
+                                                    onClick={() => removeItem(item.id)}
+                                                    disabled={items.length === 1}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

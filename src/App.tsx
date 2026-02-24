@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { AiChatbot } from "@/components/ai/AiChatbot";
 import Index from "./pages/Index";
 import ContactDetails from "./pages/ContactDetails";
 import Deals from "./pages/Deals";
@@ -274,6 +275,7 @@ const App = () => {
                 <Route path="/debug/fix-stores" element={<FixStores />} />
               </Route>
             </Routes>
+            <AiChatbot />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

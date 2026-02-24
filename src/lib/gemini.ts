@@ -87,3 +87,36 @@ Guidelines:
     const result = await model.generateContent(prompt);
     return result.response.text().trim();
 }
+
+export interface ChatMessage {
+    role: "user" | "model";
+    text: string;
+}
+
+/** ERP Chatbot — answers questions using provided live ERP context */
+export async function askChatbot(messages: ChatMessage[], context: object): Promise<string> {
+    const model = getModel();
+
+    const systemInstruction = `You are an AI assistant built into an ERP system. You help business owners understand their data.
+You have access to the following live ERP data as context:
+${JSON.stringify(context, null, 2)}
+
+Guidelines:
+- Answer questions about sales, purchases, inventory, expenses, customers, and suppliers using the data above.
+- Be concise and conversational — 1-3 sentences max unless a breakdown is needed.
+- Use ₹ for currency values.
+- If the data context doesn't have the answer, say so honestly.
+- Never make up data that isn't in the context.`;
+
+    const chat = model.startChat({
+        history: messages.slice(0, -1).map(m => ({
+            role: m.role,
+            parts: [{ text: m.text }],
+        })),
+        systemInstruction,
+    });
+
+    const lastMessage = messages[messages.length - 1];
+    const result = await chat.sendMessage(lastMessage.text);
+    return result.response.text().trim();
+}

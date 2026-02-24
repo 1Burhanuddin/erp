@@ -16,7 +16,7 @@ export async function parseInvoiceImage(base64Image: string, mimeType: string): 
     if (!apiKey) throw new Error("VITE_GEMINI_API_KEY is not set in .env");
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `You are an invoice parser. Analyze this invoice/bill image and extract the following information as valid JSON only, without any markdown or explanation:
 {

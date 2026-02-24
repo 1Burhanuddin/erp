@@ -26,8 +26,8 @@ interface ResolvedItem {
 }
 
 const FORM_ROUTES: Record<string, string> = {
-    sale: "/sell/order",
-    purchase: "/purchase/order",
+    sale: "/sell/direct",        // DirectSale.tsx — has location.state prefill support
+    purchase: "/purchase/direct", // DirectPurchase.tsx — has location.state prefill support
     quotation: "/sales/quotations/add",
 };
 

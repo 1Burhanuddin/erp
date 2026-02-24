@@ -97,7 +97,7 @@ export interface ChatMessage {
 export async function askChatbot(messages: ChatMessage[], context: object): Promise<string> {
     const model = getModel();
 
-    const systemInstruction = `You are an AI assistant built into an ERP system. You help business owners understand their data.
+    const contextText = `You are an AI assistant built into an ERP system. You help business owners understand their data.
 You have access to the following live ERP data as context:
 ${JSON.stringify(context, null, 2)}
 
@@ -108,12 +108,19 @@ Guidelines:
 - If the data context doesn't have the answer, say so honestly.
 - Never make up data that isn't in the context.`;
 
+    // Prepend context as a priming exchange so it works across all model versions
+    const primingHistory = [
+        { role: "user" as const, parts: [{ text: contextText }] },
+        { role: "model" as const, parts: [{ text: "Understood! I have your ERP data loaded. Ask me anything about your business." }] },
+    ];
+
+    const conversationHistory = messages.slice(0, -1).map(m => ({
+        role: m.role as "user" | "model",
+        parts: [{ text: m.text }],
+    }));
+
     const chat = model.startChat({
-        history: messages.slice(0, -1).map(m => ({
-            role: m.role,
-            parts: [{ text: m.text }],
-        })),
-        systemInstruction,
+        history: [...primingHistory, ...conversationHistory],
     });
 
     const lastMessage = messages[messages.length - 1];

@@ -87,8 +87,7 @@ export interface FormParseResult {
 /** Parse a natural-language message into structured form data */
 export async function parseFormFromText(
     text: string,
-    products: { name: string }[],
     contacts: { name: string }[]
 ): Promise<FormParseResult> {
-    return invoke("parse_form", { text, products, contacts });
+    return invoke("parse_form", { text, contacts });
 }

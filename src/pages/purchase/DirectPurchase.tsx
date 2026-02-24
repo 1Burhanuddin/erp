@@ -51,6 +51,7 @@ const DirectPurchase = () => {
     const [isAddSupplierOpen, setIsAddSupplierOpen] = useState(false);
     const [isAddProductOpen, setIsAddProductOpen] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
+    const [aiSupplierName, setAiSupplierName] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [supplierId, setSupplierId] = useState("");
@@ -133,13 +134,22 @@ const DirectPurchase = () => {
 
             const parsed = await parseInvoiceImage(base64, file.type);
 
-            // Auto-match supplier by name (case-insensitive)
+            // Auto-match supplier by name — try full match first, then word-level
             if (parsed.supplier_name) {
-                const matched = supplierList.find(s =>
-                    s.name.toLowerCase().includes(parsed.supplier_name!.toLowerCase()) ||
-                    parsed.supplier_name!.toLowerCase().includes(s.name.toLowerCase())
-                );
-                if (matched) setSupplierId(matched.id);
+                const aiName = parsed.supplier_name.toLowerCase();
+                const aiWords = aiName.split(/\s+/).filter(w => w.length > 2);
+                const matched = supplierList.find(s => {
+                    const sName = s.name.toLowerCase();
+                    if (sName.includes(aiName) || aiName.includes(sName)) return true;
+                    // word-level: any significant AI word found in supplier name
+                    return aiWords.some(w => sName.includes(w));
+                });
+                if (matched) {
+                    setSupplierId(matched.id);
+                    setAiSupplierName(null);
+                } else {
+                    setAiSupplierName(parsed.supplier_name); // show as hint
+                }
             }
 
             // Build items list, matching products by name
@@ -285,7 +295,6 @@ const DirectPurchase = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label>Supplier <span className="text-destructive">*</span></Label>
                                 <div className="flex gap-2">
                                     <Select value={supplierId} onValueChange={setSupplierId}>
                                         <SelectTrigger className="flex-1">
@@ -301,6 +310,12 @@ const DirectPurchase = () => {
                                         <Plus className="h-4 w-4" />
                                     </Button>
                                 </div>
+                                {aiSupplierName && !supplierId && (
+                                    <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        AI detected: <span className="font-medium">{aiSupplierName}</span> — select manually above
+                                    </p>
+                                )}
                             </div>
                             <div className="space-y-1.5">
                                 <FloatingLabelInput

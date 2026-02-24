@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
@@ -24,7 +24,7 @@ import { useProducts } from "@/api/products";
 import { useCreateDirectPurchase } from "@/api/purchase";
 import { useTaxRates } from "@/api/taxRates";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import {
     Dialog,
@@ -57,6 +57,40 @@ const DirectPurchase = () => {
     const [supplierId, setSupplierId] = useState("");
     const [orderNo, setOrderNo] = useState(`DP-${Date.now()}`);
     const [items, setItems] = useState<any[]>([]);
+    const location = useLocation();
+
+    // ── Apply chatbot prefill on mount ─────────────────────────────────────────
+    useEffect(() => {
+        const prefill = (location.state as any)?.prefill;
+        if (!prefill || !products) return;
+
+        if (prefill.contactId) setSupplierId(prefill.contactId);
+        else if (prefill.contactName) setAiSupplierName(prefill.contactName);
+
+        if (prefill.items?.length) {
+            const newItems = prefill.items.map((ai: any) => {
+                const matched = products.find(p => p.id === ai.productId) ||
+                    products.find(p => p.name.toLowerCase().includes(ai.productName?.toLowerCase()));
+                const unitPrice = ai.unitPrice || matched?.purchase_price || 0;
+                const qty = ai.quantity || 1;
+                return {
+                    productId: matched?.id || "",
+                    productName: matched?.name || ai.productName,
+                    aiProductName: ai.productName,
+                    quantity: qty,
+                    unitPrice,
+                    taxRateId: "",
+                    taxPercentage: 0,
+                    taxAmount: 0,
+                    subtotal: qty * unitPrice,
+                    unmatched: !matched?.id,
+                };
+            });
+            setItems(newItems);
+            toast.success(`${newItems.length} item(s) pre-filled from AI. Review and complete the purchase.`);
+        }
+    }, [products]);
+
 
     const [currentItem, setCurrentItem] = useState({
         productId: "",

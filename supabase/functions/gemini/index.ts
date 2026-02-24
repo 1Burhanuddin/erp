@@ -168,6 +168,53 @@ Guidelines:
             return json({ reply: text.trim() });
         }
 
+        // ── Parse natural language → form prefill ─────────────────────────────
+        if (type === "parse_form") {
+            const { text, products, contacts } = payload;
+
+            const prompt = `You are an ERP assistant. The user typed the following message:
+"${text}"
+
+Available products: ${JSON.stringify(products.map((p: { name: string }) => p.name))}
+Available contacts (customers/suppliers): ${JSON.stringify(contacts.map((c: { name: string }) => c.name))}
+
+Your job: determine if the user wants to create a Sale, Purchase, or Quotation, and extract the details.
+
+Respond ONLY with this JSON (no markdown, no explanation):
+{
+  "intent": "sale" | "purchase" | "quotation" | "none",
+  "contact_name": "<matched contact name from the list, or null>",
+  "items": [
+    {
+      "product_name": "<matched product name from the list above>",
+      "quantity": <number>,
+      "unit_price": <number or 0 if not mentioned>
+    }
+  ],
+  "message": "<friendly 1-line confirmation message to show the user, e.g. 'I've prepared a Sale for Taj Glass with 2 items.'>"
+}
+
+Rules:
+- intent is "none" if the message is NOT about creating a sale/purchase/quotation.
+- Match product and contact names to the closest item in the available lists — use the exact names from the lists.
+- If price is not mentioned, use 0.
+- items array must be empty [] if no products mentioned.`;
+
+            const responseText = await geminiContent({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.1 },
+            });
+
+            const parsed = parseResponseJson(responseText) as {
+                intent: string;
+                contact_name: string | null;
+                items: { product_name: string; quantity: number; unit_price: number }[];
+                message: string;
+            };
+
+            return json(parsed);
+        }
+
         return jsonErr(`Unknown type: ${type}`, 400);
     } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Unknown error";

@@ -58,3 +58,23 @@ export async function askChatbot(messages: ChatMessage[], context: object): Prom
     const result = await invoke<{ reply: string }>("chat", { messages, context });
     return result.reply;
 }
+
+// ── Conversational Form Filling ─────────────────────────────────────────────
+
+export type FormIntent = "sale" | "purchase" | "quotation" | "none";
+
+export interface FormParseResult {
+    intent: FormIntent;
+    contact_name: string | null;
+    items: { product_name: string; quantity: number; unit_price: number }[];
+    message: string;
+}
+
+/** Parse a natural-language message into structured form data */
+export async function parseFormFromText(
+    text: string,
+    products: { name: string }[],
+    contacts: { name: string }[]
+): Promise<FormParseResult> {
+    return invoke("parse_form", { text, products, contacts });
+}

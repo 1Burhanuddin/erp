@@ -1,8 +1,15 @@
-# Welcome to your GPT Engineer project
+# ERP System
 
-## Project info
+An enterprise resource planning system with integrated features for managing sales, purchases, inventory, and customer relationships.
 
-**URL**: https://run.gptengineer.app/projects/7e753aa5-e867-4890-ab18-f97d53f001e8/improve
+## Features
+
+- **Direct Sales & Purchases**: Streamlined order processing with AI-powered prefilling
+- **Inventory Management**: Track products and stock levels
+- **Customer & Supplier Management**: Maintain contact information and relationships
+- **Audit Logging**: Track all system changes for compliance
+- **Multi-store Support**: Manage multiple store locations
+- **AI Integration**: Smart order scanning and data entry assistance
 
 ## How can I edit this code?
 

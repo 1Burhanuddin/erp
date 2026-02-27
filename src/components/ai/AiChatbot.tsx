@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import Fuse from "fuse.js";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,9 +43,13 @@ export function AiChatbot() {
     const bottomRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const { data: contacts } = useContacts({ enabled: open });
-    const { data: products } = useProducts({ enabled: open });
+    // Load contacts & products eagerly (DashboardLayout is admin-only, so safe to pre-fetch).
+    // This ensures data is in the React Query cache before the user sends their first message.
+    // Reports are heavier — keep deferred until the chatbot is actually opened.
+    const { data: contacts, isLoading: contactsLoading } = useContacts();
+    const { data: products, isLoading: productsLoading } = useProducts();
     const { data: report } = useReports(undefined, { enabled: open });
+    const dataReady = !contactsLoading && !productsLoading;
 
     const handleConsent = () => {
         persistConsent(true);
@@ -93,14 +98,13 @@ export function AiChatbot() {
         };
     };
 
-    // ── Fuzzy-match a name against a list ──────────────────────────────────
+    // ── Fuzzy-match a name against a list (Fuse.js) ────────────────────────
     const fuzzyFind = <T extends { name: string }>(name: string, list: T[]): T | undefined => {
-        if (!name) return undefined;
-        const lower = name.toLowerCase();
-        return list.find(item => {
-            const n = item.name.toLowerCase();
-            return n === lower || n.includes(lower) || lower.includes(n);
-        });
+        if (!name || !list.length) return undefined;
+        const fuse = new Fuse(list, { keys: ["name"], threshold: 0.45, includeScore: true });
+        const results = fuse.search(name);
+        const best = results[0];
+        return best && (best.score ?? 1) < 0.45 ? best.item : undefined;
     };
 
     // ── Resolve AI product names → actual product IDs ──────────────────────
@@ -151,7 +155,6 @@ export function AiChatbot() {
             const allContacts = contacts ?? [];
             const intentResult = await parseFormFromText(
                 text,
-                (products ?? []).map(p => ({ name: p.name })),
                 allContacts.map(c => ({ name: c.name }))
             );
 
@@ -326,18 +329,22 @@ export function AiChatbot() {
                             <div className="p-3 border-t flex gap-2">
                                 <Input
                                     ref={inputRef}
-                                    placeholder={hasConsent ? "Ask or describe a sale/purchase..." : "Please accept consent to chat"}
+                                    placeholder={
+                                        !hasConsent ? "Please accept consent to chat" :
+                                            !dataReady ? "Loading your ERP data..." :
+                                                "Ask or describe a sale/purchase..."
+                                    }
                                     value={input}
                                     onChange={e => setInput(e.target.value)}
                                     onKeyDown={e => e.key === "Enter" && handleSend()}
                                     className="flex-1 rounded-full text-sm h-9"
-                                    disabled={isLoading || !hasConsent}
+                                    disabled={isLoading || !hasConsent || !dataReady}
                                 />
                                 <Button
                                     size="icon"
                                     className="h-9 w-9 rounded-full shrink-0"
                                     onClick={() => handleSend()}
-                                    disabled={isLoading || !input.trim() || !hasConsent}
+                                    disabled={isLoading || !input.trim() || !hasConsent || !dataReady}
                                 >
                                     <Send className="h-3.5 w-3.5" />
                                 </Button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
@@ -41,6 +41,7 @@ const DirectSale = () => {
     const [items, setItems] = useState<any[]>([]);
     const [aiCustomerName, setAiCustomerName] = useState<string | null>(null);
     const location = useLocation();
+    const prefillApplied = useRef(false);
 
     const { isScanning, fileInputRef, triggerScan, handleFileChange } = useAiOrderScan({
         mode: "sale",
@@ -51,10 +52,11 @@ const DirectSale = () => {
         onItemsScanned: setItems,
     });
 
-    // ── Apply chatbot prefill on mount ─────────────────────────────────────────
+    // ── Apply chatbot prefill on mount (runs once, waits for data) ────────────
     useEffect(() => {
         const prefill = (location.state as any)?.prefill;
-        if (!prefill || !customers || !products) return;
+        if (!prefill || !customers || !products || prefillApplied.current) return;
+        prefillApplied.current = true;
 
         if (prefill.contactId) setCustomerId(prefill.contactId);
         else if (prefill.contactName) setAiCustomerName(prefill.contactName);
@@ -81,7 +83,7 @@ const DirectSale = () => {
             setItems(newItems);
             toast.success(`${newItems.length} item(s) pre-filled from AI. Review and complete the sale.`);
         }
-    }, [customers, products]); // runs when data loads
+    }, [customers, products]); // wait for data, but guard prevents double-run
 
     const [currentItem, setCurrentItem] = useState({
         productId: "",

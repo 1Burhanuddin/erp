@@ -21,7 +21,10 @@ import {
   Wrench,
   Smartphone,
   Contact,
-  ArchiveX
+  ArchiveX,
+  Sun,
+  Moon,
+  Monitor
 } from "lucide-react";
 import {
   Collapsible,
@@ -55,6 +58,7 @@ import {
   BriefcaseBusiness,
   CheckCircle2
 } from "lucide-react";
+import { useTheme } from "@/components/theme-provider";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -404,7 +408,77 @@ export const SidebarMobileContent = ({ onLinkClick, activePlan = "FULL_ERP" }: {
           </div>
         ))}
       </nav>
+
+      {/* Theme Switcher pinned at bottom of Mobile Sidebar */}
+      <div className="p-4 border-t border-slate-200/60 dark:border-slate-800/60 mt-auto">
+        <ThemeSwitcher isCollapsed={false} />
+      </div>
     </div>
+  );
+};
+
+// ── Theme Switcher Component ───────────────────────────────────────────────
+const ThemeSwitcher = ({ isCollapsed }: { isCollapsed?: boolean }) => {
+  const { theme, setTheme } = useTheme();
+
+  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
+  };
+
+  const getIcon = () => {
+    if (theme === "light") return <Sun className="h-4 w-4" />;
+    if (theme === "dark") return <Moon className="h-4 w-4" />;
+    return <Monitor className="h-4 w-4" />;
+  };
+
+  const getLabel = () => {
+    if (theme === "light") return "Light Mode";
+    if (theme === "dark") return "Dark Mode";
+    return "System Theme";
+  };
+
+  const buttonContent = (
+    <div className={cn(
+      "flex items-center gap-3 px-3 h-10 w-full rounded-md transition-all duration-200 cursor-pointer",
+      isCollapsed ? "justify-center px-2" : "justify-start",
+      "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+    )}>
+      {getIcon()}
+      {!isCollapsed && <span className="font-medium text-sm">{getLabel()}</span>}
+    </div>
+  );
+
+  return (
+    <DropdownMenu>
+      {isCollapsed ? (
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>{buttonContent}</DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="font-medium">
+            {getLabel()}
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <DropdownMenuTrigger asChild>{buttonContent}</DropdownMenuTrigger>
+      )}
+      <DropdownMenuContent align="end" className="w-48" side={isCollapsed ? "right" : "bottom"}>
+        <DropdownMenuLabel className="text-xs">Select Theme</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => handleThemeChange("light")} className="flex items-center gap-2 cursor-pointer">
+          <Sun className="h-4 w-4" /> <span>Light</span>
+          {theme === "light" && <CheckCircle2 className="h-4 w-4 ml-auto text-primary" />}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleThemeChange("dark")} className="flex items-center gap-2 cursor-pointer">
+          <Moon className="h-4 w-4" /> <span>Dark</span>
+          {theme === "dark" && <CheckCircle2 className="h-4 w-4 ml-auto text-primary" />}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleThemeChange("system")} className="flex items-center gap-2 cursor-pointer">
+          <Monitor className="h-4 w-4" /> <span>System</span>
+          {theme === "system" && <CheckCircle2 className="h-4 w-4 ml-auto text-primary" />}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
@@ -504,6 +578,13 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
             </div>
           ))}
         </nav>
+
+        {/* Theme Switcher pinned at bottom of Desktop Sidebar */}
+        <div className={cn(
+          "p-3 border-t border-slate-200/60 dark:border-slate-800/60",
+        )}>
+          <ThemeSwitcher isCollapsed={isCollapsed} />
+        </div>
       </aside>
     </>
   );

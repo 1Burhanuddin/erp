@@ -4,7 +4,7 @@
 
 ## Key Features
 
-### 📊 Sales & Invoicing
+### Sales & Invoicing
 - **Quotations**: Create and manage sales quotes
 - **Sales Orders**: Track and process customer orders
 - **Delivery Challans**: Manage delivery documentation
@@ -14,34 +14,34 @@
 - **E-Commerce Sales**: Integrate with online store orders
 - **Web Bookings**: Manage service requests and appointments
 
-### 🛍️ Purchasing & Procurement
+### Purchasing & Procurement
 - **Purchase Orders**: Create and manage supplier orders
 - **Goods Receipt Notes (GRN)**: Track incoming goods
 - **Purchase Invoices**: Record supplier bills
 - **Direct Purchase**: Quick procurement entry
 - **Purchase Returns**: Process supplier returns
 
-### 📦 Inventory Management
+### Inventory Management
 - **Real-time Stock Tracking**: Monitor inventory levels across locations
 - **Product Master**: Manage products with categories, brands, and units
 - **Stock Adjustments**: Manual inventory corrections
 - **Multi-warehouse Support**: Organize inventory by location
 - **Stock Valuation Reports**: Track inventory value and metrics
 
-### 👥 Contacts & CRM
+### Contacts & CRM
 - **Supplier Management**: Maintain supplier details and purchase history
 - **Customer Management**: Track customer information and interactions
 - **Deals Pipeline**: Manage sales opportunities with Kanban board
 - **Contact Classification**: Organize contacts by role and category
 
-### 👨‍💼 Employee & HR Management
+### Employee & HR Management
 - **Employee Directory**: Manage employee information and profiles
 - **Attendance Tracking**: Record attendance with geofencing support
 - **Task Management**: Assign and track employee tasks
 - **Performance Monitoring**: Track employee performance metrics
 - **Mobile App**: Dedicated mobile interface for field employees
 
-### 📈 Advanced Reporting & Analytics
+### Advanced Reporting & Analytics
 - **Profit & Loss (P&L)**: Financial health analysis with date range filtering
 - **GST Compliance**: GSTR-1 and GSTR-3B tax reports for Indian businesses
 - **Stock Valuation**: Detailed inventory analytics and alerts
@@ -49,13 +49,13 @@
 - **General Reports**: Sales trends, monthly revenue, category distribution
 - **Export Options**: Download reports as CSV for further analysis
 
-### 🔐 Security & Compliance
+### Security & Compliance
 - **Row Level Security (RLS)**: Complete data isolation between users via Supabase
 - **Audit Logging**: Track all system changes with user attribution
 - **Multi-Store Support**: Manage multiple business locations independently
 - **Role-Based Access**: Admin and Employee role separation
 
-### 🤖 AI-Powered Features
+### AI-Powered Features
 - **Smart Order Scanning**: Google Gemini integration for automated order entry
 - **AI Prefilling**: Intelligent data prefilling to reduce manual entry
 - **Document Analysis**: Extract data from order images

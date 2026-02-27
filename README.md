@@ -1,6 +1,6 @@
 # ERP System
 
-An enterprise resource planning system with integrated features for managing sales, purchases, inventory, and customer relationships.
+A comprehensive enterprise resource planning system with integrated features for managing sales, purchases, inventory, and customer relationships.
 
 ## Features
 
@@ -10,80 +10,49 @@ An enterprise resource planning system with integrated features for managing sal
 - **Audit Logging**: Track all system changes for compliance
 - **Multi-store Support**: Manage multiple store locations
 - **AI Integration**: Smart order scanning and data entry assistance
+- **Reports**: GST, Profit & Loss, Stock, and Expense reports
 
-## How can I edit this code?
+## Tech Stack
 
-There are several ways of editing your application.
+- **Frontend**: React with TypeScript
+- **UI Framework**: shadcn-ui
+- **Styling**: Tailwind CSS
+- **Build Tool**: Vite
+- **Backend**: Supabase with PostgreSQL
+- **AI**: Google Gemini integration
 
-**Use GPT Engineer**
+## Getting Started
 
-Simply visit the GPT Engineer project at [GPT Engineer](https://gptengineer.app/projects/7e753aa5-e867-4890-ab18-f97d53f001e8/improve) and start prompting.
+### Prerequisites
+- Node.js & npm (or Bun)
+- Git
 
-Changes made via gptengineer.app will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in the GPT Engineer UI.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone https://github.com/1Burhanuddin/erp.git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to project directory
+cd erp
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
+# or with bun
+bun install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Debugging
 
-**Use GitHub Codespaces**
+Utility scripts are available in the `scripts/` directory to help with debugging database issues.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-All GPT Engineer projects can be deployed directly via the GPT Engineer app.
-
-Simply visit your project at [GPT Engineer](https://gptengineer.app/projects/7e753aa5-e867-4890-ab18-f97d53f001e8/improve) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.gptengineer.app/tips-tricks/custom-domain/)
-
-## Debugging Scripts
-
-We have provided utility scripts in the `scripts/` directory to help with debugging database issues.
-
-### `scripts/debug_sales_items.cjs`
-This script checks if the `sales_items` table has the necessary tax columns populated.
-Usage:
+### debug_sales_items.cjs
+Checks if the `sales_items` table has the necessary tax columns populated.
 ```sh
 node scripts/debug_sales_items.cjs
 ```

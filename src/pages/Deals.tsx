@@ -1,12 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { PageLayout, PageHeader } from "@/components/layout";
 import { StatusBadge } from "@/components/shared";
 import { useDeals, useUpdateDeal, useCreateDeal, Deal } from "@/api/deals";
 import { Button } from "@/components/ui/button";
 import { Plus, MoreHorizontal } from "lucide-react";
 import { ExpandableSearch } from "@/components/ui/expandable-search";
+import { ResponsivePageActions } from "@/components/shared/ResponsivePageActions";
+import { DataViewToggle } from "@/components/shared/DataViewToggle";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +49,7 @@ const Deals = () => {
   const { data: dealsData, isLoading } = useDeals();
   const deals = useMemo(() => dealsData || [], [dealsData]);
   const updateDealMutation = useUpdateDeal();
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('card');
   const createDealMutation = useCreateDeal();
   const { data: contactsData } = useContacts();
   const contacts = useMemo(() => contactsData || [], [contactsData]);
@@ -168,21 +172,113 @@ const Deals = () => {
 
   return (
     <PageLayout>
-      <ExpandableSearch
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder="Search deals..."
-      />
+      {/* Top Controls Section */}
+      <div className="bg-background border border-border rounded-xl p-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+          <div className="w-full lg:w-96">
+            <ExpandableSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search deals..."
+            />
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <DataViewToggle viewMode={viewMode} setViewMode={setViewMode} variant="default" />
+            <Button onClick={() => setIsCreateOpen(true)} className="h-10">
+              <Plus className="mr-2 h-4 w-4" />
+              New Deal
+            </Button>
+          </div>
+        </div>
+      </div>
 
+      {/* Content Section */}
+      <div className="bg-background border border-border rounded-xl p-6">
+        <DragDropContext onDragEnd={(result) => {
+          if (!result.destination) return;
+          const { source, destination, draggableId } = result;
+          if (source.droppableId === destination.droppableId) return;
+          const newStatus = destination.droppableId;
+          updateDealMutation.mutate({ id: draggableId, status: newStatus });
+        }}>
+          <div className="space-y-6">
+            {Object.entries(columns).map(([columnId, columnDeals]) => {
+              const column = COLUMNS.find(c => c.id === columnId);
+              if (!column) return null;
+              
+              return (
+                <div key={columnId} className="bg-muted/30 rounded-lg p-4">
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-3">{column.title}</h3>
+                  <Droppable droppableId={columnId}>
+                    {(provided, snapshot) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className={cn(
+                          "min-h-[200px] rounded-lg transition-colors",
+                          snapshot.isDraggingOver ? "bg-muted/50" : "bg-background"
+                        )}
+                      >
+                        {columnDeals.map((deal, index) => (
+                          <Draggable key={deal.id} draggableId={deal.id} index={index}>
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={cn(
+                                  "mb-3 cursor-pointer transition-all",
+                                  snapshot.isDragging ? "rotate-2 shadow-lg" : "hover:shadow-md"
+                                )}
+                              >
+                                <CardContent className="p-4">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <h4 className="font-medium">{deal.title}</h4>
+                                      <p className="text-sm text-muted-foreground mt-1">
+                                        ${deal.value?.toLocaleString() || '0'}
+                                      </p>
+                                    </div>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                          <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        {COLUMNS.map(col => (
+                                          <DropdownMenuItem
+                                            key={col.id}
+                                            onClick={() => handleMoveDeal(deal, col.id)}
+                                            disabled={deal.status === col.id}
+                                          >
+                                            Move to {col.title}
+                                          </DropdownMenuItem>
+                                        ))}
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+              );
+            })}
+          </div>
+        </DragDropContext>
+      </div>
+
+      {/* Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogTrigger asChild>
-          <Button
-            className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 shadow-xl"
-            size="lg"
-          >
-            <Plus className="mr-2 h-5 w-5" />
-            <span className="font-medium text-base">New Deal</span>
-          </Button>
+          <div className="hidden" />
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>

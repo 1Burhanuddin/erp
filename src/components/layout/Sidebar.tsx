@@ -578,13 +578,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
             </div>
           ))}
         </nav>
-
-        {/* Theme Switcher pinned at bottom of Desktop Sidebar */}
-        <div className={cn(
-          "p-3 border-t border-slate-200/60 dark:border-slate-800/60",
-        )}>
-          <ThemeSwitcher isCollapsed={isCollapsed} />
-        </div>
       </aside>
     </>
   );

@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { CommandMenu } from "@/components/CommandMenu";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { StoreSwitcher } from "@/components/StoreSwitcher";
+import { useTheme } from "@/components/theme-provider";
 import { useLocation } from "react-router-dom";
 
 interface TopHeaderProps {
@@ -17,6 +18,17 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const location = useLocation();
   const isDashboard = location.pathname === "/" || location.pathname === "/dashboard";
+  const { theme, setTheme } = useTheme();
+
+  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
+  };
+
+  const getIcon = () => {
+    if (theme === "light") return <Sun className="h-4 w-4" />;
+    if (theme === "dark") return <Moon className="h-4 w-4" />;
+    return <Monitor className="h-4 w-4" />;
+  };
 
   // Clone sidebarContent to inject the onLinkClick prop if it's a valid React element
   const contentWithProps = React.isValidElement(sidebarContent)
@@ -49,6 +61,19 @@ const TopHeader = ({ title, description, sidebarContent }: TopHeaderProps) => {
           <StoreSwitcher />
           {isDashboard && <CommandMenu />}
           <NotificationsDropdown />
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => {
+              const nextTheme = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+              handleThemeChange(nextTheme);
+            }}
+            title={`Current: ${theme}. Click to switch theme`}
+          >
+            {getIcon()}
+          </Button>
         </div>
 
         {/* Mobile Store Switcher - Always visible */}

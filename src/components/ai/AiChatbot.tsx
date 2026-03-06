@@ -60,6 +60,13 @@ export function AiChatbot() {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isLoading]);
 
+    // Listen for external chatbot open event
+    useEffect(() => {
+        const handleOpenChatbot = () => setOpen(true);
+        window.addEventListener('open-chatbot', handleOpenChatbot);
+        return () => window.removeEventListener('open-chatbot', handleOpenChatbot);
+    }, []);
+
     // ── Build rich context for Q&A ──────────────────────────────────────────
     const buildContext = () => {
         const customers = contacts?.filter(c => c.role === "Customer" || c.role === "Both" || !c.role) ?? [];
@@ -191,7 +198,7 @@ export function AiChatbot() {
             {!open && (
                 <button
                     onClick={() => setOpen(true)}
-                    className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform"
+                    className="fixed bottom-6 right-6 z-[60] h-14 w-14 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform"
                     title="Ask AI"
                 >
                     <Bot className="h-6 w-6" />
@@ -201,7 +208,7 @@ export function AiChatbot() {
             {/* Chat window */}
             {open && (
                 <div className={cn(
-                    "fixed bottom-6 right-6 z-50 flex flex-col bg-card border border-border rounded-2xl shadow-2xl shadow-black/20 transition-all duration-200",
+                    "fixed bottom-6 right-6 z-[60] flex flex-col bg-card border border-border rounded-2xl shadow-2xl shadow-black/20 transition-all duration-200",
                     minimized ? "w-72 h-14" : "w-[380px] h-[540px]"
                 )}>
                     {/* Header */}
@@ -286,12 +293,12 @@ export function AiChatbot() {
 
                             {/* Consent Check or Suggested prompts */}
                             {!hasConsent ? (
-                                <div className="mx-4 mb-4 p-3 bg-violet-100/50 dark:bg-violet-950/40 rounded-xl border border-violet-200 dark:border-violet-800 flex flex-col gap-3">
+                                <div className="mx-4 mb-4 p-3 bg-primary/10 dark:bg-primary/20 rounded-xl border border-primary/20 dark:border-primary/30 flex flex-col gap-3">
                                     <div className="flex gap-2 items-start">
-                                        <ShieldAlert className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0 mt-0.5" />
+                                        <ShieldAlert className="h-4 w-4 text-primary dark:text-primary shrink-0 mt-0.5" />
                                         <div className="space-y-1">
-                                            <p className="text-xs font-semibold text-violet-900 dark:text-violet-200">AI Privacy Consent</p>
-                                            <p className="text-[10px] leading-normal text-violet-700/80 dark:text-violet-400/80">
+                                            <p className="text-xs font-semibold text-primary dark:text-primary">AI Privacy Consent</p>
+                                            <p className="text-[10px] leading-normal text-primary/80 dark:text-primary/70">
                                                 This assistant uses Google Gemini to help you manage your ERP.
                                                 By continuing, you agree to share sanitized business data for processing.
                                             </p>
@@ -300,7 +307,7 @@ export function AiChatbot() {
                                     <Button
                                         size="sm"
                                         onClick={handleConsent}
-                                        className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-lg h-8 text-xs font-bold"
+                                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 text-xs font-bold"
                                     >
                                         <ShieldCheck className="mr-2 h-3.5 w-3.5" />
                                         Accept & Start Chatting

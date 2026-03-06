@@ -22,6 +22,7 @@ import {
 const Reports = () => {
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [mounted, setMounted] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('card');
 
   useEffect(() => {
     setMounted(true);
@@ -418,7 +419,7 @@ const Reports = () => {
                     }}
                     formatter={(value: number) => [`₹${value.toLocaleString()}`, "Revenue"]}
                   />
-                  <Bar dataKey="value" fill="hsl(262, 83%, 58%)" radius={[50, 50, 50, 50]} barSize={20} />
+                  <Bar dataKey="value" fill="hsl(var(--primary))" radius={[50, 50, 50, 50]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

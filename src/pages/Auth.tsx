@@ -88,122 +88,60 @@ const Auth = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-stone-50 dark:bg-zinc-900 relative overflow-hidden">
-            {/* Decorative Blobs - Desktop */}
-            <div className="hidden lg:block absolute inset-0 overflow-hidden pointer-events-none">
-                {/* Purple blob - top left */}
-                <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-[#8B6B9E] dark:bg-[#7A5A8D] rounded-[40%_60%_70%_30%/40%_50%_60%_50%]"></div>
-
-                {/* Coral blob - top right */}
-                <div className="absolute -top-20 right-0 w-[400px] h-[400px] bg-[#F5A5A0] dark:bg-[#E89590] rounded-[60%_40%_30%_70%/60%_30%_70%_40%]"></div>
-
-                {/* Yellow blob - bottom right */}
-                <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] bg-[#F4E5A0] dark:bg-[#E8D890] rounded-[30%_70%_70%_30%/30%_30%_70%_70%]"></div>
-
-                {/* Purple blob - bottom left */}
-                <div className="absolute bottom-20 -left-20 w-[350px] h-[350px] bg-[#9B7BAE] dark:bg-[#8A6A9D] rounded-[70%_30%_50%_50%/30%_60%_40%_70%]"></div>
+        <div className="min-h-screen flex">
+            {/* Left Panel - Modern Design */}
+            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+                <img 
+                    src="/auth_banner2.svg" 
+                    alt="Business professional working"
+                    className="absolute inset-0 w-full h-full object-contain"
+                />
             </div>
 
-            {/* Main Content Container */}
-            <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative z-10">
-                {/* Left Side - Branding (Desktop) */}
-                <div className="hidden lg:flex flex-col justify-center flex-1 space-y-6 bg-white/60 dark:bg-zinc-800/60 backdrop-blur-sm rounded-3xl p-10 shadow-lg">
-                    <div className="flex items-center gap-3 mb-4">
-                        <LayoutDashboard className="h-12 w-12 text-black dark:text-white" />
-                        <h1 className="text-5xl font-bold text-black dark:text-white tracking-tight">
-                            Operra
-                        </h1>
-                    </div>
-                    <p className="text-sm text-black/70 dark:text-white/70 font-medium tracking-widest uppercase">
-                        Enterprise Resource Planning
-                    </p>
-
-                    <div className="space-y-4 pt-6">
-                        <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100 leading-tight">
-                            Streamline Your Business Operations
-                        </h2>
-                        <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-md">
-                            Manage inventory, sales, purchases, contacts, and employees all in one powerful platform.
-                        </p>
-
-                        {/* Feature List */}
-                        <div className="space-y-3 pt-4">
-                            <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                                <div className="w-2 h-2 rounded-full bg-[#8B6B9E]"></div>
-                                <span>Real-time inventory tracking</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                                <div className="w-2 h-2 rounded-full bg-[#F5A5A0]"></div>
-                                <span>Comprehensive sales & purchase management</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                                <div className="w-2 h-2 rounded-full bg-[#F4E5A0]"></div>
-                                <span>Employee management & attendance tracking</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
-                                <div className="w-2 h-2 rounded-full bg-[#9B7BAE]"></div>
-                                <span>Advanced reporting & analytics</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Side - Auth Form */}
-                <div className="w-full lg:w-auto lg:flex-1 max-w-xl relative">
+            {/* Right Panel - Auth Form */}
+            <div className="flex-1 lg:w-1/2 bg-gray-50 dark:bg-zinc-900 flex items-center justify-center p-4">
+                <div className="w-full max-w-md">
                     {/* Mobile Branding */}
-                    <div className="lg:hidden text-center mb-6 relative z-10">
-                        <div className="flex items-center justify-center gap-2 mb-3">
-                            <LayoutDashboard className="h-8 w-8 text-black dark:text-white" />
-                            <h1 className="text-3xl font-bold text-black dark:text-white tracking-tight">
+                    <div className="lg:hidden text-center mb-8">
+                        <div className="flex items-center justify-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                                <LayoutDashboard className="h-5 w-5 text-white" />
+                            </div>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                 Operra
                             </h1>
                         </div>
-                        <p className="text-xs text-black/70 dark:text-white/70 font-medium tracking-widest uppercase">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 font-medium tracking-widest uppercase">
                             Enterprise Resource Planning
                         </p>
                     </div>
 
-                    {/* Mobile Decorative Blobs - Positioned relative to viewport */}
-                    <div className="lg:hidden fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-                        {/* Purple blob - top left */}
-                        <div className="absolute top-0 left-0 w-[200px] h-[200px] bg-[#8B6B9E] dark:bg-[#7A5A8D] rounded-[60%_40%_30%_70%/60%_30%_70%_40%] -translate-x-1/3 -translate-y-1/3"></div>
-
-                        {/* Yellow blob - top right */}
-                        <div className="absolute top-10 right-0 w-[150px] h-[150px] bg-[#F4E5A0] dark:bg-[#E8D890] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] translate-x-1/3"></div>
-
-                        {/* Coral blob - bottom right */}
-                        <div className="absolute bottom-20 right-0 w-[180px] h-[180px] bg-[#F5A5A0] dark:bg-[#E89590] rounded-[70%_30%_50%_50%/30%_60%_40%_70%] translate-x-1/4"></div>
-
-                        {/* Small purple blob - bottom left */}
-                        <div className="absolute bottom-0 left-0 w-[120px] h-[120px] bg-[#9B7BAE] dark:bg-[#8A6A9D] rounded-[50%_50%_50%_50%/50%_50%_50%_50%] -translate-x-1/4 translate-y-1/4"></div>
-                    </div>
-
                     {/* Auth Card */}
-                    <Card className="border-0 shadow-2xl bg-card relative z-10">
-                        <CardHeader className="space-y-1 pb-6 pt-8 px-8">
-                            <CardTitle className="text-3xl font-bold text-center lg:text-left text-gray-800 dark:text-gray-100">
-                                {isLogin ? "Welcome Back" : "Create Account"}
+                    <Card className="border-0 shadow-xl bg-white dark:bg-zinc-800 rounded-2xl">
+                        <CardHeader className="space-y-1 pb-8 pt-10 px-8">
+                            <CardTitle className="text-2xl font-bold text-center text-blue-900 dark:text-white">
+                                {isLogin ? "Operra" : "Create Account"}
                             </CardTitle>
-                            <CardDescription className="text-center lg:text-left text-base">
+                            <CardDescription className="text-center text-base text-gray-600 dark:text-gray-400">
                                 {isLogin
-                                    ? "Enter your credentials to access your account"
-                                    : "Enter your details to create your account"}
+                                    ? "Sign in to access your dashboard"
+                                    : "Sign up to get started with Operra"}
                             </CardDescription>
                         </CardHeader>
 
                         <form onSubmit={handleAuth}>
                             <CardContent className="space-y-5 px-8">
                                 <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
-                                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                                    <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 dark:bg-zinc-700 p-1 rounded-xl">
                                         <TabsTrigger
                                             value="signin"
-                                            className="data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black"
+                                            className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-zinc-800 dark:data-[state=active]:text-blue-400 rounded-lg font-medium"
                                         >
                                             Sign In
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="signup"
-                                            className="data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black"
+                                            className="data-[state=active]:bg-white data-[state=active]:text-blue-600 dark:data-[state=active]:bg-zinc-800 dark:data-[state=active]:text-blue-400 rounded-lg font-medium"
                                         >
                                             Sign Up
                                         </TabsTrigger>
@@ -226,13 +164,13 @@ const Auth = () => {
                                                 {!isLogin && (
                                                     <div className="space-y-2">
                                                         <div className="relative">
-                                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
                                                             <FloatingLabelInput
                                                                 id="fullName"
                                                                 label="Full Name"
                                                                 type="text"
-                                                                className="pl-10"
-                                                                labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
+                                                                className="pl-11 bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-600 rounded-xl"
+                                                                labelClassName="peer-placeholder-shown:left-10 peer-focus:left-3 bg-white dark:bg-zinc-800 px-2 rounded"
                                                                 value={name}
                                                                 onChange={(e) => setName(e.target.value)}
                                                                 required={!isLogin}
@@ -243,13 +181,13 @@ const Auth = () => {
 
                                                 <div className="space-y-2">
                                                     <div className="relative">
-                                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
                                                         <FloatingLabelInput
                                                             id="email"
                                                             label="Email"
                                                             type="email"
-                                                            className="pl-10"
-                                                            labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
+                                                            className="pl-11 bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-600 rounded-xl"
+                                                            labelClassName="peer-placeholder-shown:left-10 peer-focus:left-3 bg-white dark:bg-zinc-800 px-2 rounded"
                                                             value={email}
                                                             onChange={(e) => setEmail(e.target.value)}
                                                             required
@@ -259,13 +197,13 @@ const Auth = () => {
 
                                                 <div className="space-y-2">
                                                     <div className="relative">
-                                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
                                                         <FloatingLabelInput
                                                             id="password"
                                                             label="Password"
                                                             type={showPassword ? "text" : "password"}
-                                                            className="pl-10 pr-10"
-                                                            labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
+                                                            className="pl-11 pr-11 bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-600 rounded-xl"
+                                                            labelClassName="peer-placeholder-shown:left-10 peer-focus:left-3 bg-white dark:bg-zinc-800 px-2 rounded"
                                                             value={password}
                                                             onChange={(e) => setPassword(e.target.value)}
                                                             required
@@ -273,7 +211,7 @@ const Auth = () => {
                                                         <button
                                                             type="button"
                                                             onClick={() => setShowPassword(!showPassword)}
-                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors z-10"
+                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors z-10"
                                                             aria-label={showPassword ? "Hide password" : "Show password"}
                                                         >
                                                             {showPassword ? (
@@ -288,13 +226,13 @@ const Auth = () => {
                                                 {!isLogin && (
                                                     <div className="space-y-2">
                                                         <div className="relative">
-                                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
                                                             <FloatingLabelInput
                                                                 id="confirmPassword"
                                                                 label="Confirm Password"
                                                                 type={showPassword ? "text" : "password"}
-                                                                className="pl-10"
-                                                                labelClassName="peer-placeholder-shown:left-9 peer-focus:left-1"
+                                                                className="pl-11 bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-600 rounded-xl"
+                                                                labelClassName="peer-placeholder-shown:left-10 peer-focus:left-3 bg-white dark:bg-zinc-800 px-2 rounded"
                                                                 value={confirmPassword}
                                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                                 required={!isLogin}
@@ -310,7 +248,7 @@ const Auth = () => {
 
                             <CardFooter className="flex flex-col gap-4 px-8 pb-8">
                                 <Button
-                                    className="w-full font-semibold h-12 text-base bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 border-0"
+                                    className="w-full font-semibold h-12 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-0 transition-colors"
                                     type="submit"
                                     disabled={loading}
                                 >
@@ -318,14 +256,14 @@ const Auth = () => {
                                     {isLogin ? "Sign In" : "Create Account"}
                                 </Button>
 
-                                <p className="text-center text-sm text-muted-foreground">
+                                <p className="text-center text-sm text-gray-600 dark:text-gray-400">
                                     {isLogin ? (
                                         <>
                                             Don&apos;t have an account?{" "}
                                             <button
                                                 type="button"
                                                 onClick={() => setMode("signup")}
-                                                className="text-black dark:text-white hover:underline font-bold"
+                                                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline font-semibold"
                                             >
                                                 Sign up
                                             </button>
@@ -336,7 +274,7 @@ const Auth = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => setMode("signin")}
-                                                className="text-black dark:text-white hover:underline font-bold"
+                                                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline font-semibold"
                                             >
                                                 Sign in
                                             </button>

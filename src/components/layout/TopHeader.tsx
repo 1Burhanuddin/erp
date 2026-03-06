@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Menu, ChevronLeft } from "lucide-react";
+import { Menu, ChevronLeft, Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { CommandMenu } from "@/components/CommandMenu";

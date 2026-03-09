@@ -63,6 +63,9 @@ export const ListingLayout = ({
     headerActions,
     children
 }: ListingLayoutProps) => {
+    const hasActionBar = (selectedCount ?? 0) > 0 && !!floatingActions;
+    useSelectionActionBarVisibility(hasActionBar);
+
     return (
         <>
             <div className="bg-white dark:bg-card border-none sm:border sm:border-border/50 sm:shadow-sm sm:rounded-2xl overflow-hidden mb-6">

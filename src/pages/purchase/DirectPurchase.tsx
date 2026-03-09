@@ -68,7 +68,12 @@ const DirectPurchase = () => {
         galleryInputRef, 
         triggerCamera, 
         triggerGallery, 
-        handleFileChange 
+        handleFileChange,
+        previewUrl,
+        showPreview,
+        confirmPreview,
+        retakePreview,
+        closePreview,
     } = useAiOrderScan({
         mode: "purchase",
         contacts: supplierList,

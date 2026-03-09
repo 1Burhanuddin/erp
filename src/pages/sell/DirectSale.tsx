@@ -51,7 +51,12 @@ const DirectSale = () => {
         galleryInputRef, 
         triggerCamera, 
         triggerGallery, 
-        handleFileChange 
+        handleFileChange,
+        previewUrl,
+        showPreview,
+        confirmPreview,
+        retakePreview,
+        closePreview,
     } = useAiOrderScan({
         mode: "sale",
         contacts: customers,

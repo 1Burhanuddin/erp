@@ -74,6 +74,10 @@ const DirectPurchase = () => {
         confirmPreview,
         retakePreview,
         closePreview,
+        totalPendingImages,
+        currentPreviewIndex,
+        goToPrevImage,
+        goToNextImage,
     } = useAiOrderScan({
         mode: "purchase",
         contacts: supplierList,

@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Bot, Plus, LayoutGrid, Table, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useHideOnSelectionBar } from "@/hooks/useSelectionActionBar";
 import { useLocation } from "react-router-dom";
 
 interface EdgeDockProps {

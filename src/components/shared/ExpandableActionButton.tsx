@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Bot, Plus, LayoutGrid, Table, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
+import { useHideOnSelectionBar } from "@/hooks/useSelectionActionBar";
 
 interface ExpandableActionButtonProps {
   viewMode: 'table' | 'card';
@@ -23,7 +24,10 @@ export const ExpandableActionButton = ({
 }: ExpandableActionButtonProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [hiddenByActionBar, setHiddenByActionBar] = useState(false);
   const location = useLocation();
+
+  useHideOnSelectionBar(useCallback((h: boolean) => setHiddenByActionBar(h), []));
 
   // Detect mobile device
   useEffect(() => {
@@ -86,6 +90,8 @@ export const ExpandableActionButton = ({
     e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
+
+  if (hiddenByActionBar && isMobile) return null;
 
   return (
     <div className="expandable-action-container fixed bottom-6 right-6 z-[60]">

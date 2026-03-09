@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Bot, Plus, LayoutGrid, Table, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
+import { useHideOnSelectionBar } from "@/hooks/useSelectionActionBar";
 
 interface FloatingActionHubProps {
   viewMode: 'table' | 'card';
@@ -25,7 +26,10 @@ export const FloatingActionHub = ({
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [hiddenByActionBar, setHiddenByActionBar] = useState(false);
   const location = useLocation();
+
+  useHideOnSelectionBar(useCallback((h: boolean) => setHiddenByActionBar(h), []));
 
   // Detect mobile device
   useEffect(() => {
@@ -86,6 +90,8 @@ export const FloatingActionHub = ({
 
   // On mobile, always show expanded (no hover), on desktop use hover
   const shouldShowExpanded = isMobile || isExpanded;
+
+  if (hiddenByActionBar && isMobile) return null;
 
   return (
     <div 

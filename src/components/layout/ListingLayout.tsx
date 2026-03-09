@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { useSelectionActionBarVisibility } from "@/hooks/useSelectionActionBar";
 import { Filter, Plus, X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -62,6 +63,9 @@ export const ListingLayout = ({
     headerActions,
     children
 }: ListingLayoutProps) => {
+    const hasActionBar = (selectedCount ?? 0) > 0 && !!floatingActions;
+    useSelectionActionBarVisibility(hasActionBar);
+
     return (
         <>
             <div className="bg-white dark:bg-card border-none sm:border sm:border-border/50 sm:shadow-sm sm:rounded-2xl overflow-hidden mb-6">

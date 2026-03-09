@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Bot, Plus, LayoutGrid, Table, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useHideOnSelectionBar } from "@/hooks/useSelectionActionBar";
 import { useLocation } from "react-router-dom";
 
 interface EdgeDockProps {
@@ -24,7 +25,10 @@ export const EdgeDock = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [hiddenByActionBar, setHiddenByActionBar] = useState(false);
   const location = useLocation();
+
+  useHideOnSelectionBar(useCallback((h: boolean) => setHiddenByActionBar(h), []));
 
   // Detect mobile device
   useEffect(() => {
@@ -74,6 +78,8 @@ export const EdgeDock = ({
 
   // On mobile, show expanded by default or use tap to toggle
   const shouldShowExpanded = isMobile ? isExpanded : (isHovered || isExpanded);
+
+  if (hiddenByActionBar && isMobile) return null;
 
   return (
     <div 

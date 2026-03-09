@@ -57,6 +57,10 @@ const DirectSale = () => {
         confirmPreview,
         retakePreview,
         closePreview,
+        totalPendingImages,
+        currentPreviewIndex,
+        goToPrevImage,
+        goToNextImage,
     } = useAiOrderScan({
         mode: "sale",
         contacts: customers,
@@ -205,6 +209,11 @@ const DirectSale = () => {
                 onConfirm={confirmPreview}
                 onRetake={retakePreview}
                 onClose={closePreview}
+                totalImages={totalPendingImages}
+                currentIndex={currentPreviewIndex}
+                onPrev={goToPrevImage}
+                onNext={goToNextImage}
+                onAddMore={() => galleryInputRef.current?.click()}
             />
             {/* Hidden file inputs for scanning */}
             <input

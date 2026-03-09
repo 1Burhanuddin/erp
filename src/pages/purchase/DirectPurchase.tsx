@@ -60,7 +60,14 @@ const DirectPurchase = () => {
 
     const supplierList = suppliers?.filter(c => c.role === 'Supplier' || c.role === 'Both') || [];
 
-    const { isScanning, fileInputRef, triggerScan, handleFileChange } = useAiOrderScan({
+    const { 
+        isScanning, 
+        cameraInputRef, 
+        galleryInputRef, 
+        triggerCamera, 
+        triggerGallery, 
+        handleFileChange 
+    } = useAiOrderScan({
         mode: "purchase",
         contacts: supplierList,
         products,

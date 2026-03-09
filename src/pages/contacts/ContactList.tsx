@@ -75,7 +75,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                 contact.email || "",
                 contact.phone || "",
                 contact.company || "",
-       (conta?.gstin ||)  contact "",
+       (contact as any)?.gstin || "",
                 contact.address || "",
                 contact.role || ""
             ],

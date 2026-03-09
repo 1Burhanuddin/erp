@@ -28,6 +28,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { useAiOrderScan } from "@/hooks/useAiOrderScan";
 import { UnmatchedItemRow } from "@/components/ai/UnmatchedItemRow";
+import { ImageSourceSelector } from "@/components/ai/ImageSourceSelector";
 
 const DirectSale = () => {
     const navigate = useNavigate();

@@ -29,6 +29,7 @@ import { format } from "date-fns";
 import { useAiOrderScan } from "@/hooks/useAiOrderScan";
 import { UnmatchedItemRow } from "@/components/ai/UnmatchedItemRow";
 import { ImageSourceSelector } from "@/components/ai/ImageSourceSelector";
+import { ImagePreviewDialog } from "@/components/ai/ImagePreviewDialog";
 
 const DirectSale = () => {
     const navigate = useNavigate();

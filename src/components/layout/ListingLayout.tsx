@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { useSelectionActionBarVisibility } from "@/hooks/useSelectionActionBar";
 import { Filter, Plus, X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";

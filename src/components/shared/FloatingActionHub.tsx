@@ -26,7 +26,10 @@ export const FloatingActionHub = ({
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [hiddenByActionBar, setHiddenByActionBar] = useState(false);
   const location = useLocation();
+
+  useHideOnSelectionBar(useCallback((h: boolean) => setHiddenByActionBar(h), []));
 
   // Detect mobile device
   useEffect(() => {

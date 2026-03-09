@@ -79,6 +79,8 @@ export const EdgeDock = ({
   // On mobile, show expanded by default or use tap to toggle
   const shouldShowExpanded = isMobile ? isExpanded : (isHovered || isExpanded);
 
+  if (hiddenByActionBar && isMobile) return null;
+
   return (
     <div 
       className={cn(

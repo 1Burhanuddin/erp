@@ -202,7 +202,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                {contact.gstin && <div className="text-sm font-mono">GST: {contact.gstin}</div>}
+                                                {(contact as any).gstin && <div className="text-sm font-mono">GST: {(contact as any).gstin}</div>}
                                                 {contact.address && (
                                                     <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5 truncate max-w-[200px]">
                                                         <MapPin className="h-3 w-3 flex-shrink-0" /> {contact.address}

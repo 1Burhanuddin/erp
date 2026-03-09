@@ -29,7 +29,6 @@ const Inventory = () => {
   }, []);
 
   const filteredInventory = products
-    .filter(item => item.type === 'Product') // Only show physical products
     .filter((item) =>
       item.name.toLowerCase().includes(search.toLowerCase()) ||
       (item.sku && item.sku.toLowerCase().includes(search.toLowerCase()))

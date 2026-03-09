@@ -38,6 +38,7 @@ import { useCreateContact } from "@/api/contacts";
 import { useCreateProduct } from "@/api/products";
 import { useAiOrderScan } from "@/hooks/useAiOrderScan";
 import { UnmatchedItemRow } from "@/components/ai/UnmatchedItemRow";
+import { ImageSourceSelector } from "@/components/ai/ImageSourceSelector";
 
 const DirectPurchase = () => {
     const navigate = useNavigate();
@@ -60,7 +61,14 @@ const DirectPurchase = () => {
 
     const supplierList = suppliers?.filter(c => c.role === 'Supplier' || c.role === 'Both') || [];
 
-    const { isScanning, fileInputRef, triggerScan, handleFileChange } = useAiOrderScan({
+    const { 
+        isScanning, 
+        cameraInputRef, 
+        galleryInputRef, 
+        triggerCamera, 
+        triggerGallery, 
+        handleFileChange 
+    } = useAiOrderScan({
         mode: "purchase",
         contacts: supplierList,
         products,
@@ -230,9 +238,17 @@ const DirectPurchase = () => {
 
     return (
         <PageLayout>
-            {/* Hidden file input for invoice scanning */}
+            {/* Hidden file inputs for scanning */}
             <input
-                ref={fileInputRef}
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleFileChange}
+            />
+            <input
+                ref={galleryInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
@@ -250,18 +266,24 @@ const DirectPurchase = () => {
                                 <h3 className="font-semibold text-base">Direct Purchase</h3>
                                 <p className="text-sm text-muted-foreground">Fill manually or scan an invoice</p>
                             </div>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={triggerScan}
+                            <ImageSourceSelector
+                                onCameraSelect={triggerCamera}
+                                onGallerySelect={triggerGallery}
                                 disabled={isScanning}
-                                className="gap-2 border-primary text-primary hover:bg-primary/10"
+                                isScanning={isScanning}
                             >
-                                {isScanning
-                                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Scanning...</>
-                                    : <><ScanLine className="h-4 w-4" /> Scan Invoice</>
-                                }
-                            </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isScanning}
+                                    className="gap-2 border-primary text-primary hover:bg-primary/10"
+                                >
+                                    {isScanning
+                                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Scanning...</>
+                                        : <><ScanLine className="h-4 w-4" /> Scan Invoice</>
+                                    }
+                                </Button>
+                            </ImageSourceSelector>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -28,6 +28,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { useAiOrderScan } from "@/hooks/useAiOrderScan";
 import { UnmatchedItemRow } from "@/components/ai/UnmatchedItemRow";
+import { ImageSourceSelector } from "@/components/ai/ImageSourceSelector";
 
 const DirectSale = () => {
     const navigate = useNavigate();
@@ -43,7 +44,14 @@ const DirectSale = () => {
     const location = useLocation();
     const prefillApplied = useRef(false);
 
-    const { isScanning, fileInputRef, triggerScan, handleFileChange } = useAiOrderScan({
+    const { 
+        isScanning, 
+        cameraInputRef, 
+        galleryInputRef, 
+        triggerCamera, 
+        triggerGallery, 
+        handleFileChange 
+    } = useAiOrderScan({
         mode: "sale",
         contacts: customers,
         products,
@@ -184,7 +192,22 @@ const DirectSale = () => {
 
     return (
         <PageLayout>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            {/* Hidden file inputs for scanning */}
+            <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleFileChange}
+            />
+            <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-2 md:p-4">
                 {/* Left: Input Panel */}
@@ -197,18 +220,24 @@ const DirectSale = () => {
                                 <h3 className="font-semibold text-base">Direct Sale</h3>
                                 <p className="text-sm text-muted-foreground">Fill manually or scan a customer order</p>
                             </div>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={triggerScan}
+                            <ImageSourceSelector
+                                onCameraSelect={triggerCamera}
+                                onGallerySelect={triggerGallery}
                                 disabled={isScanning}
-                                className="gap-2 border-primary text-primary hover:bg-primary/10"
+                                isScanning={isScanning}
                             >
-                                {isScanning
-                                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Scanning...</>
-                                    : <><ScanLine className="h-4 w-4" /> Scan Order</>
-                                }
-                            </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isScanning}
+                                    className="gap-2 border-primary text-primary hover:bg-primary/10"
+                                >
+                                    {isScanning
+                                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Scanning...</>
+                                        : <><ScanLine className="h-4 w-4" /> Scan Order</>
+                                    }
+                                </Button>
+                            </ImageSourceSelector>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

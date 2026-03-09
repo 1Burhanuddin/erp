@@ -57,6 +57,10 @@ const DirectSale = () => {
         confirmPreview,
         retakePreview,
         closePreview,
+        totalPendingImages,
+        currentPreviewIndex,
+        goToPrevImage,
+        goToNextImage,
     } = useAiOrderScan({
         mode: "sale",
         contacts: customers,

@@ -56,7 +56,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
             c.email?.toLowerCase().includes(query) ||
             c.phone?.toLowerCase().includes(query) ||
             c.company?.toLowerCase().includes(query) ||
-            c.gstin?.toLowerCase().includes(query) ||
+            (c as any).gstin?.toLowerCase().includes(query) ||
             c.address?.toLowerCase().includes(query)
         );
     }) || [];

@@ -43,7 +43,14 @@ const DirectSale = () => {
     const location = useLocation();
     const prefillApplied = useRef(false);
 
-    const { isScanning, fileInputRef, triggerScan, handleFileChange } = useAiOrderScan({
+    const { 
+        isScanning, 
+        cameraInputRef, 
+        galleryInputRef, 
+        triggerCamera, 
+        triggerGallery, 
+        handleFileChange 
+    } = useAiOrderScan({
         mode: "sale",
         contacts: customers,
         products,

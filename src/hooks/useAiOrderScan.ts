@@ -50,9 +50,11 @@ export function useAiOrderScan({
     onItemsScanned,
 }: UseAiOrderScanOptions) {
     const [isScanning, setIsScanning] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
+    const galleryInputRef = useRef<HTMLInputElement>(null);
 
-    const triggerScan = () => fileInputRef.current?.click();
+    const triggerCamera = () => cameraInputRef.current?.click();
+    const triggerGallery = () => galleryInputRef.current?.click();
 
     // ── Fuse.js fuzzy contact match ─────────────────────────────────────────
     const fuseContacts = contacts

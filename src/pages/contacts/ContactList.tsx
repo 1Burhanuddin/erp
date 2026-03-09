@@ -141,9 +141,9 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                                         )}
                                     </div>
 
-                                    {contact.gstin && (
+                                    {(contact as any).gstin && (
                                         <div className="mt-3 pt-3 border-t text-xs font-mono text-muted-foreground">
-                                            GST: {contact.gstin}
+                                            GST: {(contact as any).gstin}
                                         </div>
                                     )}
                                 </DataCard>

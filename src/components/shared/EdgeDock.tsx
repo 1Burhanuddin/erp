@@ -25,7 +25,10 @@ export const EdgeDock = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [hiddenByActionBar, setHiddenByActionBar] = useState(false);
   const location = useLocation();
+
+  useHideOnSelectionBar(useCallback((h: boolean) => setHiddenByActionBar(h), []));
 
   // Detect mobile device
   useEffect(() => {

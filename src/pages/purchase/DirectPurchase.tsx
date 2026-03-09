@@ -38,6 +38,7 @@ import { useCreateContact } from "@/api/contacts";
 import { useCreateProduct } from "@/api/products";
 import { useAiOrderScan } from "@/hooks/useAiOrderScan";
 import { UnmatchedItemRow } from "@/components/ai/UnmatchedItemRow";
+import { ImageSourceSelector } from "@/components/ai/ImageSourceSelector";
 
 const DirectPurchase = () => {
     const navigate = useNavigate();

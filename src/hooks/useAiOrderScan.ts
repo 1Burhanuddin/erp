@@ -165,5 +165,12 @@ export function useAiOrderScan({
         }
     };
 
-    return { isScanning, fileInputRef, triggerScan, handleFileChange };
+    return { 
+        isScanning, 
+        cameraInputRef, 
+        galleryInputRef, 
+        triggerCamera, 
+        triggerGallery, 
+        handleFileChange 
+    };
 }

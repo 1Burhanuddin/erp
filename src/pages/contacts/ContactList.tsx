@@ -56,7 +56,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
             c.email?.toLowerCase().includes(query) ||
             c.phone?.toLowerCase().includes(query) ||
             c.company?.toLowerCase().includes(query) ||
-            c.gstin?.toLowerCase().includes(query) ||
+            (c as any)?.gstin?.t?.gstin?.toLowerCase().includes(query) ||
             c.address?.toLowerCase().includes(query)
         );
     }) || [];
@@ -75,7 +75,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                 contact.email || "",
                 contact.phone || "",
                 contact.company || "",
-                contact.gstin || "",
+       (contact as any)?.gstin || "",
                 contact.address || "",
                 contact.role || ""
             ],
@@ -141,9 +141,9 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                                         )}
                                     </div>
 
-                                    {contact.gstin && (
+                                    {(contact as any).gstin && (
                                         <div className="mt-3 pt-3 border-t text-xs font-mono text-muted-foreground">
-                                            GST: {contact.gstin}
+                                            GST: {(contact as any).gstin}
                                         </div>
                                     )}
                                 </DataCard>
@@ -202,7 +202,7 @@ const ContactList = ({ role, title, description }: ContactListProps) => {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                {contact.gstin && <div className="text-sm font-mono">GST: {contact.gstin}</div>}
+                                                {(contact as any).gstin && <div className="text-sm font-mono">GST: {(contact as any).gstin}</div>}
                                                 {contact.address && (
                                                     <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5 truncate max-w-[200px]">
                                                         <MapPin className="h-3 w-3 flex-shrink-0" /> {contact.address}

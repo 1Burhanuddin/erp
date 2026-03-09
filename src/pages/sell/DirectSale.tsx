@@ -29,6 +29,7 @@ import { format } from "date-fns";
 import { useAiOrderScan } from "@/hooks/useAiOrderScan";
 import { UnmatchedItemRow } from "@/components/ai/UnmatchedItemRow";
 import { ImageSourceSelector } from "@/components/ai/ImageSourceSelector";
+import { ImagePreviewDialog } from "@/components/ai/ImagePreviewDialog";
 
 const DirectSale = () => {
     const navigate = useNavigate();
@@ -50,7 +51,12 @@ const DirectSale = () => {
         galleryInputRef, 
         triggerCamera, 
         triggerGallery, 
-        handleFileChange 
+        handleFileChange,
+        previewUrl,
+        showPreview,
+        confirmPreview,
+        retakePreview,
+        closePreview,
     } = useAiOrderScan({
         mode: "sale",
         contacts: customers,
@@ -192,6 +198,14 @@ const DirectSale = () => {
 
     return (
         <PageLayout>
+            <ImagePreviewDialog
+                open={showPreview}
+                imageUrl={previewUrl}
+                isProcessing={isScanning}
+                onConfirm={confirmPreview}
+                onRetake={retakePreview}
+                onClose={closePreview}
+            />
             {/* Hidden file inputs for scanning */}
             <input
                 ref={cameraInputRef}

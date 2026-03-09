@@ -39,6 +39,7 @@ import { useCreateProduct } from "@/api/products";
 import { useAiOrderScan } from "@/hooks/useAiOrderScan";
 import { UnmatchedItemRow } from "@/components/ai/UnmatchedItemRow";
 import { ImageSourceSelector } from "@/components/ai/ImageSourceSelector";
+import { ImagePreviewDialog } from "@/components/ai/ImagePreviewDialog";
 
 const DirectPurchase = () => {
     const navigate = useNavigate();
@@ -67,7 +68,12 @@ const DirectPurchase = () => {
         galleryInputRef, 
         triggerCamera, 
         triggerGallery, 
-        handleFileChange 
+        handleFileChange,
+        previewUrl,
+        showPreview,
+        confirmPreview,
+        retakePreview,
+        closePreview,
     } = useAiOrderScan({
         mode: "purchase",
         contacts: supplierList,
@@ -238,6 +244,14 @@ const DirectPurchase = () => {
 
     return (
         <PageLayout>
+            <ImagePreviewDialog
+                open={showPreview}
+                imageUrl={previewUrl}
+                isProcessing={isScanning}
+                onConfirm={confirmPreview}
+                onRetake={retakePreview}
+                onClose={closePreview}
+            />
             {/* Hidden file inputs for scanning */}
             <input
                 ref={cameraInputRef}

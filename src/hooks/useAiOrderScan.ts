@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Fuse from "fuse.js";
 import { toast } from "sonner";
 import { parseInvoiceImage, parseSaleOrderImage } from "@/lib/gemini";
@@ -50,6 +50,9 @@ export function useAiOrderScan({
     onItemsScanned,
 }: UseAiOrderScanOptions) {
     const [isScanning, setIsScanning] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [showPreview, setShowPreview] = useState(false);
+    const pendingFileRef = useRef<{ base64: string; mimeType: string } | null>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
     const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,7 +68,6 @@ export function useAiOrderScan({
         if (!fuseContacts || !aiName) return undefined;
         const results = fuseContacts.search(aiName);
         const best = results[0];
-        // Accept match only if score is below 0.35 (lower = better)
         if (best && (best.score ?? 1) < 0.35) return best.item;
         return undefined;
     };
@@ -83,39 +85,14 @@ export function useAiOrderScan({
         return undefined;
     };
 
-    // ── handleFileChange ────────────────────────────────────────────────────
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        // Reset so same file can be re-selected
-        e.target.value = "";
-
-        // ── File validation ──────────────────────────────────────────────
-        if (!file.type.startsWith("image/")) {
-            toast.error("Only image files are supported for scanning.");
-            return;
-        }
-        if (file.size > MAX_FILE_SIZE) {
-            toast.error("Image is too large. Please use an image under 10 MB.");
-            return;
-        }
-
+    // ── Process the image with AI ───────────────────────────────────────────
+    const processImage = useCallback(async (base64: string, mimeType: string) => {
         setIsScanning(true);
         try {
-            // ── Convert to base64 ────────────────────────────────────────
-            const base64 = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve((reader.result as string).split(",")[1]);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-
-            // ── Call the appropriate AI function ─────────────────────────
             const parsed = mode === "purchase"
-                ? await parseInvoiceImage(base64, file.type)
-                : await parseSaleOrderImage(base64, file.type);
+                ? await parseInvoiceImage(base64, mimeType)
+                : await parseSaleOrderImage(base64, mimeType);
 
-            // ── Match contact ────────────────────────────────────────────
             const contactName = mode === "purchase"
                 ? (parsed as any).supplier_name
                 : (parsed as any).customer_name;
@@ -129,7 +106,6 @@ export function useAiOrderScan({
                 }
             }
 
-            // ── Map items ────────────────────────────────────────────────
             if (parsed.items?.length) {
                 const fallbackPrice = (p: Product | undefined) =>
                     mode === "purchase" ? p?.purchase_price ?? 0 : p?.sale_price ?? 0;
@@ -162,15 +138,73 @@ export function useAiOrderScan({
             toast.error(err?.message ?? "Failed to scan image.");
         } finally {
             setIsScanning(false);
+            setShowPreview(false);
+            setPreviewUrl(null);
+            pendingFileRef.current = null;
         }
+    }, [mode, contacts, products]);
+
+    // ── handleFileChange → show preview instead of processing immediately ──
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        e.target.value = "";
+
+        if (!file.type.startsWith("image/")) {
+            toast.error("Only image files are supported for scanning.");
+            return;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            toast.error("Image is too large. Please use an image under 10 MB.");
+            return;
+        }
+
+        // Create preview URL
+        const objectUrl = URL.createObjectURL(file);
+        setPreviewUrl(objectUrl);
+        setShowPreview(true);
+
+        // Store base64 for later processing
+        const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve((reader.result as string).split(",")[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+        pendingFileRef.current = { base64, mimeType: file.type };
     };
 
-    return { 
-        isScanning, 
-        cameraInputRef, 
-        galleryInputRef, 
-        triggerCamera, 
-        triggerGallery, 
-        handleFileChange 
+    // ── Preview actions ─────────────────────────────────────────────────────
+    const confirmPreview = useCallback(() => {
+        if (pendingFileRef.current) {
+            processImage(pendingFileRef.current.base64, pendingFileRef.current.mimeType);
+        }
+    }, [processImage]);
+
+    const retakePreview = useCallback(() => {
+        setShowPreview(false);
+        setPreviewUrl(null);
+        pendingFileRef.current = null;
+    }, []);
+
+    const closePreview = useCallback(() => {
+        setShowPreview(false);
+        setPreviewUrl(null);
+        pendingFileRef.current = null;
+    }, []);
+
+    return {
+        isScanning,
+        cameraInputRef,
+        galleryInputRef,
+        triggerCamera,
+        triggerGallery,
+        handleFileChange,
+        // Preview state
+        previewUrl,
+        showPreview,
+        confirmPreview,
+        retakePreview,
+        closePreview,
     };
 }

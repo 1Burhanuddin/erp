@@ -49,10 +49,7 @@ const ProductsList = () => {
         return (
             product.name?.toLowerCase().includes(query) ||
             product.sku?.toLowerCase().includes(query) ||
-            product.description?.toLowerCase().includes(query) ||
-            (product.category as any)?.name?.toLowerCase().includes(query) ||
-            (product.brand as any)?.name?.toLowerCase().includes(query) ||
-            (product.unit as any)?.name?.toLowerCase().includes(query)
+            product.description?.toLowerCase().includes(query)
         );
     }) || [];
 

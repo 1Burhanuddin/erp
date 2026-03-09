@@ -198,6 +198,14 @@ const DirectSale = () => {
 
     return (
         <PageLayout>
+            <ImagePreviewDialog
+                open={showPreview}
+                imageUrl={previewUrl}
+                isProcessing={isScanning}
+                onConfirm={confirmPreview}
+                onRetake={retakePreview}
+                onClose={closePreview}
+            />
             {/* Hidden file inputs for scanning */}
             <input
                 ref={cameraInputRef}

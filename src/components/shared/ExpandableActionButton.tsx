@@ -91,6 +91,8 @@ export const ExpandableActionButton = ({
     setIsExpanded(!isExpanded);
   };
 
+  if (hiddenByActionBar && isMobile) return null;
+
   return (
     <div className="expandable-action-container fixed bottom-6 right-6 z-[60]">
       {/* Expanded Buttons */}

@@ -91,6 +91,8 @@ export const FloatingActionHub = ({
   // On mobile, always show expanded (no hover), on desktop use hover
   const shouldShowExpanded = isMobile || isExpanded;
 
+  if (hiddenByActionBar && isMobile) return null;
+
   return (
     <div 
       className={cn(
